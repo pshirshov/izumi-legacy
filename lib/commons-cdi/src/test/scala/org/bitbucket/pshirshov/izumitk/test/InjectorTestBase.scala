@@ -17,8 +17,8 @@ import scala.util.{Failure, Success, Try}
   */
 @ExposedTestScope
 trait InjectorTestBase extends IzumiTestBase with StrictLogging {
-  import net.codingwell.scalaguice.InjectorExtensions.ScalaInjector
-  protected implicit class VisibleScalaInjector(injector: Injector) extends ScalaInjector(injector) // just to avoid implicit conversions in inherited classes
+  // just to avoid implicit conversions in inherited classes
+  protected implicit class VisibleScalaInjector(injector: Injector) extends net.codingwell.scalaguice.InjectorExtensions.ScalaInjector(injector)
 
   protected val modules: Module
 
@@ -26,6 +26,13 @@ trait InjectorTestBase extends IzumiTestBase with StrictLogging {
   protected def checkInjectorException(exception: Throwable): Throwable = exception
 
   FailingConfigLoadingStrategy.init()
+
+  protected def withFixture[T : Manifest, R](test: (T, Injector) => R): TestData => R = {
+    withInjector {
+      injector =>
+        test(injector.instance[T], injector)
+    }
+  }
 
   protected final def withInjector[T](test: (Injector) => T): TestData => T = {
     td =>
