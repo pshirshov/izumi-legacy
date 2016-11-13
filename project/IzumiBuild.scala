@@ -81,7 +81,7 @@ object IzumiBuild extends PerfectBuild {
     //    , coverageOutputTeamCity := true
     //    , coverageOutputXML := true
     //    , coverageOutputHTML := true
-    , sonatypeProfileName := "org.bitbucket.pshirshov"
+    , sonatypeProfileName := "org.bitbucket.pshirshov.izumitk"
     , pomExtra := <url>https://bitbucket.org/pshirshov/scala-izumitk</url>
       <licenses>
         <license>
