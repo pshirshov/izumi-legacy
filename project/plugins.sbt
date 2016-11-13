@@ -4,7 +4,7 @@
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.1.3"
 
 
-//resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
+resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 
 
-addSbtPlugin("org.bitbucket.pshirshov.sbt" % "perfect-build" % "1.3.4")
+addSbtPlugin("org.bitbucket.pshirshov.sbt" % "perfect-build" % "1.3.5-SNAPSHOT")
