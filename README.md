@@ -1,0 +1,1 @@
+A simple Scala toolkit for fast evolving advanced applications.

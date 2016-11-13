@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<included>
+    <jmxConfigurator />
+
+    <property name="pattern" value="%d{HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n"/>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${pattern}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="WSOUT" class="org.bitbucket.pshirshov.izumitk.http.util.WSAppender">
+        <pattern>${pattern}</pattern>
+    </appender>
+
+    <root level="WARN">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="WSOUT"/>
+    </root>
+
+    <logger name="akka.actor.ActorSystemImpl" level="INFO"/>
+    <logger name="org.bitbucket.pshirshov.izumitk" level="DEBUG"/>
+</included>
