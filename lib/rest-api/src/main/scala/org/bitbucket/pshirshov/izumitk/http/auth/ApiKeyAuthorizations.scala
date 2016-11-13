@@ -18,7 +18,7 @@ class ApiKeyAuthorizations @Inject()(
     apiKey == key
   }
 
-  protected[izumitk] def extractApiKey(): HttpHeader => Option[String] = {
+  protected def extractApiKey(): HttpHeader => Option[String] = {
     extractKey(keyHeaderName)
   }
 }
