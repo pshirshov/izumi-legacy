@@ -18,7 +18,7 @@ class ApiKeyAuthorizations @Inject()(
     apiKey == key
   }
 
-  protected def extractApiKey(): HttpHeader => Option[String] = {
+  def extractApiKey(): HttpHeader => Option[String] = {
     extractKey(keyHeaderName)
   }
 }
