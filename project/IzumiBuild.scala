@@ -70,8 +70,13 @@ object IzumiBuild extends PerfectBuild {
   override def appDependencies: Seq[ClasspathDep[ProjectReference]] = dep("app-skeleton")
 
 
-  override def publishSettings: Seq[_root_.sbt.Def.Setting[Task[Unit]]] = Seq(
-    publish := { MultiPublishPlugin.MultiPublishSigned.value }
+  override def publishSettings: Seq[_root_.sbt.Def.Setting[_]] = Seq(
+    publish := {
+      MultiPublishPlugin.MultiPublishSigned.value
+    }
+    , publishArtifact in(Test, packageBin) := true
+    , publishArtifact in(Test, packageDoc) := true
+    , publishArtifact in(Test, packageSrc) := true
   )
 
   override lazy val baseSettings = super.baseSettings ++ Seq(
