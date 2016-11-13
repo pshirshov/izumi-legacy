@@ -4,7 +4,9 @@ import izumitk.Dependencies.{C, T}
 import pbuild._
 import sbt.Keys._
 import sbt._
+
 //import scoverage.ScoverageKeys._
+import xerial.sbt.Sonatype.SonatypeKeys._
 
 object IzumiBuild extends PerfectBuild {
   override lazy val allProjects: Map[String, Project] = Seq(
@@ -67,23 +69,40 @@ object IzumiBuild extends PerfectBuild {
 
   override def appDependencies: Seq[ClasspathDep[ProjectReference]] = dep("app-skeleton")
 
+
+  override def publishSettings: Seq[_root_.sbt.Def.Setting[Task[Unit]]] = Seq(
+    publish := { MultiPublishPlugin.MultiPublishSigned.value }
+  )
+
   override lazy val baseSettings = super.baseSettings ++ Seq(
     //unmanagedBase := baseDirectory.value / "jars"
     resolvers += "restlet" at "http://maven.restlet.com/"
     , resolvers ++= config.publishing.map(_.resolver(isSnapshot.value)) // TODO: move to build
     //    , coverageOutputTeamCity := true
-//    , coverageOutputXML := true
-//    , coverageOutputHTML := true
+    //    , coverageOutputXML := true
+    //    , coverageOutputHTML := true
+    , sonatypeProfileName := "org.bitbucket.pshirshov"
+    , pomExtra := <url>https://bitbucket.org/pshirshov/scala-izumitk</url>
+      <licenses>
+        <license>
+          <name>BSD-style</name>
+          <url>http://www.opensource.org/licenses/bsd-license.php</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+      <scm>
+        <url>git@bitbucket.org:pshirshov/scala-izumitk.git</url>
+        <connection>scm:git@bitbucket.org:pshirshov/scala-izumitk.git</connection>
+      </scm>
+      <developers>
+        <developer>
+          <id>pshirshov</id>
+          <name>Pavel Shirshov</name>
+          <url>http://pshirshov.me</url>
+        </developer>
+      </developers>
   )
   // ScoverageKeys.coverageFailOnMinimum := false
 
   override lazy val defaultSettings = super.defaultSettings
-
-//  val dockerRegistry = sys.props.get("docker.registry").get
-//
-//  val resourceRoot = s"$projectRoot/project/resources"
-//  val builder = new FileRepositoryBuilder
-//  val repository = builder.readEnvironment.findGitDir.build
-//  val branch = repository.getBranch
-//  val ref = repository.getRef(Constants.HEAD).getObjectId.abbreviate(7).name()
 }
