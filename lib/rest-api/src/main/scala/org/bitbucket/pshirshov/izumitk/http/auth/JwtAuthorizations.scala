@@ -59,7 +59,7 @@ class JwtAuthorizations @Inject() (
     }
   }
 
-  protected def extractJwtToken(): HttpHeader => Option[String] = {
+  def extractJwtToken(): HttpHeader => Option[String] = {
     case Authorization(c: OAuth2BearerToken) =>
       Some(c.token)
 
