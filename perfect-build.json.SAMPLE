@@ -1,0 +1,16 @@
+{
+  "publishing": [
+    {
+      "publishAll": true,
+      "repository": "https://oss.sonatype.org/",
+      "snapshots": "content/repositories/snapshots",
+      "releases": "service/local/staging/deploy/maven2",
+      "credentials": "credentials.sonatype-nexus.properties"
+    }
+  ],
+
+  "properties": {
+    "project.version": "1.0.0-SNAPSHOT",
+    "project.organization": "org.bitbucket.pshirshov"
+  }
+}

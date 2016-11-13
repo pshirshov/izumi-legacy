@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<restrict>
+
+    <cors>
+        <allow-origin>*</allow-origin>
+        <strict-checking/>
+    </cors>
+
+    <http>
+        <method>get</method>
+        <method>post</method>
+    </http>
+
+    <commands>
+        <command>read</command>
+        <command>write</command>
+        <command>exec</command>
+        <command>list</command>
+        <command>version</command>
+        <command>search</command>
+    </commands>
+
+</restrict>
