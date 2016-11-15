@@ -23,7 +23,7 @@ trait InjectorTestBase extends IzumiTestBase with StrictLogging {
   protected val modules: Module
 
   protected def check(injector: Injector): Unit = {}
-  protected def checkInjectorException(exception: Throwable): Throwable = exception
+//  protected def checkInjectorException(exception: Throwable): Throwable = exception
 
   FailingConfigLoadingStrategy.init()
 
@@ -46,15 +46,16 @@ trait InjectorTestBase extends IzumiTestBase with StrictLogging {
 
       Try(Guice.createInjector(Modules.combine(modules, testDataModule, injectorListenerModule))) match {
         case Failure(f) =>
-          logger.warn(s"Unexpected exception during injector creation", f)
-          Try(checkInjectorException(f)) match {
-            case Failure(pending: TestPendingException) =>
-              throw pending
-            case Failure(e) =>
-              throw e
-            case Success(e) =>
-              throw e
-          }
+          throw f
+//          logger.warn(s"Unexpected exception during injector creation", f)
+//          Try(checkInjectorException(f)) match {
+//            case Failure(pending: TestPendingException) =>
+//              throw pending
+//            case Failure(e) =>
+//              throw e
+//            case Success(e) =>
+//              throw e
+//          }
 
         case Success(injector) =>
           Try(check(injector)) match {
