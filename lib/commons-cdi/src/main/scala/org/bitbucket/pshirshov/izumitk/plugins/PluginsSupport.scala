@@ -76,6 +76,7 @@ trait PluginsSupport extends StrictLogging {
         Option(clz.getAnnotation(classOf[NonRootPlugin])) match {
           case Some(ann) =>
             val classes = (clz.getInterfaces :+ clz).toSet
+            // TODO: here we need to check all the dependency graph, not only first dependency level
             val isOk = reverseDependencies.keySet.intersect(classes).nonEmpty
             logger.debug(s"Non-root plugin `$clz` implements $classes and is necessary = $isOk")
             isOk
