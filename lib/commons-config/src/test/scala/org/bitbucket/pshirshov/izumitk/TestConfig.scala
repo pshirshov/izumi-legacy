@@ -3,9 +3,18 @@ package org.bitbucket.pshirshov.izumitk
 import com.typesafe.config.{Config, ConfigFactory}
 import org.bitbucket.pshirshov.izumitk.test.ExposedTestScope
 
+import scala.language.implicitConversions
+
 @ExposedTestScope
 object TestConfig {
-  def references(sections: String*): Config = {
+  import scala.collection.JavaConversions._
+  import scala.collection.JavaConverters._
+
+  case class TestConfigSection(resourceName: String, alias: String)
+
+  implicit def toConfigSection(resourceName: String): TestConfigSection = TestConfigSection(resourceName, resourceName)
+
+  def references(sections: TestConfigSection*): Config = {
     val out = sections.map(reference).toList match {
       case head :: Nil =>
         head
@@ -20,20 +29,18 @@ object TestConfig {
       .resolve()
   }
 
-  private def reference(section: String): Config = {
-    val filename = s"$section-reference.conf"
+  private def reference(section: TestConfigSection): Config = {
+    val filename = s"${section.resourceName}-reference.conf"
 
     val config = ConfigFactory.parseResources(filename)
 
     if (config.isEmpty) {
       throw new IllegalStateException(s"Empty reference: `$section`")
     }
-    import scala.collection.JavaConversions._
 
-    import scala.collection.JavaConverters._
     val unwrapped = config.root().unwrapped().map {
       case (k, v) =>
-        (s"$section.$k", v)
+        (s"${section.alias}.$k", v)
     }.toMap.asJava
 
     ConfigFactory.parseMap(unwrapped)
