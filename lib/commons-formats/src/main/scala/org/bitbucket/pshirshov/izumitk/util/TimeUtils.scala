@@ -42,4 +42,6 @@ object TimeUtils {
     val instant = Instant.ofEpochSecond(t)
     ZonedDateTime.ofInstant(instant, utc)
   }
+
+  implicit def dateTimeOrdering: Ordering[ZonedDateTime] = Ordering.fromLessThan(_ isBefore _)
 }

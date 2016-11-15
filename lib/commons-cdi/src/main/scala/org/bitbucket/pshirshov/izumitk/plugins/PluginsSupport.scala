@@ -5,10 +5,10 @@ import java.util.regex.Pattern
 import com.google.common.reflect.ClassPath
 import com.typesafe.config.Config
 import com.typesafe.scalalogging.StrictLogging
-import org.bitbucket.pshirshov.izumitk.{RequiredConfig, TargetPoint}
 import org.bitbucket.pshirshov.izumitk.cdi.Plugin
 import org.bitbucket.pshirshov.izumitk.config.LoadedConfig
-import org.bitbucket.pshirshov.izumitk.util.StringUtils
+import org.bitbucket.pshirshov.izumitk.util.{CollectionUtils, StringUtils}
+import org.bitbucket.pshirshov.izumitk.{Depends, NonRootPlugin, RequiredConfig, TargetPoint}
 import org.scalactic._
 
 import scala.collection.JavaConversions._
@@ -33,50 +33,87 @@ trait PluginsSupport extends StrictLogging {
     logger.debug(s"Scanning `${pluginsPackages()}` for plugins...")
 
     val classpath = ClassPath.from(Thread.currentThread().getContextClassLoader)
-    val plugins = pluginsPackages().flatMap(loadPlugin(_, classpath))
+    val plugins = loadPlugins(pluginsPackages(), classpath)
 
     logger.debug(s"Plugins loaded: ${plugins.size}")
     plugins.sorted
   }
 
-  def loadPlugin(pluginsPackage: String, classpath: ClassPath): Seq[Plugin] = {
-    val plugins = classpath.getTopLevelClassesRecursive(pluginsPackage)
-      .map(_.load())
-      .filter {
-        pclass =>
-          classOf[Plugin].isAssignableFrom(pclass) &&
-            !pluginDeactivated(pclass) &&
-            pluginIsValidTarget(pclass)
+  def loadPlugins(pluginsPackage: Seq[String], classpath: ClassPath): Seq[Plugin] = {
+    val allLoadabalePluginClasses =
+      pluginsPackage.flatMap {
+        pkg =>
+          classpath
+            .getTopLevelClassesRecursive(pkg)
+            .map(_.load())
       }
-      .flatMap {
-        clz =>
-          logger.debug(s"Processing plugin `${clz.getCanonicalName}`...")
 
-          val instance = loadConfigurablePlugin(clz).recoverWith {
-            bad =>
-              loadSimplePlugin(clz).badMap(bad1 => bad ++ bad1)
-          }
+    val activeAndValidPluginClasses = allLoadabalePluginClasses.filter {
+      pclass =>
+        classOf[Plugin].isAssignableFrom(pclass) &&
+          !pluginDeactivated(pclass) &&
+          pluginIsValidTarget(pclass)
+    }
 
-          instance match {
-            case Good(p) =>
-              logger.debug(s"Plugin `${clz.getCanonicalName}` instantiated: $p")
-              Some(p)
+    val dependencyEdges = activeAndValidPluginClasses.flatMap {
+      clz =>
+        Option(clz.getAnnotation(classOf[Depends])) match {
+          case Some(ann) =>
+            ann.value().map(dependency => clz -> dependency)
+          case None =>
+            Seq()
+        }
+    }
 
-            case Bad(f) =>
-              logger.warn(s"Loading of plugin `${clz.getCanonicalName}` failed: $f")
-              None
-          }
-      }.toSeq
-    plugins
+    val dependencies = CollectionUtils.toMapOfSets[Class[_], Class[_]](dependencyEdges)
+    val reverseDependencies = CollectionUtils.toMapOfSets[Class[_], Class[_]](dependencyEdges.map(_.swap))
+
+    logger.debug(s"Dependency matrix: $dependencies")
+    logger.debug(s"Reverse dependency matrix: $reverseDependencies")
+
+    def withoutUnrequiredClasses = activeAndValidPluginClasses.filter {
+      clz =>
+        Option(clz.getAnnotation(classOf[NonRootPlugin])) match {
+          case Some(ann) =>
+            val classes = (clz.getInterfaces :+ clz).toSet
+            val isOk = reverseDependencies.keySet.intersect(classes).nonEmpty
+            logger.debug(s"Non-root plugin `$clz` implements $classes and is necessary = $isOk")
+            isOk
+          case None =>
+            true
+        }
+    }
+
+    val loadedPlugins = withoutUnrequiredClasses.flatMap {
+      clz =>
+        logger.debug(s"Processing plugin `${clz.getCanonicalName}`...")
+
+        val instance = loadConfigurablePlugin(clz).recoverWith {
+          bad =>
+            loadSimplePlugin(clz).badMap(bad1 => bad ++ bad1)
+        }
+
+        instance match {
+          case Good(p) =>
+            logger.debug(s"Plugin `${clz.getCanonicalName}` instantiated: $p")
+            Some(p)
+
+          case Bad(f) =>
+            logger.warn(s"Loading of plugin `${clz.getCanonicalName}` failed: $f")
+            None
+        }
+    }
+
+    loadedPlugins
   }
 
   protected def pluginDeactivated(pclass: Class[_]): Boolean = {
     if (
       pluginsConfig.deactivated.contains(pclass.getCanonicalName) ||
-      pluginsConfig.deactivated.contains(pclass.getSimpleName) ||
-      pluginsConfig.deactivated.exists {expr =>
-        expr.startsWith("rx:") && Pattern.compile(expr.substring(3)).matcher(pclass.getCanonicalName).matches()
-      }
+        pluginsConfig.deactivated.contains(pclass.getSimpleName) ||
+        pluginsConfig.deactivated.exists { expr =>
+          expr.startsWith("rx:") && Pattern.compile(expr.substring(3)).matcher(pclass.getCanonicalName).matches()
+        }
     ) {
       logger.debug(s"Plugin is deactivated: $pclass")
       true
@@ -120,7 +157,8 @@ trait PluginsSupport extends StrictLogging {
     val companyPackage = getClass.getPackage.getName.split('.').take(2).toList.mkString(".")
 
     Seq(
-      s"$companyPackage.plugins"
+      s"org.bitbucket.pshirshov.izumitk.plugins"
+      , s"$companyPackage.plugins"
       , s"$companyPackage.$appId.plugins"
       , s"${getClass.getPackage.getName}.plugins"
     ) // lookup in org.bitbucket.pshirshov.izumitk and org.bitbucket.pshirshov.izumitk.<appId>

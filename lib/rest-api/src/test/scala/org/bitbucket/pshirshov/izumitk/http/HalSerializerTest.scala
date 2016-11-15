@@ -59,8 +59,12 @@ class HalSerializerTest extends InjectorTestBase {
         val mapper = injector.instance[HalSerializer]
         val message = HistoricMessage(UUID.randomUUID(), TestPolymorphics.SimpleTextPayload("xxx"))
         val sample = HistoryEntry(message, Seq(message, message))
-        println(mapper.makeRepr("http://localhost:8080", sample).toString(RepresentationFactory.HAL_JSON))
-
+        val repr = mapper.makeRepr("http://localhost:8080", sample, {
+          ctx =>
+            ctx.repr.withLink("xxx", "yyy")
+        })
+          .toString(RepresentationFactory.HAL_JSON)
+        println(repr) // TODO: XXX: real test
     }
   }
 

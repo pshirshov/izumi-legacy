@@ -9,6 +9,7 @@ import com.google.inject.{Inject, Singleton}
 import org.bitbucket.pshirshov.izumitk.hal.HalResource
 import org.bitbucket.pshirshov.izumitk.json.JacksonMapper
 import com.theoryinpractise.halbuilder.api._
+import org.bitbucket.pshirshov.izumitk.http.hal.Hal.{HalContext, HalHandler}
 
 import scala.reflect.runtime.universe._
 /**
@@ -18,7 +19,11 @@ class HalSerializer @Inject()(
   @Named("standardMapper") mapper: JacksonMapper
   , factory: RepresentationFactory
 ) {
-  def makeRepr(baseUri: String, dto: AnyRef): Representation = {
+  def makeRepr(
+                baseUri: String
+                , dto: AnyRef
+                , handler: HalHandler
+              ): Representation = {
     if (!dto.getClass.isAnnotationPresent(classOf[HalResource])) {
       throw new IllegalArgumentException(s"Not a HAL resource: $dto")
     }
@@ -52,11 +57,11 @@ class HalSerializer @Inject()(
             repr.withProperty(name, mapper.valueToTree(v))
           case v: util.Collection[AnyRef] =>
             import scala.collection.JavaConversions._
-            fillSequence(repr, baseUri, name, v.toSeq)
+            fillSequence(repr, baseUri, name, v.toSeq, handler)
           case v: Traversable[AnyRef] =>
-            fillSequence(repr, baseUri, name, v.toSeq)
+            fillSequence(repr, baseUri, name, v.toSeq, handler)
           case v: AnyRef if isHalResource(v) =>
-            repr.withRepresentation(name, makeRepr(baseUri, v))
+            repr.withRepresentation(name, makeRepr(baseUri, v, handler))
           case v: AnyRef => //if isHalProperty(v) =>
             repr.withProperty(name, mapper.valueToTree(v))
           case _ =>
@@ -64,11 +69,12 @@ class HalSerializer @Inject()(
         }
     }
 
+    handler(HalContext(dto, baseUri, repr))
     repr
   }
 
-  private def fillSequence(repr: Representation, baseUri: String, name: String, v: Traversable[AnyRef]): Unit = {
-    serializeSequence(v, baseUri) match {
+  private def fillSequence(repr: Representation, baseUri: String, name: String, v: Traversable[AnyRef], handler: HalHandler): Unit = {
+    serializeSequence(v, baseUri, handler) match {
       case (resources, properties) =>
         if (properties.nonEmpty) {
           val arr = mapper.getNodeFactory.arrayNode()
@@ -80,11 +86,11 @@ class HalSerializer @Inject()(
     }
   }
 
-  private def serializeSequence(sequence: Traversable[AnyRef], baseUri: String): (Seq[Representation], Seq[JsonNode]) = {
+  private def serializeSequence(sequence: Traversable[AnyRef], baseUri: String, handler: HalHandler): (Seq[Representation], Seq[JsonNode]) = {
     sequence.partition(isHalResource) match {
       case (resources, properties) =>
         (
-          resources.map(r => makeRepr(baseUri, r)).toSeq
+          resources.map(r => makeRepr(baseUri, r, handler)).toSeq
           , properties.map(p => mapper.valueToTree[JsonNode](p)).toSeq
           )
     }
