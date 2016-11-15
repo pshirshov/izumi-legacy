@@ -91,8 +91,13 @@ abstract class Starter[ArgsType <: WithBaseArguments] {
     //NamedConfigLoadingStrategy.init(path)
     FailingConfigLoadingStrategy.init()
 
-    val loadedConfig = TypesafeConfigLoader.loadConfig(path, referenceConfigName)
+    val loadedConfig = doLoadConfig(args, path)
     handleConfigLoadingResult(loadedConfig, args)
+  }
+
+
+  protected def doLoadConfig(args: ArgsType, path: String): Try[LoadedConfig] = {
+    TypesafeConfigLoader.loadConfig(path, referenceConfigName)
   }
 
   protected def handleReference(args: ArgsType, c: LoadedConfig): LoadedConfig = {
