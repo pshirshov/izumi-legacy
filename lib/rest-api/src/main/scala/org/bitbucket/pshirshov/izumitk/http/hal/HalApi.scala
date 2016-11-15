@@ -29,7 +29,7 @@ class HalApi @Inject()
 
   protected val halContentType = ContentType(`application/hal+json`)
 
-  def completeHal[R <: Hal : ClassTag : Manifest](endpointName: String)(fun: => R): (RequestContext) => Future[RouteResult] = metered("xxx") {
+  def completeHal[R <: Hal : ClassTag : Manifest](endpointName: String)(fun: => R): (RequestContext) => Future[RouteResult] = metered(endpointName) {
     ctx: RequestContext =>
       import Hal._
 
