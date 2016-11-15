@@ -2,6 +2,7 @@ package org.bitbucket.pshirshov.izumitk.http.util
 
 import java.util.concurrent.TimeUnit
 
+import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.directives.BasicDirectives
 import akka.http.scaladsl.server.{Directive0, RequestContext, Route, RouteResult}
 import com.codahale.metrics._
@@ -24,8 +25,10 @@ trait MetricDirectives extends BasicDirectives with StrictLogging {
             val operationDuration = System.nanoTime() - before
             r.headers.find(_.is(MetricDirectives.ENDPOINT_NAME_HEADER)).foreach {
               h =>
-                val timer = metrics.timer(s"$productId-${h.value()}")
+                val metricName = s"$productId-${h.value()}"
+                val timer = metrics.timer(metricName)
                 timer.update(operationDuration, TimeUnit.NANOSECONDS)
+                logger.trace(s"Metric recorded: $metricName=$operationDuration")
             }
         }
 
@@ -35,6 +38,19 @@ trait MetricDirectives extends BasicDirectives with StrictLogging {
 
           case rr@RouteResult.Complete(_) =>
             rr.copy(response = rr.response.withHeaders(rr.response.headers.filterNot(_.is(MetricDirectives.ENDPOINT_NAME_HEADER))))
+        }
+    }
+  }
+
+  def metered(endpointName: String): Directive0 = {
+    mapInnerRoute {
+      route: Route => ctx: RequestContext =>
+        route(ctx).map {
+          case rr@RouteResult.Rejected(_) =>
+            rr
+
+          case rr@RouteResult.Complete(_) =>
+            rr.copy(response = rr.response.withHeaders(rr.response.headers :+ RawHeader(MetricDirectives.ENDPOINT_NAME_HEADER, endpointName)))
         }
     }
   }
