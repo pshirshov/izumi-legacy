@@ -40,15 +40,14 @@ class HalApi @Inject()
         case Auto(entity, handler) =>
           val repr = entity match {
             case Good(dto: AnyRef) =>
-              serializer.makeRepr(baseUri, dto)
+              serializer.makeRepr(baseUri, dto, handler)
             case Bad(failure) =>
               throw new ServiceException(s"Bad result: $failure") // TODO: needs to be improved
             case dto: AnyRef =>
-              serializer.makeRepr(baseUri, dto)
+              serializer.makeRepr(baseUri, dto, handler)
             case other =>
               throw new UnsupportedOperationException(s"Automatic HAL serialization unsupported: $other")
           }
-          handler(entity, baseUri, repr)
           repr
       }
 

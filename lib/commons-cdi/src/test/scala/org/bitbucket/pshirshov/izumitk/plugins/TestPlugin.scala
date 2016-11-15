@@ -5,7 +5,7 @@ import com.google.inject.Inject
 import com.typesafe.config.Config
 import net.codingwell.scalaguice.ScalaModule
 import org.bitbucket.pshirshov.izumitk.cdi.Plugin
-import org.bitbucket.pshirshov.izumitk.{Depends, ExtensionPoint, RequiredConfig, TargetPoint}
+import org.bitbucket.pshirshov.izumitk._
 
 @ExtensionPoint
 trait TestExtender1 {
@@ -97,3 +97,19 @@ class TestTargetPlugin4 extends Plugin with TestTarget1 {
 
 class TestPluginRegexDisabledXXX extends Plugin {
 }
+
+
+@NonRootPlugin
+class TestInvalidNonRootPlugin extends Plugin {
+}
+
+trait INonRootDep {}
+
+@NonRootPlugin
+class TestValidNonRootPlugin extends Plugin with INonRootDep {
+}
+
+@Depends(Array(classOf[INonRootDep]))
+class TestRootDependantPlugin extends Plugin {
+}
+
