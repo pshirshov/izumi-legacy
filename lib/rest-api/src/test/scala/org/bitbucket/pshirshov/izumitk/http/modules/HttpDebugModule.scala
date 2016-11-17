@@ -1,7 +1,7 @@
 package org.bitbucket.pshirshov.izumitk.http.modules
 
 import com.google.inject.{Provides, Singleton}
-import org.bitbucket.pshirshov.izumitk.http.LogingHttpDebugLogHandler
+import org.bitbucket.pshirshov.izumitk.http.LoggingHttpDebugLogHandler
 import org.bitbucket.pshirshov.izumitk.http.rest.HttpDebugLogHandler
 import org.bitbucket.pshirshov.izumitk.test.ExposedTestScope
 import net.codingwell.scalaguice.ScalaModule
@@ -14,5 +14,5 @@ class HttpDebugModule() extends ScalaModule {
 
   @Provides
   @Singleton
-  def loggingHttpLogHandler: HttpDebugLogHandler = new LogingHttpDebugLogHandler()
+  def loggingHttpLogHandler: HttpDebugLogHandler = new LoggingHttpDebugLogHandler()
 }

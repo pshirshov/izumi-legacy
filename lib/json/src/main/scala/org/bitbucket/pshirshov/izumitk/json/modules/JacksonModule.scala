@@ -75,7 +75,7 @@ final class JacksonModule() extends ScalaModule {
 }
 
 abstract class AbstractDomainExtensionsModule extends ScalaModule {
-  protected def addStringValDeserializer[T: ClassTag](module: SimpleModule) = {
+  protected def addStringValConstructorDeserializer[T: ClassTag](module: SimpleModule) = {
     val runtimeClass: Class[T] = scala.reflect.classTag[T].runtimeClass.asInstanceOf[Class[T]]
 
     module.addDeserializer(runtimeClass, new JsonDeserializer[T] {
@@ -92,4 +92,28 @@ abstract class AbstractDomainExtensionsModule extends ScalaModule {
       }
     })
   }
+
+  protected def addStringValParsingDeserializer[T <: AnyRef : Manifest](simpleModule: SimpleModule, parser: String => T): SimpleModule = {
+    val clazz = manifest[T].runtimeClass.asInstanceOf[Class[T]]
+
+    simpleModule.addKeyDeserializer(clazz, new KeyDeserializer {
+      override def deserializeKey(key: String, ctxt: DeserializationContext): AnyRef = {
+        parser(key)
+      }
+    })
+
+    simpleModule.addDeserializer(clazz, new JsonDeserializer[T] {
+      override def deserialize(p: JsonParser, ctxt: DeserializationContext): T = {
+        val currentToken = p.getCurrentToken
+
+        if (currentToken.equals(JsonToken.VALUE_STRING)) {
+          val text = p.getText.trim()
+          parser(text)
+        } else {
+          ctxt.handleUnexpectedToken(clazz, p).asInstanceOf[T]
+        }
+      }
+    })
+  }
+
 }

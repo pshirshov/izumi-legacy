@@ -7,7 +7,7 @@ import com.typesafe.scalalogging.StrictLogging
 
 
 @ExposedTestScope
-class LogingHttpDebugLogHandler extends HttpDebugLogHandler with StrictLogging {
+class LoggingHttpDebugLogHandler extends HttpDebugLogHandler with StrictLogging {
   override def handleLog(entry: LogEntry): Unit = {
     logger.info(entry.obj.toString)
   }

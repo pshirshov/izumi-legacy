@@ -25,7 +25,7 @@ class HalApi @Inject()
   , override protected implicit val executionContext: ExecutionContext
 ) extends MetricDirectives {
 
-  protected val `application/hal+json` = MediaType.applicationWithFixedCharset(RepresentationFactory.HAL_JSON, HttpCharsets.`UTF-8`)
+  protected val `application/hal+json` = MediaType.applicationWithFixedCharset(RepresentationFactory.HAL_JSON.split("/").last, HttpCharsets.`UTF-8`)
 
   protected val halContentType = ContentType(`application/hal+json`)
 
