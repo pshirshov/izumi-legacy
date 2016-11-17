@@ -9,17 +9,7 @@ import org.bitbucket.pshirshov.izumitk.http.rest._
 import com.typesafe.config.Config
 import net.codingwell.scalaguice.{ScalaModule, ScalaMultibinder}
 
-
-final class RestModule() extends ScalaModule {
-  override def configure(): Unit = {
-    // TODO: better place
-    ScalaMultibinder.newSetBinder[HealthChecker](binder)
-
-    bind[SerializationProtocol].to[JacksonProtocol].in[Singleton]
-    bind[JsonAPIPolicy].to[DefaultJsonAPIPolicy].in[Singleton]
-    bind[RequestTransformer].to[DefaultJsonAPIPolicy].in[Singleton]
-  }
-
+abstract class AbstractRestModule() extends ScalaModule {
   @Provides
   @Singleton
   def exceptionHandler(policy: JsonAPIPolicy): ExceptionHandler = policy.exceptionHandler()
@@ -39,6 +29,16 @@ final class RestModule() extends ScalaModule {
         RawHeader(entry.getKey, entry.getValue.unwrapped().asInstanceOf[String])
     }.toSeq
   }
+}
 
 
+class RestModule() extends AbstractRestModule {
+  override def configure(): Unit = {
+    // TODO: better place
+    ScalaMultibinder.newSetBinder[HealthChecker](binder)
+
+    bind[SerializationProtocol].to[JacksonProtocol].in[Singleton]
+    bind[JsonAPIPolicy].to[DefaultJsonAPIPolicy].in[Singleton]
+    bind[RequestTransformer].to[DefaultJsonAPIPolicy].in[Singleton]
+  }
 }
