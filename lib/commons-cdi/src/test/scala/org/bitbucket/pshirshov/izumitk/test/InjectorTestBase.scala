@@ -23,14 +23,15 @@ trait InjectorTestBase extends IzumiTestBase with StrictLogging {
   protected val modules: Module
 
   protected def check(injector: Injector): Unit = {}
+
 //  protected def checkInjectorException(exception: Throwable): Throwable = exception
 
   FailingConfigLoadingStrategy.init()
 
-  protected def withFixture[T : Manifest, R](test: (T, Injector) => R): TestData => R = {
+  protected def withInjected[Fixture : Manifest, R](test: (Fixture, Injector) => R): TestData => R = {
     withInjector {
       injector =>
-        test(injector.instance[T], injector)
+        test(injector.instance[Fixture], injector)
     }
   }
 

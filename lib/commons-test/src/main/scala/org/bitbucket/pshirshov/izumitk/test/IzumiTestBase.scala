@@ -1,15 +1,18 @@
 package org.bitbucket.pshirshov.izumitk.test
 
+import org.scalamock.matchers
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.{GivenWhenThen, fixture}
+import org.scalatest.{GivenWhenThen, Matchers, fixture}
 
 /**
   *
   */
 trait IzumiTestBase
   extends fixture.WordSpecLike
-    with MockFactory
     with fixture.TestDataFixture
-    with GivenWhenThen {
+    with Matchers
+    with GivenWhenThen
+    with MockFactory
+    with matchers.Matchers {
 
 }
