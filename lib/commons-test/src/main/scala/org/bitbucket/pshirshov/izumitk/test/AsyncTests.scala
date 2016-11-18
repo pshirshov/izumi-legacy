@@ -3,6 +3,7 @@ package org.bitbucket.pshirshov.izumitk.test
 import org.bitbucket.pshirshov.izumitk.test.AsyncTests.AwaitDuration
 
 import scala.annotation.tailrec
+import scala.concurrent.{Await, Awaitable}
 import scala.concurrent.duration.Duration
 import scala.util.control.NonFatal
 
@@ -52,6 +53,14 @@ trait AsyncTests {
     poll(_max min interval)
   }
 
+
+  protected def awaitResult[T](awaitable: Awaitable[T])(implicit atMost: AwaitDuration): T = {
+    Await.result(awaitable, atMost.max)
+  }
+
+  protected def awaitReady[T](awaitable: Awaitable[T])(implicit atMost: AwaitDuration): awaitable.type  = {
+    Await.ready(awaitable, atMost.max)
+  }
 }
 
 object AsyncTests {
