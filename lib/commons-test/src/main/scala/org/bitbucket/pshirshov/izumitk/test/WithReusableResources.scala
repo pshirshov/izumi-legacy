@@ -4,10 +4,15 @@ package org.bitbucket.pshirshov.izumitk.test
   */
 @ExposedTestScope
 trait WithReusableResources {
-  def getResource[R](name: String, constructor: () => R, destructor: (R) => Unit = {_: R =>}): R = {
+  def getResource[R](
+                      name: String
+                      , constructor: () => R
+                      , destructor: (R) => Unit = {_: R =>}
+                      , handler: (R) => R = {r: R => r}
+                    ): R = {
     Option(ReusableHeavyTestResources.get[R](name)) match {
       case Some(resource) =>
-        resource
+        handler(resource)
 
       case None =>
         val resource: R = constructor()
