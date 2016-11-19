@@ -40,7 +40,7 @@ object Dependencies {
     val hikaricp = "com.zaxxer" % "HikariCP" % "2.5.1"
     val clickhouse = "ru.yandex.clickhouse" % "clickhouse-jdbc" % "0.1.11"
 
-    private val jackson_version = "2.8.1"
+    private val jackson_version = "2.8.4"
     private val jackson_databind = "com.fasterxml.jackson.core" % "jackson-databind" % jackson_version
     private val jackson_scala = "com.fasterxml.jackson.module" %% "jackson-module-scala" % jackson_version
     private val jackson_jsr310 = "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % jackson_version
