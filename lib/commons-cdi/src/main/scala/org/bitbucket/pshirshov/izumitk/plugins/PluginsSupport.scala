@@ -12,6 +12,7 @@ import org.bitbucket.pshirshov.izumitk.{Depends, NonRootPlugin, RequiredConfig, 
 import org.scalactic._
 
 import scala.collection.JavaConversions._
+import scala.collection.immutable.ListSet
 
 case class PluginsConfig(
                           enabled: Boolean
@@ -154,15 +155,15 @@ trait PluginsSupport extends StrictLogging {
       )
   }
 
-  protected def pluginsPackages() = {
+  protected def pluginsPackages(): Seq[String] = {
     val companyPackage = getClass.getPackage.getName.split('.').take(2).toList.mkString(".")
 
-    Seq(
+    ListSet(
       s"org.bitbucket.pshirshov.izumitk.plugins"
       , s"$companyPackage.plugins"
       , s"$companyPackage.$appId.plugins"
       , s"${getClass.getPackage.getName}.plugins"
-    ) // lookup in org.bitbucket.pshirshov.izumitk and org.bitbucket.pshirshov.izumitk.<appId>
+    ).toSeq // lookup in org.bitbucket.pshirshov.izumitk and org.bitbucket.pshirshov.izumitk.<appId>
   }
 
   private def loadSimplePlugin(clz: Class[_]): Plugin Or Every[Throwable] = {

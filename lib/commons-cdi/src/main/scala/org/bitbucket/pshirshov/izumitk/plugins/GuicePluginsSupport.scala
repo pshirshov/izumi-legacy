@@ -70,7 +70,8 @@ trait GuicePluginsSupport extends PluginsSupport with StrictLogging {
     logger.debug(s"Modules instantiated: ${modules.modules.size}: $modules")
 
     val internalModules = BunchOfModules("plugin-support", Seq(
-      new PluginsIntrospectionModule(allPlugins), new AppConstantsModule(appId)
+      new AppConstantsModule(appId)
+      , new PluginsIntrospectionModule(allPlugins)
     ))
 
     PluginsInitiated(allPlugins, Seq(modules, internalModules))

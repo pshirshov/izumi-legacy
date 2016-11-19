@@ -53,3 +53,8 @@ trait BootstrapPlugin {
   def handleModulesList(modules: Seq[Module]) = modules
 }
 
+trait GuicePlugin
+  extends ScalaModule
+    with Plugin {
+  override def createPluginModules: Seq[ScalaModule] = Seq(this)
+}

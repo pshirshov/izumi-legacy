@@ -4,7 +4,7 @@ import com.google.inject
 import com.google.inject.Inject
 import com.typesafe.config.Config
 import net.codingwell.scalaguice.ScalaModule
-import org.bitbucket.pshirshov.izumitk.cdi.Plugin
+import org.bitbucket.pshirshov.izumitk.cdi.{GuicePlugin, Plugin}
 import org.bitbucket.pshirshov.izumitk._
 
 @ExtensionPoint
@@ -111,5 +111,11 @@ class TestValidNonRootPlugin extends Plugin with INonRootDep {
 
 @Depends(Array(classOf[INonRootDep]))
 class TestRootDependantPlugin extends Plugin {
+}
+
+class TestGuicePlugin extends GuicePlugin {
+  override def configure(): Unit = {
+
+  }
 }
 
