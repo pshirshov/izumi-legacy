@@ -12,7 +12,7 @@ object AuthorizationContext {
 }
 
 trait Authorizations {
-  protected type Cred <: Credentials
+  type Cred <: Credentials
 
   protected def contextAuthorization(context: AuthorizationContext): (Cred) => ((RequestContext) => Boolean)
 
