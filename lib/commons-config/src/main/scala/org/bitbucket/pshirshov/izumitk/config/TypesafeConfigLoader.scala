@@ -70,9 +70,9 @@ object TypesafeConfigLoader extends StrictLogging {
   }
 
   private final def cleanupEffectiveAppConfig(effectiveAppConfig: Config, reference: Config): Config = {
-    import scala.collection.JavaConversions._
+    import scala.collection.JavaConverters._
 
-    ConfigFactory.parseMap(effectiveAppConfig.root().unwrapped().filterKeys(reference.hasPath))
+    ConfigFactory.parseMap(effectiveAppConfig.root().unwrapped().asScala.filterKeys(reference.hasPath).asJava)
   }
 
   private final def classloader(): ClassLoader = {

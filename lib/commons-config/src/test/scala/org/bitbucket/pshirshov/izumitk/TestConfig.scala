@@ -7,7 +7,6 @@ import scala.language.implicitConversions
 
 @ExposedTestScope
 object TestConfig {
-  import scala.collection.JavaConversions._
   import scala.collection.JavaConverters._
 
   case class TestConfigSection(resourceName: String, alias: String)
@@ -38,7 +37,7 @@ object TestConfig {
       throw new IllegalStateException(s"Empty reference: `$section`")
     }
 
-    val unwrapped = config.root().unwrapped().map {
+    val unwrapped = config.root().unwrapped().asScala.map {
       case (k, v) =>
         (s"${section.alias}.$k", v)
     }.toMap.asJava

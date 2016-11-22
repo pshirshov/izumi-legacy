@@ -8,6 +8,7 @@ import org.bitbucket.pshirshov.izumitk.HealthChecker
 import org.bitbucket.pshirshov.izumitk.http.rest._
 import com.typesafe.config.Config
 import net.codingwell.scalaguice.{ScalaModule, ScalaMultibinder}
+import org.bitbucket.pshirshov.izumitk.akka.http.util.RequestTransformer
 
 abstract class AbstractRestModule() extends ScalaModule {
   @Provides
@@ -22,9 +23,9 @@ abstract class AbstractRestModule() extends ScalaModule {
   @Singleton
   @Named("headers.cors")
   def corsHeaders(@Named("@rest.cors.headers.*") config: Config): Seq[RawHeader] = {
-    import scala.collection.JavaConversions._
+    import scala.collection.JavaConverters._
 
-    config.entrySet().map {
+    config.entrySet().asScala.map {
       entry =>
         RawHeader(entry.getKey, entry.getValue.unwrapped().asInstanceOf[String])
     }.toSeq

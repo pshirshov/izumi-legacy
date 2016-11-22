@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.node.{IntNode, JsonNodeFactory, ObjectNode
 import com.google.inject.{Inject, Singleton}
 import com.google.inject.name.Named
 import com.typesafe.scalalogging.StrictLogging
+import org.bitbucket.pshirshov.izumitk.akka.http.util.RequestTransformer
 import org.bitbucket.pshirshov.izumitk.json.JacksonMapper
 import org.bitbucket.pshirshov.izumitk.services.{FailureRecord, FailureRepository, ServiceFailure}
 import org.bitbucket.pshirshov.izumitk.util.TimeUtils
@@ -109,10 +110,10 @@ class DefaultJsonAPIPolicy @Inject()
     val exceptionThrowables = exceptions.map(_.asInstanceOf[Throwable])
 
     val code = getFailureCode(problems, exceptionThrowables)
-    import scala.collection.JavaConversions._
+    import scala.collection.JavaConverters._
 
     val failuresNode = JsonNodeFactory.instance.arrayNode()
-    failuresNode.addAll(problems.map(formatFailure))
+    failuresNode.addAll(problems.map(formatFailure).asJava)
     meta.set("failures", failuresNode)
 
     if (exceptions.nonEmpty) {

@@ -76,8 +76,7 @@ class HalSerializerImpl @Inject()
             fillMap(repr, baseUri, name, v, handler)
 
           case v: util.Collection[_] =>
-            import scala.collection.JavaConversions._
-            fillSequence(repr, baseUri, name, v.toSeq, handler)
+            fillSequence(repr, baseUri, name, v.asScala.toSeq, handler)
 
           case v: Traversable[_] =>
             fillSequence(repr, baseUri, name, v.toSeq, handler)

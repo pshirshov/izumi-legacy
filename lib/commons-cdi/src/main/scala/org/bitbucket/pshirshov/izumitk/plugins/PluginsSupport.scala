@@ -11,7 +11,7 @@ import org.bitbucket.pshirshov.izumitk.util.{CollectionUtils, StringUtils}
 import org.bitbucket.pshirshov.izumitk.{Depends, NonRootPlugin, RequiredConfig, TargetPoint}
 import org.scalactic._
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.collection.immutable.ListSet
 
 case class PluginsConfig(
@@ -46,7 +46,7 @@ trait PluginsSupport extends StrictLogging {
         pkg =>
           classpath
             .getTopLevelClassesRecursive(pkg)
-            .map(_.load())
+            .asScala.map(_.load())
       }
 
     val activeAndValidPluginClasses = allLoadabalePluginClasses.filter {
@@ -216,7 +216,7 @@ trait PluginsSupport extends StrictLogging {
 
   protected lazy val pluginsConfig = {
     val pluginsSection = config.effective.getConfig("plugins")
-    val deactivated = pluginsSection.getStringList("deactivated").toSet
+    val deactivated = pluginsSection.getStringList("deactivated").asScala.toSet
     val enabled = StringUtils.toBoolean(System.getProperty("plugins.enabled"))
       .getOrElse(pluginsSection.getBoolean("enabled"))
     val targets = pluginsSection.getConfig("targets")

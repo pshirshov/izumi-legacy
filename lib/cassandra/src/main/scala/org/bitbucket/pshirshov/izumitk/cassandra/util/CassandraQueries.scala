@@ -6,7 +6,7 @@ import com.datastax.driver.core._
 import com.typesafe.scalalogging.StrictLogging
 import org.bitbucket.pshirshov.izumitk.cassandra.PSCache
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 
 trait CassandraQueries extends StrictLogging {
@@ -49,7 +49,7 @@ trait CassandraQueries extends StrictLogging {
       case s: PreparedStatement =>
         Seq(s.getQueryString)
       case s: BatchStatement =>
-        s.getStatements.flatMap {
+        s.getStatements.asScala.flatMap {
           subs =>
             log(subs)
         }.toSeq

@@ -1,5 +1,10 @@
 package org.bitbucket.pshirshov.izumitk.akka.http.util.logging
 
+import ch.qos.logback.classic.PatternLayout
+import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.core.AppenderBase
+import org.reactivestreams.Subscriber
+
 /**
   */
 class WSAppender[T] extends AppenderBase[T] {
@@ -12,13 +17,13 @@ class WSAppender[T] extends AppenderBase[T] {
   }
 
   override def append(eventObject: T): Unit = {
-    import scala.collection.JavaConversions._
+    import scala.collection.JavaConverters._
 
     eventObject match {
       case le: ILoggingEvent =>
         val msg = layout.doLayout(le)
 
-        WSAppender.subscribers.foreach {
+        WSAppender.subscribers.asScala.foreach {
           s =>
             try {
               s.onNext(msg)

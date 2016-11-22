@@ -4,11 +4,16 @@ import akka.http.scaladsl.model.HttpHeader
 import akka.http.scaladsl.model.headers.{Authorization, OAuth2BearerToken, RawHeader}
 import akka.http.scaladsl.server
 import akka.http.scaladsl.server.Directives._
+import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import org.bitbucket.pshirshov.izumitk.akka.http.util.jwt.Jwt
+import org.bitbucket.pshirshov.izumitk.json.JacksonMapper
+import org.jose4j.json.JsonUtil
 import org.jose4j.jwk.PublicJsonWebKey
 import org.jose4j.jwt.JwtClaims
+import scala.collection.JavaConverters._
 
 import scala.util.Try
 
@@ -27,7 +32,7 @@ class JwtAuthorizations @Inject() (
     Some(RawHeader(jwtHeaderName, s"Bearer $token"))
   }
 
-  def createJwtToken(keyId: String, subject: String, modifier: (ObjectNode, ObjectMapper) => JsonNode) = {
+  def createJwtToken(keyId: String, subject: String, modifier: (ObjectNode, ObjectMapper) => JsonNode): String = {
     val claims = new JwtClaims()
     claims.setGeneratedJwtId()
     claims.setIssuedAtToNow()
@@ -39,7 +44,7 @@ class JwtAuthorizations @Inject() (
     claims.setExpirationTimeMinutesInTheFuture(tokenExpirationMinutes)
     claims.setNotBeforeMinutesInThePast(2)
     claims.setSubject(subject)
-    claims.setStringListClaim("roles", Vector[String]())
+    claims.setStringListClaim("roles", List.empty[String].asJava)
 
     val tree = jwtMapper.readTree(claims.toJson).asInstanceOf[ObjectNode]
     val token = jwtMapper.writeValueAsString(modifier(tree, jwtMapper))

@@ -7,6 +7,8 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.Flow
 import com.google.inject.{Provides, Singleton}
 import net.codingwell.scalaguice.ScalaModule
+import org.bitbucket.pshirshov.izumitk.akka.http.services.HttpService
+import org.bitbucket.pshirshov.izumitk.akka.http.util.logging.{HttpDebugLogHandler, NoopHttpDebugLogHandler}
 
 
 final class HttpModule() extends ScalaModule {

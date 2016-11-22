@@ -10,6 +10,7 @@ import akka.stream.Materializer
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import com.typesafe.scalalogging.StrictLogging
+import org.bitbucket.pshirshov.izumitk.akka.http.auth.Authorizations
 import org.bitbucket.pshirshov.izumitk.akka.http.util.client.LoopbackProxy
 
 import scala.concurrent.ExecutionContext

@@ -1,6 +1,10 @@
 package org.bitbucket.pshirshov.izumitk.akka.http.util.jwt
 
 import com.typesafe.scalalogging.StrictLogging
+import org.jose4j.jwk.PublicJsonWebKey
+import org.jose4j.jws.{AlgorithmIdentifiers, JsonWebSignature}
+import org.jose4j.jwt.JwtClaims
+import org.jose4j.jwt.consumer.JwtConsumerBuilder
 
 import scala.util.Try
 
@@ -27,7 +31,7 @@ trait Jwt extends StrictLogging {
   }
 
   // TODO: improve this
-  def createConsumerBuilder = {
+  def createConsumerBuilder: JwtConsumerBuilder = {
     new JwtConsumerBuilder().setRequireExpirationTime()
       .setAllowedClockSkewInSeconds(30)
       .setRequireSubject()

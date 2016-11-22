@@ -13,6 +13,7 @@ import net.codingwell.scalaguice.{ScalaModule, ScalaMultibinder}
 import org.bitbucket.pshirshov.izumitk.HealthChecker
 import org.bitbucket.pshirshov.izumitk.cassandra._
 import org.bitbucket.pshirshov.izumitk.cassandra.util.NetworkUtils
+import scala.collection.JavaConverters._
 
 
 /**
@@ -24,7 +25,7 @@ abstract class CassandraModuleBase() extends ScalaModule with StrictLogging {
   }
 
   protected def createCluster(policy: TokenAwarePolicy, endpoints: List[String]): Cluster = {
-    import scala.collection.JavaConversions._
+    import scala.collection.JavaConverters._
 
     val builder = Cluster.builder()
 
@@ -42,7 +43,7 @@ abstract class CassandraModuleBase() extends ScalaModule with StrictLogging {
 
     val metadata = newCluster.getMetadata
     logger.info("Using to cassandra cluster: {}", metadata.getClusterName)
-    metadata.getAllHosts.foreach {
+    metadata.getAllHosts.asScala.foreach {
       host =>
         logger.info("Cassandra node - Datacenter: {}; Host: {}; Rack: {}", host.getDatacenter, host.getAddress,
           host.getRack)
@@ -84,8 +85,7 @@ abstract class CassandraModuleBase() extends ScalaModule with StrictLogging {
   @Singleton
   @Named("cassandra.endpoints")
   final def endpoints (@Named("@cassandra.nodes[]") endpoints: ConfigList): List[String] = {
-    import scala.collection.JavaConversions._
-    endpoints.map(_.unwrapped().toString).toList
+    endpoints.asScala.map(_.unwrapped().toString).toList
   }
 
   @Provides
