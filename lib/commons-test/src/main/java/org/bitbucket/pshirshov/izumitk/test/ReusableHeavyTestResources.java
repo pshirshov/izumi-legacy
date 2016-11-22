@@ -85,6 +85,7 @@ public final class ReusableHeavyTestResources {
     static {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             if (DESTROY_ON_EXIT.get()) {
+                LOG.warn("Destroying temporary resources, to avoid use `-Dtests.debug=true` JVM property");
                 destroyAll();
             } else {
                 LOG.warn("Debug mode, leaving resources untouched");

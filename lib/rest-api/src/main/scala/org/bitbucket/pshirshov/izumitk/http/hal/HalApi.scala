@@ -3,6 +3,7 @@ package org.bitbucket.pshirshov.izumitk.http.hal
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.{RequestContext, RouteResult}
 import com.codahale.metrics.MetricRegistry
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import org.bitbucket.pshirshov.izumitk.services.ServiceException
