@@ -3,12 +3,11 @@ package org.bitbucket.pshirshov.izumitk.http.hal
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.{RequestContext, RouteResult}
 import com.codahale.metrics.MetricRegistry
-import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
-import org.bitbucket.pshirshov.izumitk.services.ServiceException
 import com.theoryinpractise.halbuilder.api.RepresentationFactory
 import org.bitbucket.pshirshov.izumitk.http.util.MetricDirectives
+import org.bitbucket.pshirshov.izumitk.services.ServiceException
 import org.scalactic.{Bad, Good}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -20,7 +19,7 @@ import scala.reflect._
 class HalApi @Inject()
 (
   representationFactory: RepresentationFactory
-  , serializer: HalSerializer
+  , serializer: HalSerializerImpl
   , @Named("app.id") override protected val productId: String
   , override protected val metrics: MetricRegistry
   , override protected implicit val executionContext: ExecutionContext

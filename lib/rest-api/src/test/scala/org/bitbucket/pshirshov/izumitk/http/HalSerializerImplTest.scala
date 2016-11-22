@@ -10,11 +10,12 @@ import com.google.inject.util.Modules
 import org.bitbucket.pshirshov.izumitk.hal.HalResource
 import org.bitbucket.pshirshov.izumitk.TestConfig
 import org.bitbucket.pshirshov.izumitk.app.modules.ConfigExposingModule
-import org.bitbucket.pshirshov.izumitk.http.hal.HalSerializer
+import org.bitbucket.pshirshov.izumitk.http.hal.{HalSerializerImpl, UnreliableHalDecoder}
 import org.bitbucket.pshirshov.izumitk.http.modules.HalModule
 import org.bitbucket.pshirshov.izumitk.json.modules.JacksonModule
 import org.bitbucket.pshirshov.izumitk.test.InjectorTestBase
 import com.theoryinpractise.halbuilder.api.RepresentationFactory
+import org.bitbucket.pshirshov.izumitk.http.TestPolymorphics.SimpleTextPayload
 
 
 @JsonTypeInfo(
@@ -50,13 +51,15 @@ case class HistoryEntry(message: HistoricMessage
                         , test02: String = "xxx"
                         , complexProperty: ComplexProperty = ComplexProperty()
                         , arrayProperty: Seq[ComplexProperty] = Seq(ComplexProperty(), ComplexProperty())
+                        , mapProperty: Map[String, ComplexProperty] = Map("test" -> ComplexProperty())
+                        , resourceMapProperty: Map[String, HistoricMessage] = Map("test" -> HistoricMessage(UUID.randomUUID(), SimpleTextPayload("xxx")))
                        )
 
-class HalSerializerTest extends InjectorTestBase {
+class HalSerializerImplTest extends InjectorTestBase {
   "HAL Serializer" must {
     "serialize case classes hierarchy" in withInjector {
       injector =>
-        val mapper = injector.instance[HalSerializer]
+        val mapper = injector.instance[HalSerializerImpl]
         val message = HistoricMessage(UUID.randomUUID(), TestPolymorphics.SimpleTextPayload("xxx"))
         val sample = HistoryEntry(message, Seq(message, message))
         val repr = mapper.makeRepr("http://localhost:8080", sample, {
@@ -64,7 +67,11 @@ class HalSerializerTest extends InjectorTestBase {
             ctx.repr.withLink("xxx", "yyy")
         })
           .toString(RepresentationFactory.HAL_JSON)
-        println(repr) // TODO: XXX: real test
+
+        //println(repr) // TODO: XXX: real test
+
+        val decoder =  injector.instance[UnreliableHalDecoder]
+        assert(decoder.readHal[HistoryEntry](repr) == sample)
     }
   }
 

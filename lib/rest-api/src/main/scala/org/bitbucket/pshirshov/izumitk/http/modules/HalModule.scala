@@ -5,10 +5,12 @@ import com.google.inject.{Provides, Singleton}
 import com.theoryinpractise.halbuilder.api.RepresentationFactory
 import com.theoryinpractise.halbuilder.standard.StandardRepresentationFactory
 import net.codingwell.scalaguice.ScalaModule
+import org.bitbucket.pshirshov.izumitk.http.hal.{HalSerializer, HalSerializerImpl}
 
 
 final class HalModule() extends ScalaModule {
   override def configure(): Unit = {
+    bind[HalSerializer].to[HalSerializerImpl].in[Singleton]
   }
 
   @Provides
