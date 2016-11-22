@@ -8,8 +8,8 @@ import akka.http.scaladsl.unmarshalling.FromEntityUnmarshaller
 import com.fasterxml.jackson.databind.JsonNode
 import com.typesafe.scalalogging.StrictLogging
 import org.bitbucket.pshirshov.izumitk.akka.http.util.MetricDirectives
+import org.bitbucket.pshirshov.izumitk.failures.services.{ServiceException, ServiceFailure}
 import org.bitbucket.pshirshov.izumitk.json.JacksonMapper
-import org.bitbucket.pshirshov.izumitk.services._
 import org.scalactic._
 
 import scala.collection.immutable.Seq

@@ -1,5 +1,4 @@
-package org.bitbucket.pshirshov.izumitk.services
-
+package org.bitbucket.pshirshov.izumitk.failures.services
 
 import java.nio.ByteBuffer
 import java.time.LocalDateTime

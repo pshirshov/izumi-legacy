@@ -7,7 +7,6 @@ import com.google.inject.name.Named
 import org.bitbucket.pshirshov.izumitk.cassandra.PSCache
 import org.bitbucket.pshirshov.izumitk.cassandra.util.CassandraQueries
 import org.bitbucket.pshirshov.izumitk.json.JacksonMapper
-import org.bitbucket.pshirshov.izumitk.services.{FailureRecord, FailureRepository, RestoredFailureRecord}
 import org.bitbucket.pshirshov.izumitk.util.{ExceptionUtils, SerializationUtils}
 import org.apache.commons.lang3.exception
 

@@ -1,7 +1,9 @@
-package org.bitbucket.pshirshov.izumitk.services
+package org.bitbucket.pshirshov.izumitk.failures
+
 import com.codahale.metrics.MetricRegistry
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
+import org.bitbucket.pshirshov.izumitk.failures.services.{FailureRecord, FailureRepository, RestoredFailureRecord}
 
 /**
   */
