@@ -1,12 +1,13 @@
 package org.bitbucket.pshirshov.izumitk.http.hal
 
+import akka.http.scaladsl.model.MediaType.WithFixedCharset
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.{RequestContext, RouteResult}
 import com.codahale.metrics.MetricRegistry
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import com.theoryinpractise.halbuilder.api.RepresentationFactory
-import org.bitbucket.pshirshov.izumitk.http.util.MetricDirectives
+import org.bitbucket.pshirshov.izumitk.akka.http.util.MetricDirectives
 import org.bitbucket.pshirshov.izumitk.services.ServiceException
 import org.scalactic.{Bad, Good}
 
@@ -25,7 +26,7 @@ class HalApi @Inject()
   , override protected implicit val executionContext: ExecutionContext
 ) extends MetricDirectives {
 
-  protected val `application/hal+json` = MediaType.applicationWithFixedCharset(RepresentationFactory.HAL_JSON.split("/").last, HttpCharsets.`UTF-8`)
+  protected val `application/hal+json`: WithFixedCharset = MediaType.applicationWithFixedCharset(RepresentationFactory.HAL_JSON.split("/").last, HttpCharsets.`UTF-8`)
 
   protected val halContentType = ContentType(`application/hal+json`)
 

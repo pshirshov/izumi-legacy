@@ -7,6 +7,7 @@ import akka.stream.Materializer
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import com.typesafe.config.Config
+import org.bitbucket.pshirshov.izumitk.akka.http.auth.Authorizations
 import org.bitbucket.pshirshov.izumitk.akka.http.util.logging.WSLogger
 
 import scala.concurrent.ExecutionContext

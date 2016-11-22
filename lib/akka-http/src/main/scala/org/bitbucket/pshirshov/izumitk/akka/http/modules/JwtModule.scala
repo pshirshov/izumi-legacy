@@ -4,6 +4,7 @@ import com.google.inject.name.Named
 import com.google.inject.{Provides, Singleton}
 import com.typesafe.config.Config
 import net.codingwell.scalaguice.ScalaModule
+import org.jose4j.jwk.PublicJsonWebKey
 
 
 final class JwtModule() extends ScalaModule {
@@ -13,9 +14,9 @@ final class JwtModule() extends ScalaModule {
   @Provides
   @Singleton
   def jwtKey(@Named("@jwt.jwt-keys.*") jwtKeys: Config): Map[String, PublicJsonWebKey] = {
-    import scala.collection.JavaConversions._
+    import scala.collection.JavaConverters._
 
-    val values = jwtKeys.root().unwrapped()
+    val values = jwtKeys.root().unwrapped().asScala
       .toMap.asInstanceOf[Map[String, String]]
 
     values.map {

@@ -2,7 +2,6 @@ package org.bitbucket.pshirshov.izumitk.util
 
 import scala.collection.mutable.ArrayBuffer
 //remove if not needed
-import scala.collection.JavaConversions._
 
 object ExceptionUtils {
   def currentStack(): String = {
@@ -39,7 +38,7 @@ object ExceptionUtils {
     val ret = new ArrayBuffer[Throwable]()
     var currentThrowable = t
     while (currentThrowable != null) {
-      ret.add(currentThrowable)
+      ret.append(currentThrowable)
       currentThrowable = currentThrowable.getCause
     }
     ret

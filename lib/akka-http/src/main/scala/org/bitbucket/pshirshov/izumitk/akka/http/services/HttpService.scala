@@ -4,6 +4,7 @@ import akka.http.scaladsl._
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.server.directives.WebSocketDirectives
 import com.google.inject.{Inject, Singleton}
+import org.bitbucket.pshirshov.izumitk.akka.http.util.RequestTransformer
 
 
 trait HttpService {

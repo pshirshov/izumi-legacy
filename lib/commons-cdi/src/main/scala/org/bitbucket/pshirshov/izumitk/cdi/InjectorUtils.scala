@@ -11,7 +11,7 @@ import com.typesafe.scalalogging.StrictLogging
 import net.codingwell.scalaguice.InjectorExtensions._
 import net.codingwell.scalaguice.ScalaModule
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.collection.JavaConverters._
 import scala.collection.immutable
 import scala.language.existentials
@@ -46,7 +46,7 @@ class InjectorListenerModule extends ScalaModule with StrictLogging {
 
   @Provides
   @Named("closeableObjects")
-  def closeableObjects(): Seq[AutoCloseable] = provisions.toSeq
+  def closeableObjects(): Seq[AutoCloseable] = provisions.asScala.toSeq
 }
 
 
@@ -59,7 +59,7 @@ sealed case class ExecutorClosingAdapter(executor: ExecutorService) extends Auto
 
 object InjectorUtils extends StrictLogging {
   implicit class ShutdownSupport(injector: Injector) {
-    def shutdown() = InjectorUtils.shutdown(injector)
+    def shutdown(): Unit = InjectorUtils.shutdown(injector)
   }
 
   private def shutdown(injector: Injector): Unit = {

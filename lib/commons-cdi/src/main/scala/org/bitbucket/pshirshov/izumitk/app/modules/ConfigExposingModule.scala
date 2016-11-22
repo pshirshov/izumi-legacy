@@ -29,10 +29,10 @@ final class ConfigExposingModule(val config: Config) extends ScalaModule with St
   def appConfig: Config = config
 
   private def flatten(section: ConfigObject): Map[String, ConfigBinding] = {
-    import scala.collection.JavaConversions._
+    import scala.collection.JavaConverters._
 
     val ret = scala.collection.mutable.HashMap[String, ConfigBinding]()
-    section.entrySet().foreach {
+    section.entrySet().asScala.foreach {
       e =>
         val key = e.getKey
         val value = e.getValue

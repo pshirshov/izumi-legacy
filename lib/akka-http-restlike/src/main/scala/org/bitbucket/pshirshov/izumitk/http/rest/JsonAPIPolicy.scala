@@ -8,9 +8,6 @@ import org.scalactic.{Every, Or}
 
 import scala.concurrent.Future
 
-trait RequestTransformer {
-  def requestMapper: RequestContext => RequestContext = {rc => rc}
-}
 
 trait JsonAPIPolicy {
   val protocol: SerializationProtocol

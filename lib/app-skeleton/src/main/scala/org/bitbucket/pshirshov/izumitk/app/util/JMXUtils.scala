@@ -7,7 +7,7 @@ import javax.management.{InstanceAlreadyExistsException, MBeanServer, ObjectName
 import com.typesafe.scalalogging.StrictLogging
 import sun.management.ManagementFactoryHelper
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 /**
   */
@@ -37,7 +37,7 @@ object JMXUtils extends StrictLogging {
       platformBeans.add(ManagementFactoryHelper.getDiagnosticMXBean)
 
       val registered = new java.util.HashSet[ObjectName]()
-      for (bean <- platformBeans) {
+      for (bean <- platformBeans.asScala) {
         val objectName = bean.getObjectName
         if (registered.add(objectName)) {
           try {

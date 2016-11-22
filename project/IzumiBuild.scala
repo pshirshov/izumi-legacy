@@ -14,64 +14,66 @@ object IzumiBuild extends PerfectBuild {
     mkProject(
       base = file("lib/commons-test"),
       dependencies = Seq()
-    ),
-    mkProject(
+    )
+    , mkProject(
       base = file("lib/commons-formats"),
       dependencies = Seq("commons-test")
-    ),
-    mkProject(
+    )
+    , mkProject(
       base = file("lib/commons-config"),
       dependencies = Seq("commons-test")
-    ),
-    mkProject(
+    )
+    , mkProject(
       base = file("lib/commons-cdi"),
       dependencies = Seq("commons-test", "commons-formats", "commons-config")
-    ),
+    )
     // generic libraries
-    mkProject(
-      base = file("lib/app-skeleton"),
-      dependencies = dep()
-    ),
-    mkProject(
+    , mkProject(
       base = file("lib/json"),
       dependencies = dep()
-    ),
-    mkProject(
+    )
+    , mkProject(
       base = file("lib/failures"),
       dependencies = dep()
-    ),
-    mkProject(
+    )
+    , mkProject(
+      base = file("lib/app-skeleton"),
+      dependencies = dep()
+    )
+    , mkProject(
       base = file("lib/akka"),
       dependencies = dep()
-    ),
-    mkProject(
-      base = file("lib/akka-http"),
-      dependencies = dep("akka")
-    ),
-    mkProject(
+    )
+    , mkProject(
       base = file("lib/akka-cdi"),
       dependencies = dep("akka")
-    ),
-    mkProject(
+    )
+    , mkProject(
       base = file("lib/cassandra"),
       dependencies = dep()
-    ),
-    mkProject(
+    )
+    , mkProject(
       base = file("lib/failures-cassandra"),
       dependencies = dep("cassandra", "failures", "json")
-    ),
-    mkProject(
-      base = file("lib/app-akka-http"),
-      dependencies = dep("app-skeleton", "akka-http", "json")
-    ),
-    mkProject(
+    )
+    , mkProject(
+      base = file("lib/akka-http"),
+      dependencies = dep("akka", "json")
+    )
+    , mkProject(
       base = file("lib/akka-http-restlike"),
       dependencies = dep("akka-http", "failures")
-    ),
-    mkProject(
-      base = file("lib/akka-http-hal"),
-      dependencies = dep("akka-http")
     )
+    , mkProject(
+      base = file("lib/akka-http-hal"),
+      dependencies = dep("akka-http", "failures")
+    )
+    ,mkProject(
+      base = file("lib/app-akka-http"),
+      dependencies = dep("app-skeleton", "akka-http")
+    )
+
+
   ).map(prj).toMap
 
 

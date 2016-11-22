@@ -31,7 +31,7 @@ class FailuresApi @Inject()
                 completeJson {
                   val failure = failureRepository.readFailure(failureId) /*.map {
                     f =>
-                      import scala.collection.JavaConversions._
+                      import scala.collection.JavaConverters._
                       val output = mapper.valueToTree[ObjectNode](f.copy(causes = Vector()))
                       val causes = JsonNodeFactory.instance.arrayNode()
                       causes.addAll(f.causes.map(t => new TextNode(ExceptionUtils.getStackTrace(t))))

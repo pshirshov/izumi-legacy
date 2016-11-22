@@ -11,7 +11,7 @@ import org.bitbucket.pshirshov.izumitk.services.{FailureRecord, FailureRepositor
 import org.bitbucket.pshirshov.izumitk.util.{ExceptionUtils, SerializationUtils}
 import org.apache.commons.lang3.exception
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 @Singleton
 class CassandraFailureRespository @Inject()
@@ -24,7 +24,7 @@ class CassandraFailureRespository @Inject()
   extends FailureRepository {
 
   override def readFailure(failureId: String): Option[RestoredFailureRecord] = {
-    query.execute(query.selectFailure.bind(failureId), "failure-get").map(instantiate).headOption
+    query.execute(query.selectFailure.bind(failureId), "failure-get").asScala.map(instantiate).headOption
   }
 
   override protected def writeFailureRecord(id: String, failure: FailureRecord): Unit = {
@@ -49,6 +49,7 @@ class CassandraFailureRespository @Inject()
 
   override def enumerate(visitor: (RestoredFailureRecord) => Unit): Unit = {
     query.execute(query.selectAllFailures.bind(), "failure-enumerate")
+      .asScala
       .toIterator
       .map(instantiate)
       .foreach(visitor)
