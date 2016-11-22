@@ -8,7 +8,7 @@ import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import com.theoryinpractise.halbuilder.api.RepresentationFactory
 import org.bitbucket.pshirshov.izumitk.akka.http.util.MetricDirectives
-import org.bitbucket.pshirshov.izumitk.failures.services.ServiceException
+import org.bitbucket.pshirshov.izumitk.failures.model.ServiceException
 import org.scalactic.{Bad, Good}
 
 import scala.concurrent.{ExecutionContext, Future}
