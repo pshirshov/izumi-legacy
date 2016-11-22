@@ -4,8 +4,9 @@ import com.google.inject.Guice
 import com.google.inject.name.Names
 import com.typesafe.config.ConfigFactory
 import net.codingwell.scalaguice.InjectorExtensions._
-import org.bitbucket.pshirshov.izumitk.cdi.Plugin
+import org.bitbucket.pshirshov.izumitk.cdi.{BunchOfModules, Plugin}
 import org.bitbucket.pshirshov.izumitk.config.{LoadedConfig, LoadedResource}
+import org.bitbucket.pshirshov.izumitk.modularity.GuicePluginsSupport
 import org.bitbucket.pshirshov.izumitk.plugins._
 import org.bitbucket.pshirshov.izumitk.test.IzumiTestBase
 
@@ -15,7 +16,7 @@ class TestLoader extends GuicePluginsSupport {
   private val testConfig = ConfigFactory.load("plugins-test.conf")
   override protected val config: LoadedConfig = LoadedResource(testConfig, testConfig, testConfig)
 
-  def loadModulesTest() = loadPluginModules().modules
+  def loadModulesTest(): Seq[BunchOfModules] = loadPluginModules().modules
 }
 
 class PluginsTest extends IzumiTestBase {
@@ -26,7 +27,7 @@ class PluginsTest extends IzumiTestBase {
         val modules = loader.loadModulesTest()
         assert(modules.size >= 2)
         val injector = Guice.createInjector(modules.flatMap(_.modules) : _*)
-        assert(injector.instance[Seq[Plugin]](Names.named("app.plugins")).size == 13)
+        assert(injector.instance[Seq[Plugin]](Names.named("app.plugins")).size == 11)
 
         assert(injector.instance[Plugin](Names.named(s"app.plugins.${classOf[TestPlugin].getCanonicalName}"))
           .asInstanceOf[TestPlugin].config.getInt("xxx") == 123)

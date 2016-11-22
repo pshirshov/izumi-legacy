@@ -11,7 +11,7 @@ import scala.concurrent.duration.{Duration, FiniteDuration}
 /**
   */
 object TimeUtils {
-  final val utc = ZoneId.of("UTC")
+  final val utc: ZoneId = ZoneId.of("UTC")
 
   private final val dateTimeFormat = DateTimeFormatter.ISO_OFFSET_DATE_TIME
   private final val dateFormat = DateTimeFormatter.ISO_DATE
@@ -33,7 +33,7 @@ object TimeUtils {
 
   private def isoFormat(timestamp: ZonedDateTime) = dateTimeFormat.format(timestamp)
 
-  def isoFormatDate(timestamp: ZonedDateTime) = dateFormat.format(timestamp)
+  def isoFormatDate(timestamp: ZonedDateTime): String = dateFormat.format(timestamp)
 
   //def isoFormat(time: LocalTime) = timeFormat.format(time)
 

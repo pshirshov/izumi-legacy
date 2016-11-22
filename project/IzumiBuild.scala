@@ -99,7 +99,7 @@ object IzumiBuild extends PerfectBuild {
     , publishArtifact in(Test, packageSrc) := true
   )
 
-  override lazy val baseSettings = super.baseSettings ++ Seq(
+  override lazy val baseSettings: Seq[_root_.sbt.Def.Setting[_]] = super.baseSettings ++ Seq(
     //unmanagedBase := baseDirectory.value / "jars"
     resolvers += "restlet" at "http://maven.restlet.com/"
     , resolvers ++= config.publishing.map(_.resolver(isSnapshot.value)) // TODO: move to build
@@ -129,5 +129,5 @@ object IzumiBuild extends PerfectBuild {
   )
   // ScoverageKeys.coverageFailOnMinimum := false
 
-  override lazy val defaultSettings = super.defaultSettings
+  override lazy val defaultSettings: Seq[_root_.sbt.Def.Setting[_]] = super.defaultSettings
 }

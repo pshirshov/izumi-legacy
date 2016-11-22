@@ -75,7 +75,7 @@ final class JacksonModule() extends ScalaModule {
 }
 
 abstract class AbstractDomainExtensionsModule extends ScalaModule {
-  protected def addStringValConstructorDeserializer[T: ClassTag](module: SimpleModule) = {
+  protected def addStringValConstructorDeserializer[T: ClassTag](module: SimpleModule): SimpleModule = {
     val runtimeClass: Class[T] = scala.reflect.classTag[T].runtimeClass.asInstanceOf[Class[T]]
 
     module.addDeserializer(runtimeClass, new JsonDeserializer[T] {

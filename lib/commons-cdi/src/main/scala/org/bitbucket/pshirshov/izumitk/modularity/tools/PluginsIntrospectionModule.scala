@@ -1,37 +1,14 @@
-package org.bitbucket.pshirshov.izumitk.plugins
+package org.bitbucket.pshirshov.izumitk.modularity.tools
 
 import com.google.inject.TypeLiteral
 import com.google.inject.util.Types
 import com.typesafe.scalalogging.StrictLogging
 import net.codingwell.scalaguice.ScalaModule
 import org.bitbucket.pshirshov.izumitk.ExtensionPoint
-import org.bitbucket.pshirshov.izumitk.app.modules.AppConstantsModule
-import org.bitbucket.pshirshov.izumitk.cdi.{BootstrapPlugin, BunchOfModules, Plugin}
+import org.bitbucket.pshirshov.izumitk.cdi.Plugin
 
-
-case class PluginsInitiated(plugins: Seq[Plugin], modules: Seq[BunchOfModules]) {
-  def filteredModules(externalModules: Seq[BunchOfModules]): Seq[BunchOfModules] = {
-    GuicePluginsSupport.filterModules(plugins, externalModules ++ modules)
-  }
-}
-
-object GuicePluginsSupport {
-  def filterModulesSequence(plugins: Seq[Plugin], modules: BunchOfModules): BunchOfModules = {
-    val bootstrapPlugins = plugins
-      .filter(_.isInstanceOf[BootstrapPlugin])
-      .map(_.asInstanceOf[BootstrapPlugin])
-
-    BunchOfModules(s"filtered:${modules.name}", bootstrapPlugins.foldLeft(modules.modules) {
-      case (m, plugin) =>
-        plugin.handleModulesList(m)
-    })
-  }
-
-  def filterModules(plugins: Seq[Plugin], modules: Seq[BunchOfModules]): Seq[BunchOfModules] = {
-    modules.map(filterModulesSequence(plugins, _))
-  }
-}
-
+/**
+  */
 class PluginsIntrospectionModule(allPlugins: Seq[Plugin]) extends ScalaModule with StrictLogging {
   override def configure(): Unit = {
     // this allows us to inject collection of all the plugins
@@ -59,21 +36,5 @@ class PluginsIntrospectionModule(allPlugins: Seq[Plugin]) extends ScalaModule wi
         logger.debug(s"Binding Set[$e] to $plugins...")
         bind(tl).toInstance(plugins)
     }
-  }
-}
-
-trait GuicePluginsSupport extends PluginsSupport with StrictLogging {
-  protected def loadPluginModules(): PluginsInitiated = {
-    val allPlugins = loadPlugins()
-
-    val modules: BunchOfModules = BunchOfModules("plugins", allPlugins.flatMap(_.createPluginModules))
-    logger.debug(s"Modules instantiated: ${modules.modules.size}: $modules")
-
-    val internalModules = BunchOfModules("plugin-support", Seq(
-      new AppConstantsModule(appId)
-      , new PluginsIntrospectionModule(allPlugins)
-    ))
-
-    PluginsInitiated(allPlugins, Seq(modules, internalModules))
   }
 }

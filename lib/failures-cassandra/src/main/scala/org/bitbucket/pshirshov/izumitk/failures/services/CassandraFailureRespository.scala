@@ -1,7 +1,7 @@
 package org.bitbucket.pshirshov.izumitk.failures.services
 
 import com.codahale.metrics.MetricRegistry
-import com.datastax.driver.core.{ConsistencyLevel, Row, Session}
+import com.datastax.driver.core.{ConsistencyLevel, PreparedStatement, Row, Session}
 import com.google.inject.{Inject, Singleton}
 import com.google.inject.name.Named
 import org.bitbucket.pshirshov.izumitk.cassandra.PSCache
@@ -90,19 +90,19 @@ class FailureRepositoryQueries @Inject()
   stripMargin
   )
 
-  val selectFailure = {
+  val selectFailure: PreparedStatement = {
     val stmt = psCache.get("SELECT * FROM failures02 WHERE id = ?")
     stmt.setConsistencyLevel(ConsistencyLevel.LOCAL_ONE)
     stmt
   }
 
-  val selectAllFailures = {
+  val selectAllFailures: PreparedStatement = {
     val stmt = psCache.get("SELECT * FROM failures02 ALLOW FILTERING")
     stmt.setConsistencyLevel(ConsistencyLevel.LOCAL_ONE)
     stmt
   }
 
-  val writeFailure = {
+  val writeFailure: PreparedStatement = {
     val stmt = psCache.get("UPDATE failures02 SET data = ?, meta = ?, stacktraces = ?, exceptions = ? WHERE id = ?")
     stmt.setConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM)
     stmt

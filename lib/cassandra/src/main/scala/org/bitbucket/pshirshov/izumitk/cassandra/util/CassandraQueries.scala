@@ -20,7 +20,7 @@ trait CassandraQueries extends StrictLogging {
 
   protected def ddl: Seq[String]
 
-  def createTables() = {
+  def createTables(): Unit = {
     ddl.foreach {
       q =>
         session.execute(q)

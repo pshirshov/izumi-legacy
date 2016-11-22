@@ -13,7 +13,7 @@ abstract class SysSignals {
     signals.foreach {
       s =>
         Signal.handle(new Signal(s), new SignalHandler() {
-          override def handle(signal: Signal) = onSignal(signal)
+          override def handle(signal: Signal): Unit = onSignal(signal)
         })
     }
   }

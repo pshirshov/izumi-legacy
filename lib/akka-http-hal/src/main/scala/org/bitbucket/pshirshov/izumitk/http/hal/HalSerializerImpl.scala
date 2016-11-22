@@ -32,10 +32,8 @@ class HalSerializerImpl @Inject()
     dto match {
       case tree: ObjectNode =>
         serializeTree(tree, repr)
-      case hr if hr.getClass.isAnnotationPresent(classOf[HalResource]) =>
+      case hr =>
         serializeDto(baseUri, dto, handler, repr)
-      case _ =>
-        throw new IllegalArgumentException(s"Not a HAL resource: $dto")
     }
 
     handler(HalContext(dto, baseUri, repr))

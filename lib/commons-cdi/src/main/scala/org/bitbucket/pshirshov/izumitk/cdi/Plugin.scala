@@ -50,7 +50,7 @@ trait Plugin extends Ordered[Plugin] {
 trait BootstrapPlugin {
   this: Plugin =>
 
-  def handleModulesList(modules: Seq[Module]) = modules
+  def handleModulesList(modules: Seq[Module]): Seq[Module] = modules
 }
 
 trait GuicePlugin

@@ -1,5 +1,6 @@
 package org.bitbucket.pshirshov.izumitk.akka.http.util.logging
 
+import akka.NotUsed
 import akka.http.scaladsl.model.ws.{Message, TextMessage}
 import akka.stream.FlowShape
 import akka.stream.scaladsl.{Flow, GraphDSL, Sink, Source}
@@ -7,7 +8,7 @@ import akka.stream.scaladsl.{Flow, GraphDSL, Sink, Source}
 /**
   */
 object WSLogger {
-  def createLoggerFlow() = {
+  def createLoggerFlow(): Flow[Message, Message, NotUsed] = {
     Flow.fromGraph(GraphDSL.create() { implicit b =>
       import GraphDSL.Implicits._
 

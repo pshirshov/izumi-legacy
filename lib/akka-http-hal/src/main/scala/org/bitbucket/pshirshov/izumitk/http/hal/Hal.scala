@@ -14,27 +14,24 @@ object Hal {
 
   type HalConverter[T] = (T, String) => Representation
 
-  case class WithConverter[T : TypeTag  : ClassTag : Manifest](entity: T, converter: HalConverter[T]) extends Hal {
-    def entityClassTag = classTag[T]
-    def entityTypeTag = classTag[T]
-    def entityManifest = manifest[T]
+  case class WithConverter[T : TypeTag  : Manifest](entity: T, converter: HalConverter[T]) extends Hal {
+    def entityTypeTag: TypeTag[T] = typeTag[T]
+    def entityManifest: Manifest[T] = manifest[T]
   }
 
 
-  case class Entity[T <: HalEntity : TypeTag : ClassTag : Manifest](entity: T) extends Hal  {
-    def entityClassTag = classTag[T]
-    def entityTypeTag = classTag[T]
-    def entityManifest = manifest[T]
+  case class Entity[T <: HalEntity : TypeTag : Manifest](entity: T) extends Hal  {
+    def entityTypeTag: TypeTag[T] = typeTag[T]
+    def entityManifest: Manifest[T] = manifest[T]
   }
 
 
-  case class HalContext[T : TypeTag : ClassTag : Manifest](
+  case class HalContext[T : TypeTag : Manifest](
                                                             dto: T
                                                             , baseUri: String
                                                             , repr: Representation) {
-    def entityClassTag = classTag[T]
-    def entityTypeTag = classTag[T]
-    def entityManifest = manifest[T]
+    def entityTypeTag: TypeTag[T] = typeTag[T]
+    def entityManifest: Manifest[T] = manifest[T]
   }
 
   type HalHandler = HalContext[_] => Unit
@@ -43,9 +40,8 @@ object Hal {
     _ =>
   }
 
-  case class Auto[T : TypeTag : ClassTag : Manifest](entity: T, handler: HalHandler = emptyHandler()) extends Hal  {
-    def entityClassTag = classTag[T]
-    def entityTypeTag = classTag[T]
-    def entityManifest = manifest[T]
+  case class Auto[T : TypeTag : Manifest](entity: T, handler: HalHandler = emptyHandler()) extends Hal  {
+    def entityTypeTag: TypeTag[T] = typeTag[T]
+    def entityManifest: Manifest[T] = manifest[T]
   }
 }

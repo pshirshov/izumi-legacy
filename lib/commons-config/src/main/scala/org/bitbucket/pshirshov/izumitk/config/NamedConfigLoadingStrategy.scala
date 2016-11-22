@@ -26,7 +26,7 @@ class NamedConfigLoadingStrategy extends ConfigLoadingStrategy with StrictLoggin
 object NamedConfigLoadingStrategy {
   final val configPath = new AtomicReference[String]()
 
-  def init(path: String) = {
+  def init(path: String): Unit = {
     System.setProperty("config.strategy", classOf[NamedConfigLoadingStrategy].getCanonicalName)
     configPath.set(path)
   }
@@ -39,7 +39,7 @@ class FailingConfigLoadingStrategy extends ConfigLoadingStrategy {
 }
 
 object FailingConfigLoadingStrategy {
-  def init() = {
+  def init(): String = {
     System.setProperty("config.strategy", classOf[FailingConfigLoadingStrategy].getCanonicalName)
   }
 }

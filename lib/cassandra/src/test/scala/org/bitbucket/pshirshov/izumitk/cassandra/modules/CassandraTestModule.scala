@@ -28,7 +28,7 @@ final class CassandraTestModule() extends CassandraModuleBase with WithReusableR
   @Provides
   @Singleton
   @Named("cassandra.keyspace")
-  def keyspace() = {
+  def keyspace(): String = {
     CassandraTestModule.defaultKeyspace
   }
 
