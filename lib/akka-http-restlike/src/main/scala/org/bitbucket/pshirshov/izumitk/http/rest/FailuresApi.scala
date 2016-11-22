@@ -7,8 +7,8 @@ import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import org.bitbucket.pshirshov.izumitk.akka.http.auth.Authorizations
 import org.bitbucket.pshirshov.izumitk.akka.http.services.HttpService
+import org.bitbucket.pshirshov.izumitk.failures.services.FailureRepository
 import org.bitbucket.pshirshov.izumitk.json.JacksonMapper
-import org.bitbucket.pshirshov.izumitk.services.FailureRepository
 import org.scalactic.Good
 
 @Singleton

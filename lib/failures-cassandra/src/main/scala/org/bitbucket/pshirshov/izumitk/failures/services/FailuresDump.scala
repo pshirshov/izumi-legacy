@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.{ObjectMapper, SerializationFeature}
 import com.google.inject.{Inject, Singleton}
 import com.google.inject.name.Named
 import org.bitbucket.pshirshov.izumitk.json.JacksonMapper
-import org.bitbucket.pshirshov.izumitk.services.FailureRepository
 import com.typesafe.scalalogging.StrictLogging
 import resource._
 
