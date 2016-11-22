@@ -41,10 +41,13 @@ class HalSerializerImpl @Inject()
   }
 
   private def serializeDto(baseUri: String, dto: Any, handler: HalHandler, repr: Representation): Unit = {
-    val rann = dto.getClass.getAnnotation(classOf[HalResource])
-    Option(rann.self()).filter(_.nonEmpty).foreach {
-      self =>
-        repr.withLink("self", s"$baseUri/$self")
+    Option(dto.getClass.getAnnotation(classOf[HalResource])).foreach {
+      rann =>
+        Option(rann.self()).filter(_.nonEmpty).foreach {
+          self =>
+            repr.withLink("self", s"$baseUri/$self")
+        }
+        // TODO: anything else?..
     }
 
     val rm = scala.reflect.runtime.currentMirror
@@ -138,7 +141,7 @@ class HalSerializerImpl @Inject()
         (
           resources.map(r => makeRepr(baseUri, r, handler)).toSeq
           , properties.map(p => mapper.valueToTree[JsonNode](p)).toSeq
-          )
+        )
     }
   }
 
