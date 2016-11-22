@@ -3,6 +3,7 @@ package org.bitbucket.pshirshov.izumitk.util
 import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalAccessor
 import java.time._
+import java.util.Date
 import java.util.concurrent.TimeUnit
 
 import scala.concurrent.duration.{Duration, FiniteDuration}
@@ -11,13 +12,15 @@ import scala.concurrent.duration.{Duration, FiniteDuration}
   */
 object TimeUtils {
   final val utc = ZoneId.of("UTC")
+
   private final val dateTimeFormat = DateTimeFormatter.ISO_OFFSET_DATE_TIME
   private final val dateFormat = DateTimeFormatter.ISO_DATE
   private final val timeFormat = DateTimeFormatter.ISO_TIME
 
-  def parseFinite(s: String): FiniteDuration= FiniteDuration(Duration(s).toNanos, TimeUnit.NANOSECONDS)
+  def parseFinite(s: String): FiniteDuration = FiniteDuration(Duration(s).toNanos, TimeUnit.NANOSECONDS)
 
   def parse(s: String): TemporalAccessor = dateTimeFormat.parse(s)
+
   def parseDate(s: String): TemporalAccessor = dateFormat.parse(s)
 
   def parse(s: Option[String]): Option[TemporalAccessor] = s.map(parse)
@@ -29,7 +32,9 @@ object TimeUtils {
   def isoFormatUtc(timestamp: ZonedDateTime): String = dateTimeFormat.format(timestamp.withZoneSameInstant(utc))
 
   private def isoFormat(timestamp: ZonedDateTime) = dateTimeFormat.format(timestamp)
+
   def isoFormatDate(timestamp: ZonedDateTime) = dateFormat.format(timestamp)
+
   //def isoFormat(time: LocalTime) = timeFormat.format(time)
 
   def isoNow: String = isoFormat(utcNow)
@@ -38,10 +43,18 @@ object TimeUtils {
 
   def epoch: ZonedDateTime = ZonedDateTime.ofInstant(Instant.ofEpochSecond(1), utc)
 
-  def utcEpoch(t: Long): ZonedDateTime = {
+  def utcEpochSeconds(t: Long): ZonedDateTime = {
     val instant = Instant.ofEpochSecond(t)
     ZonedDateTime.ofInstant(instant, utc)
   }
+
+  def utcEpochMillies(t: Long): ZonedDateTime = {
+    val instant = Instant.ofEpochMilli(t)
+    ZonedDateTime.ofInstant(instant, utc)
+  }
+
+
+  def toTsAsUtc(ts: Date): ZonedDateTime = ts.toInstant.atZone(TimeUtils.utc)
 
   implicit def dateTimeOrdering: Ordering[ZonedDateTime] = Ordering.fromLessThan(_ isBefore _)
 }

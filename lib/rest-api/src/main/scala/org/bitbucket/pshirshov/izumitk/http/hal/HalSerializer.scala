@@ -4,18 +4,22 @@ import java.util
 import java.util.UUID
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import org.bitbucket.pshirshov.izumitk.hal.HalResource
 import org.bitbucket.pshirshov.izumitk.json.JacksonMapper
 import com.theoryinpractise.halbuilder.api._
 import org.bitbucket.pshirshov.izumitk.http.hal.Hal.{HalContext, HalHandler}
+import scala.collection.JavaConverters._
 
 import scala.reflect.runtime.universe._
+
 /**
   */
 @Singleton
-class HalSerializer @Inject()(
+class HalSerializer @Inject()
+(
   @Named("standardMapper") mapper: JacksonMapper
   , factory: RepresentationFactory
 ) {
@@ -24,11 +28,22 @@ class HalSerializer @Inject()(
                 , dto: AnyRef
                 , handler: HalHandler
               ): Representation = {
-    if (!dto.getClass.isAnnotationPresent(classOf[HalResource])) {
-      throw new IllegalArgumentException(s"Not a HAL resource: $dto")
+    val repr = factory.newRepresentation()
+
+    dto match {
+      case tree: ObjectNode =>
+        serializeTree(tree, repr)
+      case hr if hr.getClass.isAnnotationPresent(classOf[HalResource]) =>
+        serializeDto(baseUri, dto, handler, repr)
+      case _ =>
+        throw new IllegalArgumentException(s"Not a HAL resource: $dto")
     }
 
-    val repr = factory.newRepresentation()
+    handler(HalContext(dto, baseUri, repr))
+    repr
+  }
+
+  private def serializeDto(baseUri: String, dto: AnyRef, handler: HalHandler, repr: Representation): Unit = {
     val rann = dto.getClass.getAnnotation(classOf[HalResource])
     Option(rann.self()).filter(_.nonEmpty).foreach {
       self =>
@@ -45,7 +60,7 @@ class HalSerializer @Inject()(
         val name = acc.name.decodedName.toString
         val value = instanceMirror.reflectMethod(acc).apply()
         value match {
-          case _:java.lang.Number =>
+          case _: Number =>
             repr.withProperty(name, value)
           case _: String =>
             repr.withProperty(name, value)
@@ -54,6 +69,8 @@ class HalSerializer @Inject()(
           case _: Boolean =>
             repr.withProperty(name, value)
           case v: util.Map[_, _] =>
+            repr.withProperty(name, mapper.valueToTree(v))
+          case v: Map[_, _] =>
             repr.withProperty(name, mapper.valueToTree(v))
           case v: util.Collection[AnyRef] =>
             import scala.collection.JavaConversions._
@@ -68,9 +85,13 @@ class HalSerializer @Inject()(
             throw new UnsupportedOperationException(s"We don't know how to serialize `$value` in `$dto`")
         }
     }
+  }
 
-    handler(HalContext(dto, baseUri, repr))
-    repr
+  private def serializeTree(tree: ObjectNode, repr: Representation): Unit = {
+    tree.fields().asScala.foreach {
+      e =>
+        repr.withProperty(e.getKey, e.getValue)
+    }
   }
 
   private def fillSequence(repr: Representation, baseUri: String, name: String, v: Traversable[AnyRef], handler: HalHandler): Unit = {
@@ -100,9 +121,9 @@ class HalSerializer @Inject()(
     value.getClass.isAnnotationPresent(classOf[HalResource])
   }
 
-//  private def isHalProperty(value: AnyRef): Boolean = {
-//    (Seq(value.getClass) ++ value.getClass.getInterfaces.toSeq)
-//      .flatMap(_.getAnnotations)
-//      .exists(_.annotationType() == classOf[HalProperty])
-//  }
+  //  private def isHalProperty(value: AnyRef): Boolean = {
+  //    (Seq(value.getClass) ++ value.getClass.getInterfaces.toSeq)
+  //      .flatMap(_.getAnnotations)
+  //      .exists(_.annotationType() == classOf[HalProperty])
+  //  }
 }

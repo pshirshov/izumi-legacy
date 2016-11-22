@@ -35,6 +35,15 @@ trait InjectorTestBase extends IzumiTestBase with StrictLogging {
     }
   }
 
+  protected def withInjected[Fixture : Manifest, R](times: Int)(test: (Fixture, Injector) => R): TestData => Unit = {
+    withInjector {
+      injector =>
+        for (n <- 1 to times) {
+          test(injector.instance[Fixture], injector)
+        }
+    }
+  }
+
   protected final def withInjector[T](test: (Injector) => T): TestData => T = {
     td =>
       val testDataModule = new ScalaModule {
