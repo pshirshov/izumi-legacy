@@ -1,4 +1,4 @@
-package org.bitbucket.pshirshov.izumitk.failures.services.targets
+package org.bitbucket.pshirshov.izumitk.failures.targets
 
 import org.bitbucket.pshirshov.izumitk.TargetPoint
 

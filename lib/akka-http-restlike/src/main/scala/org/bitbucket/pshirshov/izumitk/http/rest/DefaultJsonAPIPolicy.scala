@@ -12,7 +12,8 @@ import com.google.inject.{Inject, Singleton}
 import com.google.inject.name.Named
 import com.typesafe.scalalogging.StrictLogging
 import org.bitbucket.pshirshov.izumitk.akka.http.util.RequestTransformer
-import org.bitbucket.pshirshov.izumitk.failures.services.{FailureRecord, FailureRepository, ServiceFailure}
+import org.bitbucket.pshirshov.izumitk.failures.model.ServiceFailure
+import org.bitbucket.pshirshov.izumitk.failures.services.{FailureRecord, FailureRepository}
 import org.bitbucket.pshirshov.izumitk.json.JacksonMapper
 import org.bitbucket.pshirshov.izumitk.util.TimeUtils
 import org.scalactic.{Bad, Every, Good, Or}
