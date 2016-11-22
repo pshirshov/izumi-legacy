@@ -45,6 +45,10 @@ object IzumiBuild extends PerfectBuild {
       dependencies = dep()
     ),
     mkProject(
+      base = file("lib/akka-http"),
+      dependencies = dep("akka")
+    ),
+    mkProject(
       base = file("lib/akka-cdi"),
       dependencies = dep("akka")
     ),
@@ -58,11 +62,15 @@ object IzumiBuild extends PerfectBuild {
     ),
     mkProject(
       base = file("lib/app-akka-http"),
-      dependencies = dep("app-skeleton", "akka")
+      dependencies = dep("app-skeleton", "akka-http", "json")
     ),
     mkProject(
-      base = file("lib/rest-api"),
-      dependencies = dep("json", "failures", "akka")
+      base = file("lib/akka-http-restlike"),
+      dependencies = dep("akka-http", "failures")
+    ),
+    mkProject(
+      base = file("lib/akka-http-hal"),
+      dependencies = dep("akka-http")
     )
   ).map(prj).toMap
 
