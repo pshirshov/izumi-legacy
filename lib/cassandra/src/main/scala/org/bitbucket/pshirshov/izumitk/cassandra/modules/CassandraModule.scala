@@ -33,7 +33,7 @@ class CassandraModule() extends CassandraModuleBase {
   @Provides
   @Singleton
   @Named("cassandra.keyspace")
-  def keyspace(@Named("@cassandra.defaults.keyspace") defaultKeyspace: String) = {
+  def keyspace(@Named("@cassandra.defaults.keyspace") defaultKeyspace: String): String = {
     defaultKeyspace
   }
 

@@ -7,7 +7,7 @@ import net.codingwell.scalaguice.InjectorExtensions._
 trait WithFailureDump {
   this: WithInjector =>
 
-  def dumpFailures() = {
+  def dumpFailures(): Unit = {
     injector.instance[FailuresDump].dump()
   }
 }

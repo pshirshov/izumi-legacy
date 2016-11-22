@@ -10,7 +10,7 @@ object Dependencies {
     scalaVersion := crossScalaVersions.value.head
   )
 
-  val globalExclusions = Seq[sbt.SbtExclusionRule]()
+  val globalExclusions: Seq[SbtExclusionRule] = Seq[sbt.SbtExclusionRule]()
 
 //  val totalExclusions = Seq(ExclusionRule("com.google.guava", "guava")
 //  , ExclusionRule("com.typesafe.akka", "akka-actor_2.11")
@@ -19,11 +19,11 @@ object Dependencies {
 //  , ExclusionRule("org.slf4j", "slf4j-api"))
 
   object C {
-    val scala_macros = "org.scalamacros" % "paradise" % "2.1.0"
+    val scala_macros: ModuleID = "org.scalamacros" % "paradise" % "2.1.0"
 
-    val json4s = "org.json4s" %% "json4s-native" % "3.3.0"
-    val jwt = "org.bitbucket.b_c" % "jose4j" % "0.4.4"
-    val restfb = "com.restfb" % "restfb" % "1.19.0"
+    val json4s: ModuleID = "org.json4s" %% "json4s-native" % "3.3.0"
+    val jwt: ModuleID = "org.bitbucket.b_c" % "jose4j" % "0.4.4"
+    val restfb: ModuleID = "com.restfb" % "restfb" % "1.19.0"
 
     val akka_version = "2.4.11"
     private val akka_actor = "com.typesafe.akka" %% "akka-actor" % akka_version
@@ -35,16 +35,16 @@ object Dependencies {
     val akka = Seq(akka_actor, akka_slf4j, akka_http_dsl)
 
     private val cassandra_core = "com.datastax.cassandra" % "cassandra-driver-core" % "3.1.0"
-    val cassandra = Seq(cassandra_core).map(_.exclude("com.google.guava", "guava"))
+    val cassandra: Seq[ModuleID] = Seq(cassandra_core).map(_.exclude("com.google.guava", "guava"))
 
-    val hikaricp = "com.zaxxer" % "HikariCP" % "2.5.1"
-    val clickhouse = "ru.yandex.clickhouse" % "clickhouse-jdbc" % "0.1.11"
+    val hikaricp: ModuleID = "com.zaxxer" % "HikariCP" % "2.5.1"
+    val clickhouse: ModuleID = "ru.yandex.clickhouse" % "clickhouse-jdbc" % "0.1.11"
 
     private val jackson_version = "2.8.4"
     private val jackson_databind = "com.fasterxml.jackson.core" % "jackson-databind" % jackson_version
     private val jackson_scala = "com.fasterxml.jackson.module" %% "jackson-module-scala" % jackson_version
     private val jackson_jsr310 = "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % jackson_version
-    val jackson = Seq(jackson_databind, jackson_scala, jackson_jsr310).map(_.exclude("com.google.guava", "guava"))
+    val jackson: Seq[ModuleID] = Seq(jackson_databind, jackson_scala, jackson_jsr310).map(_.exclude("com.google.guava", "guava"))
 
     private val scopt = "com.github.scopt" %% "scopt" % "3.3.0"
     private val jolokia = "org.jolokia" % "jolokia-core" % "1.3.2"
@@ -96,7 +96,7 @@ object Dependencies {
     private val apache_kafka_version = "0.10.0.0"
     private val apache_kafka_core = "org.apache.kafka" % "kafka_2.11" % apache_kafka_version
     private val apache_kafka_clients = "org.apache.kafka" % "kafka-clients" % apache_kafka_version
-    val apache_kafka = Seq(apache_kafka_core, apache_kafka_clients).map(
+    val apache_kafka: Seq[ModuleID] = Seq(apache_kafka_core, apache_kafka_clients).map(
       _.exclude("org.slf4j", "slf4j-log4j12") // fixing slf4j bindings
         // fixing kafka. See: https://issues.apache.org/jira/browse/KAFKA-974
       .exclude("javax.jms", "jms")
@@ -105,11 +105,11 @@ object Dependencies {
       .exclude("log4j", "log4j")
     )
 
-    val apache_commons_validator = "commons-validator" % "commons-validator" % "1.5.1"
+    val apache_commons_validator: ModuleID = "commons-validator" % "commons-validator" % "1.5.1"
 
-    val string_template = "org.antlr" % "ST4" % "4.0.8"
+    val string_template: ModuleID = "org.antlr" % "ST4" % "4.0.8"
 
-    val essentials = (commons ++ guice ++ Seq(
+    val essentials: Seq[ModuleID] = (commons ++ guice ++ Seq(
       config
       , scala_logging
       , logback
@@ -130,19 +130,19 @@ object Dependencies {
     private val gatling_highcharts = "io.gatling.highcharts" % "gatling-charts-highcharts" % gatling_version
     val gatling = Seq(gatling_app, gatling_http, gatling_recorder, gatling_highcharts)
 
-    val elasticsearch = "org.elasticsearch" % "elasticsearch" % "2.3.4"
+    val elasticsearch: ModuleID = "org.elasticsearch" % "elasticsearch" % "2.3.4"
 
-    val activemq = "org.apache.activemq" % "activemq-client" % "5.14.1"
+    val activemq: ModuleID = "org.apache.activemq" % "activemq-client" % "5.14.1"
 
-    val halbuilder = "com.theoryinpractise" % "halbuilder-standard" % "4.0.1"
+    val halbuilder: ModuleID = "com.theoryinpractise" % "halbuilder-standard" % "4.0.1"
   }
 
   object CT {
-    val akka_testkit = "com.typesafe.akka" %% "akka-testkit" % C.akka_version
-    val akka_http_testkit = "com.typesafe.akka" %% "akka-http-testkit" % C.akka_version
-    val scalatest = "org.scalatest" %% "scalatest" % C.scalactic_version
-    val scalamock = ("org.scalamock" %% "scalamock-scalatest-support" % "3.2.2").exclude("org.scalatest", "scalatest_2.11")
-    val htmlunit = "net.sourceforge.htmlunit" % "htmlunit" % "2.23"
+    val akka_testkit: ModuleID = "com.typesafe.akka" %% "akka-testkit" % C.akka_version
+    val akka_http_testkit: ModuleID = "com.typesafe.akka" %% "akka-http-testkit" % C.akka_version
+    val scalatest: ModuleID = "org.scalatest" %% "scalatest" % C.scalactic_version
+    val scalamock: ModuleID = ("org.scalamock" %% "scalamock-scalatest-support" % "3.2.2").exclude("org.scalatest", "scalatest_2.11")
+    val htmlunit: ModuleID = "net.sourceforge.htmlunit" % "htmlunit" % "2.23"
   }
 
   object T {
@@ -151,7 +151,7 @@ object Dependencies {
     private val scalatest = CT.scalatest % "test"
     private val scalamock = CT.scalamock % "test"
 
-    val htmlunit = CT.htmlunit % "test"
+    val htmlunit: ModuleID = CT.htmlunit % "test"
 
     val essentials_test = Seq(scalatest, scalamock)
     val akka_test = Seq(T.akka_testkit, T.akka_http_testkit)

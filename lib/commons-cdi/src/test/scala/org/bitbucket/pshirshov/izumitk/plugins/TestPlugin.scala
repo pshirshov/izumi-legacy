@@ -99,19 +99,19 @@ class TestPluginRegexDisabledXXX extends Plugin {
 }
 
 
-@NonRootPlugin
-class TestInvalidNonRootPlugin extends Plugin {
-}
-
-trait INonRootDep {}
-
-@NonRootPlugin
-class TestValidNonRootPlugin extends Plugin with INonRootDep {
-}
-
-@Depends(Array(classOf[INonRootDep]))
-class TestRootDependantPlugin extends Plugin {
-}
+//@NonRootPlugin
+//class TestInvalidNonRootPlugin extends Plugin {
+//}
+//
+//trait INonRootDep {}
+//
+//@NonRootPlugin
+//class TestValidNonRootPlugin extends Plugin with INonRootDep {
+//}
+//
+//@Depends(Array(classOf[INonRootDep]))
+//class TestRootDependantPlugin extends Plugin {
+//}
 
 class TestGuicePlugin extends GuicePlugin {
   override def configure(): Unit = {

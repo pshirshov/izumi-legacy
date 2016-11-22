@@ -38,7 +38,7 @@ class HttpDebug @Inject()
 
   protected val loggingLevel: Logging.LogLevel = Logging.InfoLevel
   protected val debugMarker: String = "HTTP-API"
-  protected val marshallingTimeout = FiniteDuration.apply(5, TimeUnit.SECONDS)
+  protected val marshallingTimeout: FiniteDuration = FiniteDuration.apply(5, TimeUnit.SECONDS)
   private val splitterSize = 120
 
   // fix for akka bug: https://github.com/akka/akka/issues/19981

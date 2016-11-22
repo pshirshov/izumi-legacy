@@ -18,7 +18,7 @@ class FailuresDump @Inject()(
                             , @Named("typingMapper") mapper: JacksonMapper
                             , @Named("app.id") appName: String
                             ) extends StrictLogging {
-  def dump() = {
+  def dump(): Unit = {
     val m = new ObjectMapper(mapper) {} // to avoid side effects
     m.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false)
     m.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false)

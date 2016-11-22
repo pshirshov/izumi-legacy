@@ -6,7 +6,7 @@ import ch.qos.logback.core.spi.ContextAwareBase
 
 @ExposedTestScope
 class GlobalDiscriminator extends ContextAwareBase with Discriminator[LoggingEvent] {
-  def getDiscriminatingValue(event: LoggingEvent) = {
+  def getDiscriminatingValue(event: LoggingEvent): String = {
     GlobalDiscriminator.value
   }
 
@@ -23,7 +23,7 @@ object GlobalDiscriminator {
   @volatile
   private var value: String = null
 
-  def setValue(v: String) = {
+  def setValue(v: String): Unit = {
     value = v
   }
 }

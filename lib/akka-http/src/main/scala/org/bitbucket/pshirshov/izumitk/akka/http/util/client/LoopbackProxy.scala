@@ -21,7 +21,7 @@ object LoopbackProxy {
   (
   implicit executionContext: ExecutionContext,
   materializer: Materializer
-  ) = {
+  ): Route = {
     Route {
       context =>
         val request = context.request

@@ -1,6 +1,6 @@
 package org.bitbucket.pshirshov.izumitk.cdi
 
-import akka.actor.{Actor, ActorSystem, IndirectActorProducer, Props}
+import akka.actor.{Actor, ActorRef, ActorSystem, IndirectActorProducer, Props}
 import com.google.inject.{Inject, Injector}
 
 import scala.reflect._
@@ -10,7 +10,7 @@ case class GuiceSystem @Inject()(
                                , injector: Injector
 
                              ) {
-  def create[Producer <: IndirectActorProducer : ClassTag](args: AnyRef*) = {
+  def create[Producer <: IndirectActorProducer : ClassTag](args: AnyRef*): ActorRef = {
     system.actorOf(Props(classTag[Producer].runtimeClass, Seq(injector) ++ args.toSeq :_*))
   }
 }
@@ -28,7 +28,7 @@ trait GuiceActorFactory[T <: Actor] {
 }
 
 abstract class GuiceActorFactoryProducer[FT <: GuiceActorFactory[_] : ClassTag](injector: Injector) extends IndirectActorProducer {
-  protected val factory = injector.getInstance(classTag[FT].runtimeClass).asInstanceOf[FT]
+  protected val factory: FT = injector.getInstance(classTag[FT].runtimeClass).asInstanceOf[FT]
 
   override def actorClass: Class[_ <: Actor] = classTag[FT#AT].runtimeClass.asInstanceOf[Class[Actor]]
 }

@@ -30,7 +30,7 @@ object ModuleUtil extends StrictLogging {
     }
   }
 
-  protected[cdi] def shortModuleName(module: Module) = {
+  protected[cdi] def shortModuleName(module: Module): String = {
     s"${module.getClass.getSimpleName}@${module.hashCode()}"
   }
 }

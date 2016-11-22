@@ -19,7 +19,7 @@ import scala.util.{Failure, Success, Try}
   */
 abstract class Starter[ArgsType <: WithBaseArguments] {
   protected val referenceConfigName: String
-  protected val defaultLogbackPath = Starter.defaultLogbackPath
+  protected val defaultLogbackPath: String = Starter.defaultLogbackPath
 
   protected val parser: scopt.OptionParser[ArgsType]
 
@@ -50,7 +50,7 @@ abstract class Starter[ArgsType <: WithBaseArguments] {
     }
   }
 
-  protected final def configuration(args: Array[String], defaults: ArgsType) = {
+  protected final def configuration(args: Array[String], defaults: ArgsType): StartupConfiguration[ArgsType] = {
     parser.parse(args, defaults) match {
       case Some(appArgs) =>
         parser.showHeader
@@ -65,7 +65,7 @@ abstract class Starter[ArgsType <: WithBaseArguments] {
     }
   }
 
-  protected final def config(args: ArgsType) = {
+  protected final def config(args: ArgsType): LoadedConfig = {
     val path = args.base.configFile match {
       case None =>
         referenceConfigName
@@ -200,7 +200,7 @@ abstract class Starter[ArgsType <: WithBaseArguments] {
     StatusPrinter.printInCaseOfErrorsOrWarnings(context)
   }
 
-  protected def safeMain(ep: => Unit) = {
+  protected def safeMain(ep: => Unit): Unit = {
     try {
       ep
       System.exit(0)

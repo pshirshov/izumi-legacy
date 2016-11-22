@@ -2,7 +2,7 @@
 <included>
     <include resource="logback-app.xml"/>
 
-    <appender name="WSOUT" class="org.bitbucket.pshirshov.izumitk.http.util.WSAppender">
+    <appender name="WSOUT" class="org.bitbucket.pshirshov.izumitk.akka.http.util.logging.WSAppender">
         <pattern>${pattern}</pattern>
     </appender>
 
