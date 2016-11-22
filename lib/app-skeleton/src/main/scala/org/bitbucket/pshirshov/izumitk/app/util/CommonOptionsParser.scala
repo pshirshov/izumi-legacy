@@ -1,6 +1,9 @@
-package org.bitbucket.pshirshov.izumitk.app
+package org.bitbucket.pshirshov.izumitk.app.util
 
 import java.io.File
+
+import org.bitbucket.pshirshov.izumitk.app.Version
+import org.bitbucket.pshirshov.izumitk.app.model.AppModel._
 
 
 /**

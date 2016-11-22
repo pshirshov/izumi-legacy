@@ -1,10 +1,7 @@
 import izumitk.Dependencies._
 
 
-libraryDependencies ++=
-    C.akka ++
-    T.akka_test ++
-    Seq(
+libraryDependencies ++= Seq(
       C.jwt
       , C.halbuilder
     )

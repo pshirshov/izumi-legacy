@@ -1,4 +1,4 @@
-package org.bitbucket.pshirshov.izumitk.app
+package org.bitbucket.pshirshov.izumitk.app.util
 
 import sun.misc.{Signal, SignalHandler}
 

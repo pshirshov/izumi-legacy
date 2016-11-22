@@ -1,4 +1,4 @@
-package org.bitbucket.pshirshov.izumitk.http.util
+package org.bitbucket.pshirshov.izumitk.akka.util
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http

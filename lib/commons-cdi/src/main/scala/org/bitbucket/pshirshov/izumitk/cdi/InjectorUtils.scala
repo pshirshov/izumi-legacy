@@ -1,13 +1,12 @@
 package org.bitbucket.pshirshov.izumitk.cdi
 
-import java.util
 import java.util.concurrent.{ConcurrentLinkedQueue, ExecutorService, TimeUnit}
 
 import com.google.inject.matcher.Matchers
 import com.google.inject.name.{Named, Names}
-import com.google.inject.spi.{DefaultBindingTargetVisitor, ProvisionListener}
+import com.google.inject.spi.ProvisionListener
 import com.google.inject.spi.ProvisionListener.ProvisionInvocation
-import com.google.inject.{Binding, Injector, Provides}
+import com.google.inject.{Injector, Provides}
 import com.typesafe.scalalogging.StrictLogging
 import net.codingwell.scalaguice.InjectorExtensions._
 import net.codingwell.scalaguice.ScalaModule

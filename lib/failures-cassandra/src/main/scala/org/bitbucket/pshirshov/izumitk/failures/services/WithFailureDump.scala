@@ -1,4 +1,4 @@
-package org.bitbucket.pshirshov.izumitk.cassandra.services
+package org.bitbucket.pshirshov.izumitk.failures.services
 
 import org.bitbucket.pshirshov.izumitk.cdi.WithInjector
 import net.codingwell.scalaguice.InjectorExtensions._

@@ -1,4 +1,4 @@
-package org.bitbucket.pshirshov.izumitk.cassandra.services
+package org.bitbucket.pshirshov.izumitk.failures.services
 
 import java.io.FileOutputStream
 import java.nio.file.Paths

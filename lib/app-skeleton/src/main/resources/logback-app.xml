@@ -10,15 +10,9 @@
         </encoder>
     </appender>
 
-    <appender name="WSOUT" class="org.bitbucket.pshirshov.izumitk.http.util.WSAppender">
-        <pattern>${pattern}</pattern>
-    </appender>
-
     <root level="WARN">
         <appender-ref ref="STDOUT"/>
-        <appender-ref ref="WSOUT"/>
     </root>
 
-    <logger name="akka.actor.ActorSystemImpl" level="INFO"/>
-    <logger name="org.bitbucket.pshirshov.izumitk" level="DEBUG"/>
+    <logger name="org.bitbucket.pshirshov.izumitk" level="INFO"/>
 </included>
