@@ -1,4 +1,4 @@
-package org.bitbucket.pshirshov.izumitk.cassandra.services
+package org.bitbucket.pshirshov.izumitk.failures.services
 
 import com.codahale.metrics.MetricRegistry
 import com.datastax.driver.core.{ConsistencyLevel, Row, Session}

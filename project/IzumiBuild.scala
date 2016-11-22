@@ -10,7 +10,7 @@ import xerial.sbt.Sonatype.SonatypeKeys._
 
 object IzumiBuild extends PerfectBuild {
   override lazy val allProjects: Map[String, Project] = Seq(
-    // base libraries
+    // common tools
     mkProject(
       base = file("lib/commons-test"),
       dependencies = Seq()
@@ -27,6 +27,7 @@ object IzumiBuild extends PerfectBuild {
       base = file("lib/commons-cdi"),
       dependencies = Seq("commons-test", "commons-formats", "commons-config")
     ),
+    // generic libraries
     mkProject(
       base = file("lib/app-skeleton"),
       dependencies = dep()
@@ -40,19 +41,28 @@ object IzumiBuild extends PerfectBuild {
       dependencies = dep()
     ),
     mkProject(
-      base = file("lib/akka-cdi"),
+      base = file("lib/akka"),
       dependencies = dep()
     ),
     mkProject(
+      base = file("lib/akka-cdi"),
+      dependencies = dep("akka")
+    ),
+    mkProject(
       base = file("lib/cassandra"),
-      dependencies = dep(
-        // may be moved to separate module
-        "failures", "json"
-      )
+      dependencies = dep()
+    ),
+    mkProject(
+      base = file("lib/failures-cassandra"),
+      dependencies = dep("cassandra", "failures", "json")
+    ),
+    mkProject(
+      base = file("lib/app-akka-http"),
+      dependencies = dep("app-skeleton", "akka")
     ),
     mkProject(
       base = file("lib/rest-api"),
-      dependencies = dep("json", "failures")
+      dependencies = dep("json", "failures", "akka")
     )
   ).map(prj).toMap
 

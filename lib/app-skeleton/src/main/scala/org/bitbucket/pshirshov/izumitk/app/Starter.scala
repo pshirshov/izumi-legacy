@@ -9,25 +9,11 @@ import ch.qos.logback.core.util.StatusPrinter
 import com.typesafe.config.{Config, ConfigFactory, ConfigRenderOptions}
 import org.bitbucket.pshirshov.izumitk.config._
 import org.apache.commons.io.{FileUtils, IOUtils}
+import org.bitbucket.pshirshov.izumitk.app.model.AppModel._
 import org.slf4j.LoggerFactory
 
 import scala.util.{Failure, Success, Try}
 
-case class BaseArguments(configFile: Option[File] = None,
-                         logbackFile: Option[File] = None,
-                         dump: Option[Boolean] = Option(false),
-                         allowReferenceStartup: Option[Boolean] = Option(false),
-                         showReference: Option[Boolean] = Option(false),
-                         writeReference: Option[Boolean] = Option(false)
-                        ) {}
-
-trait WithBaseArguments {
-  val base: BaseArguments
-
-  def baseCopy(base: BaseArguments): this.type
-}
-
-case class StartupConfiguration[ArgsType <: WithBaseArguments](arguments: ArgsType, config: LoadedConfig)
 
 /**
   */
@@ -164,7 +150,6 @@ abstract class Starter[ArgsType <: WithBaseArguments] {
     println("Reference config dump: \n" + rendered)
     println("Logging config dump: \n" + getLoggingReference)
   }
-
 
 
   protected def render(forDump: Config): String = {

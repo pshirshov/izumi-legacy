@@ -1,4 +1,4 @@
-package org.bitbucket.pshirshov.izumitk.app
+package org.bitbucket.pshirshov.izumitk.app.services
 
 import com.google.inject.{Inject, Singleton}
 import org.bitbucket.pshirshov.izumitk.{HealthCheck, HealthChecker}

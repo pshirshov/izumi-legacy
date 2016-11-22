@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<included>
+    <include resource="logback-app.xml"/>
+
+    <appender name="WSOUT" class="org.bitbucket.pshirshov.izumitk.http.util.WSAppender">
+        <pattern>${pattern}</pattern>
+    </appender>
+
+    <root level="WARN">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="WSOUT"/>
+    </root>
+
+    <logger name="akka.actor.ActorSystemImpl" level="INFO"/>
+</included>

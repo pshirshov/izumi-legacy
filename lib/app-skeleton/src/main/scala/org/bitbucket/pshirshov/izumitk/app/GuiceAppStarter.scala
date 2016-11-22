@@ -2,6 +2,7 @@ package org.bitbucket.pshirshov.izumitk.app
 
 import com.google.inject.{Guice, Injector}
 import com.typesafe.scalalogging.StrictLogging
+import org.bitbucket.pshirshov.izumitk.app.util.SysSignals
 import org.bitbucket.pshirshov.izumitk.cdi.InjectorUtils._
 import org.bitbucket.pshirshov.izumitk.cdi.{BunchOfModules, ModuleUtil, WithInjector}
 import sun.misc.Signal
