@@ -12,7 +12,8 @@ import com.google.inject.{Inject, Singleton}
 import com.google.inject.name.Named
 import com.typesafe.scalalogging.StrictLogging
 import org.bitbucket.pshirshov.izumitk.akka.http.util.RequestTransformer
-import org.bitbucket.pshirshov.izumitk.failures.model.ServiceFailure
+import org.bitbucket.pshirshov.izumitk.failures.model._
+import org.bitbucket.pshirshov.izumitk.failures.model.http.HttpExceptions
 import org.bitbucket.pshirshov.izumitk.failures.services.{FailureRecord, FailureRepository}
 import org.bitbucket.pshirshov.izumitk.json.JacksonMapper
 import org.bitbucket.pshirshov.izumitk.util.TimeUtils
@@ -135,15 +136,15 @@ class DefaultJsonAPIPolicy @Inject()
   private def getFailureCode(problems: Seq[ServiceFailure], exceptions: Seq[Throwable]): Int = {
     if (exceptions.nonEmpty) {
       JsonAPI.Codes.INTERNAL_FAILURE
-    } else if (problems.exists(_.isInstanceOf[InternalFailureException])) {
+    } else if (problems.exists(_.isInstanceOf[HttpExceptions.InternalFailureException])) {
       JsonAPI.Codes.INTERNAL_FAILURE
-    } else if (problems.exists(_.isInstanceOf[ForbiddenException])) {
+    } else if (problems.exists(_.isInstanceOf[HttpExceptions.ForbiddenException])) {
       JsonAPI.Codes.PERMISSION_DENIED
-    } else if (problems.exists(_.isInstanceOf[NotFoundException])) {
+    } else if (problems.exists(_.isInstanceOf[HttpExceptions.NotFoundException])) {
       JsonAPI.Codes.NOT_FOUND
-    } else if (problems.exists(_.isInstanceOf[IllegalRequestException])) {
+    } else if (problems.exists(_.isInstanceOf[HttpExceptions.IllegalRequestException])) {
       JsonAPI.Codes.MALFORMED_REQUEST
-    } else if (problems.exists(_.isInstanceOf[InvalidVersionException])) {
+    } else if (problems.exists(_.isInstanceOf[HttpExceptions.InvalidVersionException])) {
       JsonAPI.Codes.INVALID_VERSION
     } else {
       JsonAPI.Codes.INTERNAL_FAILURE
@@ -166,7 +167,7 @@ class DefaultJsonAPIPolicy @Inject()
       case ce: ControlException =>
         failure.set("failureType", new TextNode("control"))
 
-      case ife: InternalFailureException =>
+      case ife: HttpExceptions.InternalFailureException =>
         failure.set("failureType", new TextNode("catchedInternal"))
 
       case throwable: Throwable =>

@@ -33,8 +33,12 @@ object IzumiBuild extends PerfectBuild {
       dependencies = dep()
     )
     , mkProject(
-      base = file("lib/failures"),
+      base = file("lib/failures-model"),
       dependencies = dep()
+    )
+    , mkProject(
+      base = file("lib/failures"),
+      dependencies = dep("failures-model")
     )
     , mkProject(
       base = file("lib/app-skeleton"),

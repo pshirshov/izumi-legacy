@@ -18,25 +18,6 @@ import scala.util.control.NonFatal
 
 
 object JsonAPI {
-
-  class InternalFailureException(message: String, cause: Option[Throwable] = None)
-    extends ServiceException(message, cause)
-
-  trait ControlException
-    extends RuntimeException with ServiceFailure
-
-  class ForbiddenException(message: String, cause: Option[Throwable] = None)
-    extends ServiceException(message, cause) with ControlException
-
-  class IllegalRequestException(message: String, cause: Option[Throwable] = None)
-    extends ServiceException(message, cause) with ControlException
-
-  class NotFoundException(message: String, cause: Option[Throwable] = None)
-    extends ServiceException(message, cause) with ControlException
-
-  class InvalidVersionException(message: String, cause: Option[Throwable] = None)
-    extends ServiceException(message, cause) with ControlException
-
   case class Result[R: Manifest](data: Or[R, Every[ServiceFailure]]
                                  , headers: R => Traversable[HttpHeader] = empty
                                  , resultTransformer: Option[R => AnyRef] = None

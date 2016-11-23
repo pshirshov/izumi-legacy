@@ -1,4 +1,4 @@
-package org.bitbucket.pshirshov.izumitk.akka.http.auth
+package org.bitbucket.pshirshov.izumitk.akka.http.auth.model
 
 /**
   */
