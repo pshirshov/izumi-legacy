@@ -1,10 +1,10 @@
 package org.bitbucket.pshirshov.izumitk.http.hal.modules
 
-import com.google.inject.Singleton
+import com.google.inject.{Provides, Singleton}
 import net.codingwell.scalaguice.ScalaMultibinder
 import org.bitbucket.pshirshov.izumitk.HealthChecker
 import org.bitbucket.pshirshov.izumitk.akka.http.modules.AbstractRestModule
-import org.bitbucket.pshirshov.izumitk.akka.http.util.{DefaultCORS, NullRequestTransformer, RequestTransformer, CORS}
+import org.bitbucket.pshirshov.izumitk.akka.http.util._
 import org.bitbucket.pshirshov.izumitk.akka.http.util.serialization.{PermissiveJacksonProtocol, SerializationProtocol}
 import org.bitbucket.pshirshov.izumitk.http.hal.{DefaultHalApiPolicy, HalApiPolicy}
 
@@ -18,4 +18,8 @@ final class HalRestModule() extends AbstractRestModule {
     bind[RequestTransformer].to[NullRequestTransformer].in[Singleton]
     bind[CORS].to[DefaultCORS].in[Singleton]
   }
+
+  @Provides
+  @Singleton
+  def apiPolicy(halApiPolicy: HalApiPolicy): APIPolicy = halApiPolicy
 }
