@@ -115,7 +115,7 @@ class HttpDebug @Inject()
       stringBuilder.append('\n')
     }
     stringBuilder.append('\n')
-    stringBuilder.append(entityToString(response.entity))
+    stringBuilder.append(entityToString(response.entity, s"code: ${response.status}, "))
     stringBuilder.append('\n')
     stringBuilder.append("=" * splitterSize)
     stringBuilder.toString()
@@ -135,12 +135,12 @@ class HttpDebug @Inject()
     }
     stringBuilder.append('\n')
 
-    stringBuilder.append(entityToString(request.entity))
+    stringBuilder.append(entityToString(request.entity, ""))
     stringBuilder.append('\n')
     stringBuilder.toString()
   }
 
-  private def entityToString(entity: HttpEntity) = {
+  private def entityToString(entity: HttpEntity, moreData: String) = {
     val strict = Await.result(entity.toStrict(marshallingTimeout), marshallingTimeout)
     val asString = strict.getData().utf8String
 
@@ -149,7 +149,7 @@ class HttpDebug @Inject()
       stringBuilder.append(asString)
       stringBuilder.append('\n')
     }
-    addMessage(stringBuilder, s"content type: ${entity.contentType}, size: ${asString.length}", '-')
+    addMessage(stringBuilder, s"${moreData}content type: ${entity.contentType}, size: ${asString.length}", '-')
     stringBuilder.toString()
   }
 

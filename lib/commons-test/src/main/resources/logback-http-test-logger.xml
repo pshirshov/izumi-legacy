@@ -12,9 +12,9 @@
             <appender name="FILE-${test-name}" class="ch.qos.logback.core.FileAppender">
                 <file>target/http/${test-name}.txt</file>
 
-                <layout class="ch.qos.logback.classic.PatternLayout">
+                <encoder>
                     <pattern>%d{HH:mm:ss:SSS} | %-5level | %thread | %logger{20} | %msg%n%rEx</pattern>
-                </layout>
+                </encoder>
             </appender>
         </sift>
     </appender>

@@ -42,32 +42,6 @@ class DefaultHalApiPolicy @Inject()
 ) extends HalApiPolicy
   with MetricDirectives {
 
-  override def rejectionHandler(): RejectionHandler = {
-    RejectionHandler.newBuilder()
-      .handle {
-        case r =>
-          complete((Forbidden, s"REJECTED: $r"))
-      }
-      .result()
-  }
-
-  override def exceptionHandler(): ExceptionHandler = {
-    ExceptionHandler {
-      case NonFatal(e) => ctx =>
-        logger.error(s"Critical failure while handling request:\n${ctx.request}")
-
-        val f = new CommonDomainExceptions.InternalFailureException("Critical failure during request processing. Request was not logged.", Some(e))
-        val failureId = failureRepository.recordFailure(FailureRecord(f))
-        val fdata = HalFailure(failureId, "unhandledInternal", f.message)
-        val body = serializeEntity(Hal.Auto(() => fdata), ctx)
-          .toString(RepresentationFactory.HAL_JSON)
-
-        ctx.complete(HttpResponse(InternalServerError
-          , entity = HttpEntity(body).withContentType(halContentType)
-        ))
-    }
-  }
-
   val `application/hal+json`: WithFixedCharset = MediaType.applicationWithFixedCharset(RepresentationFactory.HAL_JSON.split("/").last, HttpCharsets.`UTF-8`)
 
   val halContentType = ContentType(`application/hal+json`)
@@ -88,11 +62,25 @@ class DefaultHalApiPolicy @Inject()
           ctx.complete(HttpResponse(StatusCodes.Forbidden))
         case _: CommonDomainExceptions.IllegalRequestException =>
           ctx.complete(HttpResponse(StatusCodes.BadRequest))
-        case _: CommonDomainExceptions.InternalFailureException =>
-          ctx.complete(HttpResponse(StatusCodes.InternalServerError))
         case other =>
-          throw other
+          completeFatalException(other, ctx, "handledInternal")
       }
+  }
+
+  override def rejectionHandler(): RejectionHandler = {
+    RejectionHandler.newBuilder()
+      .handle {
+        case r =>
+          complete((Forbidden, s"REJECTED: $r"))
+      }
+      .result()
+  }
+
+  override def exceptionHandler(): ExceptionHandler = {
+    ExceptionHandler {
+      case NonFatal(e) => ctx =>
+        completeFatalException(e, ctx, "unhandledInternal")
+    }
   }
 
   protected def serializeEntity[R <: Hal : ClassTag : Manifest](value: R, ctx: RequestContext): Representation = {
@@ -112,7 +100,7 @@ class DefaultHalApiPolicy @Inject()
             serializer.makeRepr(baseUri, dto, handler)
 
           case Bad(r: Every[ServiceFailure]) =>
-            val (controlExceptions, exceptions) = r.toSeq.map(_.toException)
+            val (controlExceptions, exceptions) = r.toList.map(_.toException)
               .partition(_.isInstanceOf[DomainException])
 
             controlExceptions match {
@@ -122,6 +110,7 @@ class DefaultHalApiPolicy @Inject()
                 logger.warn(s"Too much control exceptions, skipping them: $tail")
                 throw head
               case _ =>
+                logger.warn(s"$controlExceptions")
             }
 
             exceptions match {
@@ -145,6 +134,20 @@ class DefaultHalApiPolicy @Inject()
         }
         repr
     }
+  }
+
+  protected def completeFatalException(e: Throwable, ctx: RequestContext, exceptionKind: String): Future[RouteResult] = {
+    logger.error(s"Critical failure while handling request:\n${ctx.request}")
+
+    val failureId = failureRepository.recordFailure(FailureRecord(e))
+    val fdata = HalFailure(failureId, exceptionKind, e.getMessage)
+
+    val baseUri = Href.make(Option(ctx.request))
+    val body = serializer.makeRepr(baseUri, fdata, _ => {}).toString(RepresentationFactory.HAL_JSON)
+
+    ctx.complete(HttpResponse(InternalServerError
+      , entity = HttpEntity(body).withContentType(halContentType)
+    ))
   }
 
 }
