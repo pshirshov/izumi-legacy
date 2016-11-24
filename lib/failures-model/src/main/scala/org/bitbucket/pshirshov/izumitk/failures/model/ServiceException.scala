@@ -9,5 +9,7 @@ class ServiceException(
                         , writableStackTrace: Boolean = true
                       )
   extends scala.RuntimeException(message, cause.orNull, enableSuppression, writableStackTrace)
-      with ServiceFailure
+      with ServiceFailure {
+  override def toException: ServiceException = this
+}
 
