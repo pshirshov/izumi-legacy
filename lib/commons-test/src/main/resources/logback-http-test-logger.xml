@@ -9,7 +9,7 @@
     <appender name="HTTP-SIFT" class="ch.qos.logback.classic.sift.SiftingAppender">
         <discriminator class="org.bitbucket.pshirshov.izumitk.test.GlobalDiscriminator"/>
         <sift>
-            <appender name="FILE-${userid}" class="ch.qos.logback.core.FileAppender">
+            <appender name="FILE-${test-name}" class="ch.qos.logback.core.FileAppender">
                 <file>target/http/${test-name}.txt</file>
 
                 <layout class="ch.qos.logback.classic.PatternLayout">
@@ -25,7 +25,7 @@
 
     <logger name="org.bitbucket.pshirshov.izumitk" level="INFO" />
 
-    <logger name="org.bitbucket.pshirshov.izumitk.http.LogingHttpDebugLogHandler" level="INFO">
+    <logger name="org.bitbucket.pshirshov.izumitk.akka.http.util.logging.LoggingHttpDebugLogHandler" level="INFO">
         <appender-ref ref="HTTP-SIFT" />
     </logger>
 </included>
