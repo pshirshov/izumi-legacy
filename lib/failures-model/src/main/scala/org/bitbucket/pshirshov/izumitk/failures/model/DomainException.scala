@@ -5,8 +5,8 @@ package org.bitbucket.pshirshov.izumitk.failures.model
   * but doesn't mean that something bad happened. For example, it may be used to signal something
   * like HTTP NOT FOUND event.
   */
-trait ControlException
-  extends ServiceFailure {
-  this: RuntimeException =>
+trait DomainException
+  extends RuntimeException
+  with ServiceFailure {
 
 }

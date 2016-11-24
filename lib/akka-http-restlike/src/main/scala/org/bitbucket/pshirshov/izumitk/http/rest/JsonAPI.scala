@@ -8,6 +8,7 @@ import akka.http.scaladsl.unmarshalling.FromEntityUnmarshaller
 import com.fasterxml.jackson.databind.JsonNode
 import com.typesafe.scalalogging.StrictLogging
 import org.bitbucket.pshirshov.izumitk.akka.http.util.MetricDirectives
+import org.bitbucket.pshirshov.izumitk.akka.http.util.serialization.SerializationProtocol
 import org.bitbucket.pshirshov.izumitk.failures.model.{ServiceException, ServiceFailure}
 import org.bitbucket.pshirshov.izumitk.json.JacksonMapper
 import org.scalactic._
