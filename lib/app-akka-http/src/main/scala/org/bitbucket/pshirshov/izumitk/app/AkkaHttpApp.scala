@@ -14,7 +14,6 @@ import org.bitbucket.pshirshov.izumitk.akka.util.AkkaUtils
 import scala.concurrent.{ExecutionContext, Future}
 
 
-// TODO: move into izumi
 @Singleton
 final class AkkaHttpApp @Inject()
 (
