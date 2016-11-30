@@ -7,7 +7,7 @@ import scala.util.Try
 
 /**
   */
-object OrUtils {
+package object maybe {
   def from[G](theTry: Try[G]): Maybe[G] = {
     from(theTry, "Call unexpectedly failed")
   }
