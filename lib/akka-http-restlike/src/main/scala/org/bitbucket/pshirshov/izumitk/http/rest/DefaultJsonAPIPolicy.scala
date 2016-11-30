@@ -64,7 +64,7 @@ class DefaultJsonAPIPolicy @Inject()
     }
   }
 
-  def formatResponse[R: Manifest](transformedOutput: Or[Response, Every[ServiceFailure]]): (JsonNode, collection.immutable.Seq[HttpHeader]) = {
+  def formatResponse[R: Manifest](transformedOutput: Maybe[Response]): (JsonNode, collection.immutable.Seq[HttpHeader]) = {
     val factory = JsonNodeFactory.instance
     val result = factory.objectNode()
     val meta = factory.objectNode()

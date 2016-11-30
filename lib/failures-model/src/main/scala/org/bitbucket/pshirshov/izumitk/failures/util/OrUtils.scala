@@ -1,6 +1,6 @@
 package org.bitbucket.pshirshov.izumitk.failures.util
 
-import org.bitbucket.pshirshov.izumitk.failures.model.{ServiceException, ServiceFailure}
+import org.bitbucket.pshirshov.izumitk.failures.model.{Maybe, ServiceException, ServiceFailure}
 import org.scalactic.{Every, One, Or}
 
 import scala.util.Try
@@ -8,20 +8,20 @@ import scala.util.Try
 /**
   */
 object OrUtils {
-  def from[G](theTry: Try[G]): Or[G, Every[ServiceFailure]] = {
+  def from[G](theTry: Try[G]): Maybe[G] = {
     from(theTry, "Call unexpectedly failed")
   }
 
-  def from[G](theTry: Try[G], failureMessage: String): Or[G, Every[ServiceFailure]] = {
+  def from[G](theTry: Try[G], failureMessage: String): Maybe[G] = {
     from(theTry, mapException(Some(failureMessage)))
   }
 
-  def from[G](theTry: Try[G], mapper: PartialFunction[Throwable,Every[ServiceFailure]]): Or[G, Every[ServiceFailure]] = {
+  def from[G](theTry: Try[G], mapper: PartialFunction[Throwable,Every[ServiceFailure]]): Maybe[G] = {
     Or.from(theTry)
       .badMap(mapper)
   }
 
-  def mapException(failureMessage: Option[String] = None): PartialFunction[Throwable,Every[ServiceFailure]] = {
+  def mapException(failureMessage: Option[String] = None): PartialFunction[Throwable, Every[ServiceFailure]] = {
     case s: ServiceFailure =>
       One(s.toException)
     case t: Throwable =>
