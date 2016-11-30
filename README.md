@@ -8,3 +8,11 @@ The most convenient workflow:
 2. `git checkout HEAD~1`
 3. `sbt -Dpb.strict-version=false clean publish sonatypeRelease`
 4. `git checkout master`
+
+
+Convenience oneliner:
+
+    sbt -Dpb.config=perfect-build.json.SAMPLE updateBugfix && \
+      git push --mirror && git checkout HEAD~1 && \
+      sbt -Dpb.strict-version=false clean publish sonatypeRelease && \
+      git checkout master
