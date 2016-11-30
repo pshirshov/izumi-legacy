@@ -16,9 +16,23 @@ package object maybe {
     from(theTry, mapException(Some(failureMessage)))
   }
 
-  def from[G](theTry: Try[G], mapper: PartialFunction[Throwable,Every[ServiceFailure]]): Maybe[G] = {
+  def from[G](theTry: Try[G], mapper: PartialFunction[Throwable, Every[ServiceFailure]]): Maybe[G] = {
     Or.from(theTry)
       .badMap(mapper)
+  }
+
+  def mapTry[G](theTry: Try[Maybe[G]]): Maybe[G] = {
+    mapTry(theTry, "Call unexpectedly failed")
+  }
+
+  def mapTry[G](theTry: Try[Maybe[G]], failureMessage: String): Maybe[G] = {
+    mapTry(theTry, maybe.mapException(Some(failureMessage)))
+  }
+
+  def mapTry[G](theTry: Try[Maybe[G]], mapper: PartialFunction[Throwable, Every[ServiceFailure]]): Maybe[G] = {
+    Or.from(theTry)
+      .badMap(mapper)
+      .flatMap(v => v)
   }
 
   def mapException(failureMessage: Option[String] = None): PartialFunction[Throwable, Every[ServiceFailure]] = {
