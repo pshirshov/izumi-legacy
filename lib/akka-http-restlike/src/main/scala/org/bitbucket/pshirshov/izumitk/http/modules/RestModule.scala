@@ -6,6 +6,7 @@ import org.bitbucket.pshirshov.izumitk.HealthChecker
 import org.bitbucket.pshirshov.izumitk.akka.http.modules.AbstractRestModule
 import org.bitbucket.pshirshov.izumitk.akka.http.util.serialization.{JacksonProtocol, SerializationProtocol}
 import org.bitbucket.pshirshov.izumitk.akka.http.util._
+import org.bitbucket.pshirshov.izumitk.akka.http.util.cors.{CORS, DefaultCORS}
 import org.bitbucket.pshirshov.izumitk.http.rest._
 
 

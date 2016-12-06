@@ -1,6 +1,6 @@
 package org.bitbucket.pshirshov.izumitk.test
 
-import java.net.{InetSocketAddress, Socket, URL}
+import java.net.{InetSocketAddress, Socket, URI, URL}
 
 import com.google.inject.Injector
 import com.typesafe.scalalogging.StrictLogging
@@ -23,10 +23,20 @@ trait ServiceAvailabilityChecker {
   this: TestResourceAvailabilityChecker =>
 
   def verifyServiceAvailability(uri: String, timeout: Int): Unit = {
-    verifyServiceAvailability(new URL(uri), timeout)
+    verifyServiceAvailability(new URI(uri), timeout)
   }
 
   def verifyServiceAvailability(uri: URL, timeout: Int): Unit = {
+    val port = uri.getPort match {
+      case -1 =>
+        uri.getDefaultPort
+      case v =>
+        v
+    }
+    verifyServiceAvailability(uri.getHost, port, timeout)
+  }
+
+  def verifyServiceAvailability(uri: URI, timeout: Int): Unit = {
     verifyServiceAvailability(uri.getHost, uri.getPort, timeout)
   }
 

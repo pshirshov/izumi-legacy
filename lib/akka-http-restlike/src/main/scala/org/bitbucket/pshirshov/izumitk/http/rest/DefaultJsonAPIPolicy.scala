@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.node.{IntNode, JsonNodeFactory, ObjectNode
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import com.typesafe.scalalogging.StrictLogging
-import org.bitbucket.pshirshov.izumitk.akka.http.util.CORS
+import org.bitbucket.pshirshov.izumitk.akka.http.util.cors.CORS
 import org.bitbucket.pshirshov.izumitk.akka.http.util.serialization.SerializationProtocol
 import org.bitbucket.pshirshov.izumitk.failures.model._
 import org.bitbucket.pshirshov.izumitk.failures.services.{FailureRecord, FailureRepository}
