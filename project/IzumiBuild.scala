@@ -25,7 +25,7 @@ object IzumiBuild extends PerfectBuild {
     )
     , mkProject(
       base = file("lib/commons-cdi"),
-      dependencies = Seq("commons-test", "commons-formats", "commons-config")
+      dependencies = Seq[sbt.ClasspathDep[sbt.ProjectReference]]("commons-test", "commons-formats", allProjects("commons-config") % "compile->compile;test->compile,test")
     )
     // generic libraries
     , mkProject(
