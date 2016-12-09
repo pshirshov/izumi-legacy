@@ -13,8 +13,12 @@ import org.slf4j.MDC
 
 import scala.util.{Failure, Success, Try}
 
-/**
-  */
+
+
+
+
+
+
 @ExposedTestScope
 trait InjectorTestBase extends IzumiTestBase with StrictLogging {
   // just to avoid implicit conversions in inherited classes

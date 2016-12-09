@@ -7,6 +7,7 @@ import com.google.inject.Module
 import com.google.inject.name.Names
 import com.google.inject.util.Modules
 import org.bitbucket.pshirshov.izumitk.TestConfig
+import org.bitbucket.pshirshov.izumitk.TestConfigExtensions._
 import org.bitbucket.pshirshov.izumitk.app.modules.ConfigExposingModule
 import org.bitbucket.pshirshov.izumitk.json.modules.JacksonModule
 import org.bitbucket.pshirshov.izumitk.test.InjectorTestBase

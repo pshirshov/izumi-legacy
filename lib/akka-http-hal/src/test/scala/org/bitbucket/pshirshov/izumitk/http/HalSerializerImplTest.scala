@@ -16,7 +16,7 @@ import org.bitbucket.pshirshov.izumitk.test.InjectorTestBase
 import com.theoryinpractise.halbuilder.api.RepresentationFactory
 import org.bitbucket.pshirshov.izumitk.http.HalTestPolymorphics.SimpleTextPayload
 import org.bitbucket.pshirshov.izumitk.http.hal.modules.HalModule
-
+import org.bitbucket.pshirshov.izumitk.TestConfigExtensions._
 
 @JsonTypeInfo(
   use = JsonTypeInfo.Id.NAME,

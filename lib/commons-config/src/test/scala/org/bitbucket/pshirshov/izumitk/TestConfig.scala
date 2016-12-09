@@ -11,10 +11,10 @@ object TestConfig {
 
   case class TestConfigSection(resourceName: String, alias: String)
 
-  implicit def toConfigSection(resourceName: String): TestConfigSection = TestConfigSection(resourceName, resourceName)
-
   def references(sections: TestConfigSection*): Config = {
     val out = sections.map(reference).toList match {
+      case Nil =>
+        ConfigFactory.empty()
       case head :: Nil =>
         head
       case configs@head :: tail =>
