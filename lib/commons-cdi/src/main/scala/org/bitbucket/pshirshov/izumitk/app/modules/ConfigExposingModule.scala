@@ -6,21 +6,24 @@ import com.typesafe.config.{Config, ConfigList, ConfigObject, ConfigValueType}
 import com.typesafe.scalalogging.StrictLogging
 import net.codingwell.scalaguice.ScalaModule
 
-case class ConfigBinding(value: Any, clazz: Class[Any])
+import scala.util.{Success, Try}
+import scala.language.existentials
+
+case class ConfigBinding(value: Any, clazz: Class[_])
 
 final class ConfigExposingModule(val config: Config) extends ScalaModule with StrictLogging {
   override def configure(): Unit = {
     flatten(config.root())
       .foreach {
-      case (k, v) =>
-        val name = s"@$k"
-        if (v != null) {
-          logger.debug(s"Binding $name:${v.clazz} => ${v.value}")
-          bind(v.clazz)
-            .annotatedWith(Names.named(name))
-            .toInstance(v.value)
-        }
-    }
+        case (k, v) =>
+          val name = s"@$k"
+          if (v != null) {
+            logger.debug(s"Binding $name:${v.clazz} => ${v.value}")
+            bind(v.clazz.asInstanceOf[Class[Any]])
+              .annotatedWith(Names.named(name))
+              .toInstance(v.value)
+          }
+      }
   }
 
   @Provides
@@ -39,18 +42,29 @@ final class ConfigExposingModule(val config: Config) extends ScalaModule with St
         val uvalue = value.unwrapped()
         value.valueType() match {
           case ConfigValueType.OBJECT =>
-            ret.put(s"$key.*", ConfigBinding(value.asInstanceOf[ConfigObject].toConfig, classOf[Config].asInstanceOf[Class[Any]]))
-            flatten(value.asInstanceOf[ConfigObject]).foreach {
+            val subConfig = value.asInstanceOf[ConfigObject]
+            ret.put(s"$key.*", ConfigBinding(subConfig.toConfig, classOf[Config]))
+
+            // Config sections with numeric keys are lists as well as objects
+            Try(section.toConfig.getList(key)) match {
+              case Success(lst) =>
+                ret.put(s"$key[]", ConfigBinding(lst.asInstanceOf[ConfigList], classOf[ConfigList]))
+              case _ =>
+            }
+
+            flatten(subConfig).foreach {
               case (subkey, subvalue) =>
                 ret.put(s"$key.$subkey", subvalue)
             }
           case ConfigValueType.LIST =>
-            ret.put(s"$key[]", ConfigBinding(value.asInstanceOf[ConfigList], classOf[ConfigList].asInstanceOf[Class[Any]]))
+            ret.put(s"$key[]", ConfigBinding(value.asInstanceOf[ConfigList], classOf[ConfigList]))
           case ConfigValueType.NULL =>
           case _ =>
-            ret.put(s"$key", ConfigBinding(uvalue, uvalue.getClass.asInstanceOf[Class[Any]]))
+            ret.put(s"$key", ConfigBinding(uvalue, uvalue.getClass))
         }
     }
     ret.toMap
   }
+
+
 }
