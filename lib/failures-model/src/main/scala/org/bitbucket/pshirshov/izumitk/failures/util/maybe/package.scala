@@ -8,28 +8,27 @@ import scala.util.Try
 /**
   */
 package object maybe {
-  def from[G](theTry: Try[G]): Maybe[G] = {
-    from(theTry, "Call unexpectedly failed")
+  def from[G](theTry: => Try[G]): Maybe[G] = {
+    from("Call unexpectedly failed")(theTry)
   }
 
-  def from[G](theTry: Try[G], failureMessage: String): Maybe[G] = {
-    from(theTry, mapException(Some(failureMessage)))
+  def from[G](failureMessage: String)(theTry: => Try[G]): Maybe[G] = {
+    from(mapException(Some(failureMessage)))(theTry)
   }
 
-  def from[G](theTry: Try[G], mapper: PartialFunction[Throwable, Every[ServiceFailure]]): Maybe[G] = {
-    Or.from(theTry)
-      .badMap(mapper)
+  def from[G](mapper: PartialFunction[Throwable, Every[ServiceFailure]])(theTry: => Try[G]): Maybe[G] = {
+    Or.from(theTry).badMap(mapper)
   }
 
-  def mapTry[G](theTry: Try[Maybe[G]]): Maybe[G] = {
-    mapTry(theTry, "Call unexpectedly failed")
+  def flatten[G](theTry: => Try[Maybe[G]]): Maybe[G] = {
+    flatten("Call unexpectedly failed")(theTry)
   }
 
-  def mapTry[G](theTry: Try[Maybe[G]], failureMessage: String): Maybe[G] = {
-    mapTry(theTry, maybe.mapException(Some(failureMessage)))
+  def flatten[G](failureMessage: String)(theTry: => Try[Maybe[G]]): Maybe[G] = {
+    flatten(maybe.mapException(Some(failureMessage)))(theTry)
   }
 
-  def mapTry[G](theTry: Try[Maybe[G]], mapper: PartialFunction[Throwable, Every[ServiceFailure]]): Maybe[G] = {
+  def flatten[G](mapper: PartialFunction[Throwable, Every[ServiceFailure]])(theTry: => Try[Maybe[G]]): Maybe[G] = {
     Or.from(theTry)
       .badMap(mapper)
       .flatMap(v => v)
@@ -46,5 +45,11 @@ package object maybe {
         case None =>
           One(new ServiceException(t.getMessage, Some(t)))
       }
+  }
+
+  implicit class MaybeExtensions[T](theTry: Try[T]) {
+    def maybe: Maybe[T] = from(theTry)
+    def maybe(failureMessage: String): Maybe[T] = from(failureMessage)(theTry)
+    def maybe(mapper: PartialFunction[Throwable, Every[ServiceFailure]]): Maybe[T] = from(mapper)(theTry)
   }
 }
