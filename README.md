@@ -3,7 +3,7 @@ A simple Scala toolkit for fast evolving advanced applications.
 Publishing
 ----------
 
-The most convenient workflow:
+The workflow:
 
 1. `sbt updateBugfix`
 2. `git checkout HEAD~1`
