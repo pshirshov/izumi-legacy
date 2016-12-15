@@ -9,7 +9,6 @@ The most convenient workflow:
 3. `sbt -Dpb.strict-version=false clean publish sonatypeRelease`
 4. `git checkout master`
 
-
 Convenience oneliner:
 
     sbt -Dpb.config=perfect-build.json.SAMPLE updateBugfix && \
