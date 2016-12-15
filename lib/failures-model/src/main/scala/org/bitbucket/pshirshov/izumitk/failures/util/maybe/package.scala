@@ -1,13 +1,15 @@
 package org.bitbucket.pshirshov.izumitk.failures.util
 
 import org.bitbucket.pshirshov.izumitk.failures.model.{Maybe, ServiceException, ServiceFailure}
-import org.scalactic.{Every, One, Or}
+import org.scalactic.{Bad, Every, One, Or}
 
 import scala.util.Try
 
 /**
   */
 package object maybe {
+  def apply[T](r: => T): Maybe[T] = from(Try(r))
+
   def from[G](theTry: => Try[G]): Maybe[G] = {
     from("Call unexpectedly failed")(theTry)
   }
@@ -47,9 +49,26 @@ package object maybe {
       }
   }
 
-  implicit class MaybeExtensions[T](theTry: Try[T]) {
+  implicit class TryExtensions[T](theTry: Try[T]) {
     def maybe: Maybe[T] = from(theTry)
     def maybe(failureMessage: String): Maybe[T] = from(failureMessage)(theTry)
     def maybe(mapper: PartialFunction[Throwable, Every[ServiceFailure]]): Maybe[T] = from(mapper)(theTry)
+  }
+
+//  implicit class TryMaybeExtensions[T](theTry: Try[Maybe[T]]) {
+//    def flatten: Maybe[T] = maybe.flatten(theTry)
+//    def flatten(failureMessage: String): Maybe[T] = maybe.flatten(failureMessage)(theTry)
+//    def flatten(mapper: PartialFunction[Throwable, Every[ServiceFailure]]): Maybe[T] = maybe.flatten(mapper)(theTry)
+//  }
+
+  implicit class MaybeExtensions[T](theMaybe: Maybe[T]) {
+    def asExceptionsList: Seq[ServiceException] = {
+      theMaybe match {
+        case Bad(b) =>
+          b.map(_.toException).toSeq
+        case _ =>
+          Seq()
+      }
+    }
   }
 }
