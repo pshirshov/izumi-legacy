@@ -17,7 +17,6 @@ import org.bitbucket.pshirshov.izumitk.failures.services.{FailureRecord, Failure
 import org.bitbucket.pshirshov.izumitk.hal.HalResource
 import org.scalactic.{Bad, Every, Good}
 
-import scala.collection.immutable
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.implicitConversions
 import scala.reflect._
@@ -56,7 +55,7 @@ class DefaultHalApiPolicy @Inject()
 
         ctx.complete(HttpResponse(StatusCodes.OK
           , entity = HttpEntity(body).withContentType(halContentType)
-          , headers = immutable.Seq.empty[HttpHeader] ++ cors.corsHeaders
+          , headers = cors.corsHeaders.to[collection.immutable.Seq]
         ))
 
       } catch {
