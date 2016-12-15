@@ -9,6 +9,7 @@ import com.codahale.metrics.MetricRegistry
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import com.theoryinpractise.halbuilder.api.{Representation, RepresentationFactory}
+import org.bitbucket.pshirshov.izumitk.akka.http.util.cors.CORS
 import org.bitbucket.pshirshov.izumitk.akka.http.util.serialization.SerializationProtocol
 import org.bitbucket.pshirshov.izumitk.akka.http.util.{APIPolicy, MetricDirectives}
 import org.bitbucket.pshirshov.izumitk.failures.model.{CommonDomainExceptions, DomainException, ServiceException, ServiceFailure}
@@ -16,6 +17,7 @@ import org.bitbucket.pshirshov.izumitk.failures.services.{FailureRecord, Failure
 import org.bitbucket.pshirshov.izumitk.hal.HalResource
 import org.scalactic.{Bad, Every, Good}
 
+import scala.collection.immutable
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.implicitConversions
 import scala.reflect._
@@ -35,6 +37,7 @@ class DefaultHalApiPolicy @Inject()
   representationFactory: RepresentationFactory
   , serializer: HalSerializerImpl
   , failureRepository: FailureRepository
+  , cors: CORS
   , @Named("app.id") override protected val productId: String
   , override val protocol: SerializationProtocol
   , override protected val metrics: MetricRegistry
@@ -53,6 +56,7 @@ class DefaultHalApiPolicy @Inject()
 
         ctx.complete(HttpResponse(StatusCodes.OK
           , entity = HttpEntity(body).withContentType(halContentType)
+          , headers = immutable.Seq.empty[HttpHeader] ++ cors.corsHeaders
         ))
 
       } catch {
@@ -62,7 +66,7 @@ class DefaultHalApiPolicy @Inject()
           ctx.complete(HttpResponse(StatusCodes.Forbidden))
         case _: CommonDomainExceptions.IllegalRequestException =>
           ctx.complete(HttpResponse(StatusCodes.BadRequest))
-        case other =>
+        case other: Throwable =>
           completeFatalException(other, ctx, "handledInternal")
       }
   }
