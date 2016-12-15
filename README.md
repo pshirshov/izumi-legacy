@@ -1,6 +1,7 @@
 A simple Scala toolkit for fast evolving advanced applications.
 
-## Publishing
+Publishing
+----------
 
 The most convenient workflow:
 
