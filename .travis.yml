@@ -6,4 +6,5 @@ scala:
 script:
    - sbt ++$TRAVIS_SCALA_VERSION pb-uber
 
-
+jdk:
+- oraclejdk8
