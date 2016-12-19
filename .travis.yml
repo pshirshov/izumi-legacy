@@ -4,7 +4,7 @@ scala:
    - 2.11.8
 
 script:
-   - sbt -Dpb.config=perfect-build.json.travis ++$TRAVIS_SCALA_VERSION pb-uber
+   - sbt -Dpb.config=perfect-build.json.travis ++$TRAVIS_SCALA_VERSION clean test
 
 jdk:
 - oraclejdk8
