@@ -10,19 +10,22 @@ trait WithReusableResources {
                       , destructor: (R) => Unit = {_: R =>}
                       , handler: (R) => R = {r: R => r}
                     ): R = {
-    Option(ReusableHeavyTestResources.get[R](name)) match {
-      case Some(resource) =>
-        handler(resource)
+    ReusableHeavyTestResources.lock().synchronized {
+      Option(ReusableHeavyTestResources.get[R](name)) match {
+        case Some(resource) =>
+          handler(resource)
 
-      case None =>
-        val resource: R = constructor()
+        case None =>
+          val resource: R = constructor()
 
-        val wrapper = new ReusableTestResource[R] {
-          override def get(): R = resource
-          override def destroy(): Unit = destructor(resource)
-        }
+          val wrapper = new ReusableTestResource[R] {
+            override def get(): R = resource
 
-        ReusableHeavyTestResources.register(name, wrapper)
+            override def destroy(): Unit = destructor(resource)
+          }
+
+          ReusableHeavyTestResources.register(name, wrapper)
+      }
     }
   }
 }
