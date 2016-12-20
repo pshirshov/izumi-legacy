@@ -34,7 +34,7 @@ object Dependencies {
     //private val akka_http_xml = "com.typesafe.akka" %% "akka-http-xml-experimental" % akka_version
     val akka = Seq(akka_actor, akka_slf4j, akka_http_dsl)
 
-    private val cassandra_core = "com.datastax.cassandra" % "cassandra-driver-core" % "3.1.0"
+    private val cassandra_core = "com.datastax.cassandra" % "cassandra-driver-core" % "3.1.2"
     val cassandra: Seq[ModuleID] = Seq(cassandra_core).map(_.exclude("com.google.guava", "guava"))
 
     val hikaricp: ModuleID = "com.zaxxer" % "HikariCP" % "2.5.1"
