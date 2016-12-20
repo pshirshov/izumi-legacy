@@ -25,6 +25,9 @@ public final class ReusableHeavyTestResources {
     private ReusableHeavyTestResources() {
     }
 
+    public static Object lock() {
+        return RESOURCES;
+    }
 
     public static void removeAll() {
         synchronized (RESOURCES) {
