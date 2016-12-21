@@ -60,6 +60,8 @@ class HalSerializerImpl @Inject()
         val name = acc.name.decodedName.toString
         val value = instanceMirror.reflectMethod(acc).apply()
         value match {
+          case null =>
+            repr.withProperty(name, value)
           case _: Number =>
             repr.withProperty(name, value)
           case _: String =>
