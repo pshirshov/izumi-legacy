@@ -10,11 +10,13 @@ import akka.http.scaladsl.server.directives.{DebuggingDirectives, LogEntry}
 import akka.stream.Materializer
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
+import com.typesafe.scalalogging.StrictLogging
 
 import scala.collection.immutable.Seq
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{Await, ExecutionContext}
 import scala.language.{postfixOps, reflectiveCalls}
+import scala.util.{Failure, Success, Try}
 import scala.util.control.NonFatal
 
 // we need that because default logger is common for all the akka, not specific for http
@@ -34,7 +36,8 @@ class HttpDebug @Inject()
   , protected val httpDebugLogHandler: HttpDebugLogHandler
   , protected implicit val materializer: Materializer
   , protected implicit val executionContext: ExecutionContext
-) extends DebuggingDirectives {
+) extends DebuggingDirectives
+  with StrictLogging {
 
   protected val loggingLevel: Logging.LogLevel = Logging.InfoLevel
   protected val debugMarker: String = "HTTP-API"
@@ -68,6 +71,25 @@ class HttpDebug @Inject()
       toStrict {
         route
       }
+    }
+  }
+
+  def debug(marker: String): Directive0 = {
+    import Directives._
+
+    mapInnerRoute {
+      route: Route =>
+        ctx: RequestContext =>
+          logger.debug(s"Route $marker: unmatched path is ${ctx.unmatchedPath}, request is ${formatRequest(ctx.request)}")
+
+          Try(route(ctx)) match {
+            case Success(s) =>
+              logger.debug(s"Route $marker: success: $s")
+              s
+            case Failure(f) =>
+              logger.debug(s"Route $marker: route failed", f)
+              throw f
+          }
     }
   }
 
