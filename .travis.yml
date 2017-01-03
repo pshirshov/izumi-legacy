@@ -8,14 +8,8 @@ jdk:
 - oraclejdk8
 before_install:
 - openssl aes-256-cbc -K $encrypted_9065a2ed1687_key -iv $encrypted_9065a2ed1687_iv
-  -in travis.sbt.enc -out travis.sbt -d
-- openssl aes-256-cbc -K $encrypted_9065a2ed1687_key -iv $encrypted_9065a2ed1687_iv
-  -in travis.secring.gpg.enc -out travis.secring.gpg -d
-- openssl aes-256-cbc -K $encrypted_9065a2ed1687_key -iv $encrypted_9065a2ed1687_iv
-  -in travis.pubring.gpg.enc -out travis.pubring.gpg -d
-- openssl aes-256-cbc -K $encrypted_9065a2ed1687_key -iv $encrypted_9065a2ed1687_iv
-  -in credentials.sonatype-nexus.properties.enc -out credentials.sonatype-nexus.properties
-  -d
+  -in secrets.tar.enc -out secrets.tar -d
+- tar xvf secrets.tar
 env:
   global:
   - secure: f5oCeh/YZ66KHw0eGyqf8gZi6jfmERm+rLjd2GHxXDyvyLqGBzUsbhZ4j3Q9jFLr15M4uhdEWZZksw9EONlf496SHY+9I4CK0OcEIvRptSSMflNtpCFiSPjxF7dhhcWZVZKQe+EA5AQCoW2/Io4Dz05wdRswPpkyBfC0BQcV35cWp8AaobNgennwBwy6SdeVQEWYb17SiJ9LgH7kC/CljF67jQOASDqU/77TLjSV+n+JT9flS10n0Lyd3yIqUfmhTDJx7mOe/wS0w/YBKcV09Fmg4XPv+jt7KTM7s3EKTwMEH/602WDYVdR2mePSA4IXIU5ZyBnViuEKzVR65XLlYD+MI24D9t7RHr6idFxdm05rOtGuYvskdtSxRQgn2DQGqNbQNwmWCAgEIehlcl22oCCr4dGydUNaZuwQ7s6TUBFbpeYz3ribycN8tK9n7DAp8+o6ilNeCSd7Uz56hBSi/EwHR1W3eWiuXYJa9MJ+TkZFhbBPaTtWxQVL7NQzNfr+IWdTPBZpqZhRbxrlA2cIywGSvR/cLNOvWvuX/yXxSCK5pyx1TE6PZJUfvF9/JDWwXqSqUR4aVdJWRKbPlQwJkrX3ORIO8dOnuKnK0A5ciC7k7+sDx77zITSw3X5GUCe8oOtQNOjxfJ1bHsRL3pHxCv5jHkgjrmBlUrXHMzhrvko=

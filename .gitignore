@@ -2,6 +2,7 @@ perfect-build.json
 credentials.*.properties
 failures*.zip
 travis.*
+secrets.tar
 
 **/.idea/*
 !**/.idea/runConfigurations
