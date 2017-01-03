@@ -2,10 +2,22 @@ language: scala
 scala:
 - 2.11.8
 script:
-- sbt -Dpb.config=perfect-build.json.travis ++$TRAVIS_SCALA_VERSION clean test publish sonatypeRelease
+- sbt -Dpb.config=perfect-build.json.travis ++$TRAVIS_SCALA_VERSION clean test publish
+  sonatypeRelease
 jdk:
 - oraclejdk8
 before_install:
 - openssl aes-256-cbc -K $encrypted_9065a2ed1687_key -iv $encrypted_9065a2ed1687_iv
+  -in travis.pubring.gpg.enc -out travis.pubring.gpg -d
+- openssl aes-256-cbc -K $encrypted_9065a2ed1687_key -iv $encrypted_9065a2ed1687_iv
+  -in travis.secring.gpg.enc -out travis.secring.gpg -d
+- openssl aes-256-cbc -K $encrypted_9065a2ed1687_key -iv $encrypted_9065a2ed1687_iv
+  -in travis.sbt.enc -out travis.sbt -d
+- openssl aes-256-cbc -K $encrypted_9065a2ed1687_key -iv $encrypted_9065a2ed1687_iv
   -in credentials.sonatype-nexus.properties.enc -out credentials.sonatype-nexus.properties
   -d
+env:
+  global:
+  - secure: f5oCeh/YZ66KHw0eGyqf8gZi6jfmERm+rLjd2GHxXDyvyLqGBzUsbhZ4j3Q9jFLr15M4uhdEWZZksw9EONlf496SHY+9I4CK0OcEIvRptSSMflNtpCFiSPjxF7dhhcWZVZKQe+EA5AQCoW2/Io4Dz05wdRswPpkyBfC0BQcV35cWp8AaobNgennwBwy6SdeVQEWYb17SiJ9LgH7kC/CljF67jQOASDqU/77TLjSV+n+JT9flS10n0Lyd3yIqUfmhTDJx7mOe/wS0w/YBKcV09Fmg4XPv+jt7KTM7s3EKTwMEH/602WDYVdR2mePSA4IXIU5ZyBnViuEKzVR65XLlYD+MI24D9t7RHr6idFxdm05rOtGuYvskdtSxRQgn2DQGqNbQNwmWCAgEIehlcl22oCCr4dGydUNaZuwQ7s6TUBFbpeYz3ribycN8tK9n7DAp8+o6ilNeCSd7Uz56hBSi/EwHR1W3eWiuXYJa9MJ+TkZFhbBPaTtWxQVL7NQzNfr+IWdTPBZpqZhRbxrlA2cIywGSvR/cLNOvWvuX/yXxSCK5pyx1TE6PZJUfvF9/JDWwXqSqUR4aVdJWRKbPlQwJkrX3ORIO8dOnuKnK0A5ciC7k7+sDx77zITSw3X5GUCe8oOtQNOjxfJ1bHsRL3pHxCv5jHkgjrmBlUrXHMzhrvko=
+  - secure: UVpZbXsiXzGJCsdQFw4tWfh13I3qjtbNGzw+bBsQ86OCI008HvvoFh7LoVwpC/7JVoQHWHcc2s8qVQbMAlNyVai4ilElOuQ6//gbzzKuOxaZMPTK8VHqs4nFa+38aacUMksg/64mzIXUgoP9hOL7UzrbCO99LVFXGYYCozVeZZIsefmYC65/MYAxvEOtvs1hzWTxrTeGxNdNLIFAjIvcwfnlUJkSPtOxcY9Ux2otvN6QqBAHO2Wkr9iyRHWlJqSo45eusH6ZyxMq74Ls2h917OXvU5Tk4kvpknrQpxorl69zZwJflXiSnlGXPoSXiRl5s72DIl3j/+C5Cz7xx6Snf92skJuVxSYLWRep/fbDBO1RubTs7AyyUGeRp2G9IfKdWabOhEQ1ZzIjFxKgCjCXwAGT8n+tU4f0jL7uj+VitRhi7rEVKIOM8gUife5a73ZMU/CZ3dfgNh5mHZ+pjfUmbBErYD4pywwJqwTiZ5oHeq65pPYuqQ+Z9rM9FJeA++FtGnzH2zNbRi3YGUIJMmxgRSEZtjLdjb2dnPSdVIE0P+Ora+3tKrdtjgkKikkwEtMMJvFTuhLPQTZ3cOBE1JXzA4ZrWTsCh8qpkH1tW/pO4MyA0alVvkrthFJALjct13lmngDwK+/whofuQJKxC9zYChCgTUSUcx14O4OwAJARGOU=
+  - secure: fPuPsZh5sTCXSGG4TgcbJ9TF6gjSGNlTUZFyfYo1wmuEx8oNpIk6GzguDwuVmw6H72RHOuh0CPZW2Y6hV9A9XqLdwqp8FQ6XGoxhY1rArdeXdt3sYZabXlSfERyh3fAP9m7hj0VgKDDu9ufJqKRfOckhK8j3zkW4kzcmAp43bRWsTEDsEPOITr3YKaAOFjVqmAYFgjnOPzsXi8e0TPg43/0+2eoKrHMDyov4/W0+j9k50e7+EBreBbFKJWpXZomRvoRyB6eP/aI6DM2gLmpWAKyZIYWbOlrakN/5sApb4OrFJFB+hAZt4WtSeRwx6lgqJ+g0ukxPeQLjU+VEkp2F5HRzk+wjK0QQWIj9lrB91Daw7rNbvzg3BogIIBLNixt3H1f/IpboIEL/Vivpy5gO9qKeB2VG1BxQv8vwBOiu5cNkztcPo+e15GKHF02jah5pxendpEo3Z3AfQNKb1bLSgs1yKCFrOnA3vp2OrDo4rQddiWcC/CelQ84oIVDKEJmu0d9alQYwNgXU9/1XtL5PljIgbDHsAMRPGYZMwXF/NWbN+C+YRryqCCZzn0fB5JFujJuTnf/tkIETKSbDJZSMA74UzxbB3kN7FpFnoR8O0HkKWFTD3sbJjuZ/bLUOMY4HxmXQPeDNJpYqiEjrJiTla/63d/xg4EmEeL3YiktQCr0=
