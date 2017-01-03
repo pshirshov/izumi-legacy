@@ -15,8 +15,8 @@ import org.bitbucket.pshirshov.izumitk.akka.http.util.serialization.Serializatio
 import org.bitbucket.pshirshov.izumitk.failures.model._
 import org.bitbucket.pshirshov.izumitk.failures.services.{FailureRecord, FailureRepository}
 import org.bitbucket.pshirshov.izumitk.json.JacksonMapper
-import org.bitbucket.pshirshov.izumitk.util.TimeUtils
-import org.scalactic.{Bad, Every, Good, Or}
+import org.bitbucket.pshirshov.izumitk.util.{ExceptionUtils, TimeUtils}
+import org.scalactic.{Bad, Every, Good}
 
 import scala.util.control.NonFatal
 
@@ -27,6 +27,7 @@ class DefaultJsonAPIPolicy @Inject()
   failureRepository: FailureRepository
   , override val protocol: SerializationProtocol
   , protected val metrics: MetricRegistry
+  , @Named("@http.debug") protected val isDebugMode: Boolean
   , @Named("standardMapper") protected val exceptionMapper: JacksonMapper
   , @Named("app.id") protected val productId: String
   , cors: CORS
@@ -147,6 +148,10 @@ class DefaultJsonAPIPolicy @Inject()
     t match {
       case throwable: Throwable =>
         failure.set("message", new TextNode(throwable.getMessage))
+
+        if (isDebugMode) {
+          failure.set("stacktrace", new TextNode(ExceptionUtils.format(throwable)))
+        }
       case s: ServiceFailure =>
         failure.set("message", new TextNode(s.message))
       case _ =>
