@@ -15,6 +15,7 @@ import org.bitbucket.pshirshov.izumitk.akka.http.util.{APIPolicy, MetricDirectiv
 import org.bitbucket.pshirshov.izumitk.failures.model.{CommonDomainExceptions, DomainException, ServiceException, ServiceFailure}
 import org.bitbucket.pshirshov.izumitk.failures.services.{FailureRecord, FailureRepository}
 import org.bitbucket.pshirshov.izumitk.hal.HalResource
+import org.bitbucket.pshirshov.izumitk.util.ExceptionUtils
 import org.scalactic.{Bad, Every, Good}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -28,7 +29,12 @@ trait HalApiPolicy extends APIPolicy {
 }
 
 @HalResource
-case class HalFailure(failureId: String, failureType: String, failureMessage: String)
+case class HalFailure(
+                       failureId: String
+                       , failureType: String
+                       , failureMessage: String
+                       , stacktrace: Option[String]
+                     )
 
 @Singleton
 class DefaultHalApiPolicy @Inject()
@@ -39,6 +45,7 @@ class DefaultHalApiPolicy @Inject()
   , cors: CORS
   , @Named("app.id") override protected val productId: String
   , override val protocol: SerializationProtocol
+  , @Named("@http.debug") protected val isDebugMode: Boolean
   , override protected val metrics: MetricRegistry
   , override protected implicit val executionContext: ExecutionContext
 ) extends HalApiPolicy
@@ -143,10 +150,23 @@ class DefaultHalApiPolicy @Inject()
     logger.error(s"Critical failure while handling request:\n${ctx.request}")
 
     val failureId = failureRepository.recordFailure(FailureRecord(e))
-    val fdata = HalFailure(failureId, exceptionKind, e.getMessage)
+    val stacktrace = if (isDebugMode) {
+      Some(ExceptionUtils.format(e))
+    } else {
+      None
+    }
+
+    val fdata = HalFailure(
+      failureId
+      , exceptionKind
+      , e.getMessage
+      , stacktrace
+    )
 
     val baseUri = Href.make(Option(ctx.request))
-    val body = serializer.makeRepr(baseUri, fdata, _ => {}).toString(RepresentationFactory.HAL_JSON)
+    val body = serializer
+      .makeRepr(baseUri, fdata, _ => {})
+      .toString(RepresentationFactory.HAL_JSON)
 
     ctx.complete(HttpResponse(InternalServerError
       , entity = HttpEntity(body).withContentType(halContentType)

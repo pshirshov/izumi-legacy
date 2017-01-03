@@ -8,7 +8,7 @@ object ExceptionUtils {
     format(new RuntimeException())
   }
 
-  def format(t: Throwable): String = format(t, Set("org.bitbucket.pshirshov.izumitk"))
+  def format(t: Throwable): String = format(t, Set(""))
 
   def format(t: Throwable, packages: Set[String]): String = {
     val messages = causes(t).map {
