@@ -135,6 +135,8 @@ object Dependencies {
     val activemq: ModuleID = "org.apache.activemq" % "activemq-client" % "5.14.1"
 
     val halbuilder: ModuleID = "com.theoryinpractise" % "halbuilder-standard" % "4.0.1"
+
+    val bouncycastle: ModuleID = "org.bouncycastle" % "bcprov-jdk16" % "1.46"
   }
 
   object CT {
