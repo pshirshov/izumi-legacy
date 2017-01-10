@@ -34,18 +34,18 @@ final class JwtModule()
     values.map {
       case (name, key) =>
         val keyString = deref(key)
-        name -> decodeKey(keyString)
+        name -> decodeKey(name, keyString)
     }
   }
 
 
-  private def decodeKey(keyString: String) = {
+  private def decodeKey(name: String, keyString: String) = {
     val key = if (keyString.contains("BEGIN")) {
       PublicJsonWebKey.Factory.newPublicJwk(SecurityKeys.readPemKey(keyString))
     } else {
       PublicJsonWebKey.Factory.newPublicJwk(keyString)
     }
-    logger.info(s"""Loaded security key: ${SecurityKeys.keyInfo(key.getPublicKey)}:${Option(key.getPrivateKey).map(SecurityKeys.keyInfo)}
+    logger.info(s"""Loaded security key $name: ${SecurityKeys.keyInfo(key.getPublicKey)}:${Option(key.getPrivateKey).map(SecurityKeys.keyInfo)}
          |Public Key fingerprint=${SecurityKeys.keyFingerprint(key.getPublicKey)}
          |Orignal key:
          |$keyString""".stripMargin)
