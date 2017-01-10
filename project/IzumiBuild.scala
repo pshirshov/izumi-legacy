@@ -105,7 +105,10 @@ object IzumiBuild extends PerfectBuild {
 
   override lazy val baseSettings: Seq[_root_.sbt.Def.Setting[_]] = super.baseSettings ++ Seq(
     //unmanagedBase := baseDirectory.value / "jars"
-    resolvers += "restlet" at "http://maven.restlet.com/"
+    VersioningPlugin.Keys.releaseBranch := {
+      Some("release")
+    }
+    , resolvers += "restlet" at "http://maven.restlet.com/"
     , resolvers ++= config.publishing.map(_.resolver(isSnapshot.value)) // TODO: move to build
     //    , coverageOutputTeamCity := true
     //    , coverageOutputXML := true
