@@ -4,64 +4,80 @@ import akka.http.scaladsl.model.{HttpHeader, HttpRequest}
 
 // https://github.com/marcuslange/akka-http-hal/blob/master/src/main/scala/akka/http/rest/hal/Href.scala
 
-object Href {
-  def make(maybeRequest:Option[HttpRequest]):String = maybeRequest match {
-    case Some(req) => if (containsForwarded(req)) ForwardedBuilder(req).build else UrlBuilder(req).build
+
+class Href extends LinkExtractor {
+  def extract(maybeRequest: Option[HttpRequest]): String = maybeRequest match {
+    case Some(req) => if (containsForwarded(req)) {
+      new ForwardedBuilder(req).build()
+    } else {
+      new UrlBuilder(req).build()
+    }
     case None => ""
   }
 
-  private def containsForwarded(req:HttpRequest) = {
-    req.headers.exists(xf => xf.name.contains("X-Forwarded"))
+  private def containsForwarded(req: HttpRequest) = {
+    req.headers.exists(xf => xf.lowercaseName().contains("X-Forwarded".toLowerCase))
   }
 }
 
-case class ForwardedBuilder(req:HttpRequest) {
-  private val withProto:Option[String] = req.headers.collectFirst {
-    case h:HttpHeader if h.name == "X-Forwarded-Proto" => h.value
-  }
-
-  private val withHost:Option[String] = {
-    val xForwarded = req.headers.collectFirst { case h:HttpHeader if h.name == "X-Forwarded-Host" => h.value }
-    val hostHeader = if (req.uri.authority.host.address.length > 0) Some(req.uri.authority.host.address) else None
-    if (xForwarded.isInstanceOf[Some[String]]) xForwarded else hostHeader
-  }
-
-  private val withPort:Option[String] = req.headers.collectFirst {
-    case h:HttpHeader if h.name == "X-Forwarded-Port" => h.value
-  }
-
-  private val withPrefix:Option[String] = req.headers.collectFirst {
-    case h:HttpHeader if h.name == "X-Forwarded-Prefix" => h.value
-  }
-
-  def build: String = withProto match  {
-    case Some(xfp) => addHost(s"$xfp://")
-    case _ => withHost match {
-      case Some(h) => addHost("http://")
-      case _ => addHost("")
+trait BaseUriBuilder {
+  protected def defaultPort(scheme: String): Int = {
+    scheme match {
+      case "http" =>
+        80
+      case "https" =>
+        443
+      case _ =>
+        throw new IllegalArgumentException(s"Bad scheme: $scheme")
     }
   }
 
-  private def addHost(protocol:String) = withHost match {
-    case Some(xfh) => addPort(s"$protocol$xfh")
-    case _ => addPort(protocol)
+}
+
+class ForwardedBuilder(req: HttpRequest) extends BaseUriBuilder {
+  def build(): String = {
+    val b = new StringBuilder()
+    val proto = extract("X-Forwarded-Proto").getOrElse("http")
+    val port = extract("X-Forwarded-Port").getOrElse("80")
+    val prefix = extract("X-Forwarded-Prefix").getOrElse("")
+    val host = extractHost()
+    b.append(proto)
+    b.append("://")
+    b.append(extractHost().getOrElse("localhost"))
+    if (port != defaultPort(proto).toString) {
+      b.append(':')
+      b.append(port)
+    }
+    if (prefix.nonEmpty) {
+      b.append('/')
+      b.append(prefix)
+    }
+    b.toString()
   }
 
-  private def addPort(host:String) = withPort match {
-    case Some(xfp) => addPrefix(s"$host:$xfp")
-    case _ => addPrefix(host)
+  protected def extract(name: String): Option[String] = {
+    req.headers.collectFirst {
+      case h: HttpHeader if h.lowercaseName() == name.toLowerCase =>
+        h.value.toLowerCase
+    }
   }
 
-  private def addPrefix(port:String) = withPrefix match {
-    case Some(xfp) => s"$port/$xfp"
-    case _ => port
+  protected def extractHost(): Option[String] = {
+    val hostHeader = if (req.uri.authority.host.address.length > 0) Some(req.uri.authority.host.address) else None
+    extract("X-Forwarded-Host").orElse(hostHeader)
   }
 }
 
-case class UrlBuilder(req:HttpRequest) {
-  private val proto:String = req.uri.scheme
-  private val host:String = req.uri.authority.host.address
-  private val port:Int = req.uri.authority.port
+class UrlBuilder(req: HttpRequest) extends BaseUriBuilder {
+  def build(): String = {
+    val proto = req.uri.scheme
+    val host = req.uri.authority.host.address
+    val port = req.uri.authority.port
 
-  def build = s"$proto://$host:$port"
+    if (defaultPort(proto) == port) {
+      s"$proto://$host"
+    } else {
+      s"$proto://$host:$port"
+    }
+  }
 }
