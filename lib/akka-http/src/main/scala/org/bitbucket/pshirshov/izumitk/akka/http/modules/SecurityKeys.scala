@@ -3,11 +3,13 @@ package org.bitbucket.pshirshov.izumitk.akka.http.modules
 import java.io.{ByteArrayOutputStream, StringReader}
 import java.math.BigInteger
 import java.security.interfaces.RSAPublicKey
-import java.security.{Key, KeyPair, Security}
+import java.security.{Key, KeyPair, PublicKey, Security}
 
 import com.google.common.hash.{HashCode, Hashing}
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.openssl.PEMReader
+import org.bouncycastle.util.encoders.Base64
+
 
 object SecurityKeys {
   def initBouncyCastle(): Unit = {
@@ -20,7 +22,7 @@ object SecurityKeys {
     SecurityKeys.initBouncyCastle()
     val reader = new PEMReader(new StringReader(keystr))
     reader.readObject() match {
-      case k: Key  =>
+      case k: Key =>
         k
       case k: KeyPair =>
         k.getPrivate
@@ -30,12 +32,12 @@ object SecurityKeys {
 
   }
 
-  def keyFingerprint(key: Key): String = {
+  def publicKeyFingerprint(key: Key): String = {
     key match {
       case k: RSAPublicKey =>
         fingerprint(k)
-      case _ =>
-        "?"
+      case k =>
+        throw new IllegalArgumentException(s"Unsupported key: $k")
     }
   }
 
@@ -47,9 +49,20 @@ object SecurityKeys {
     fingerprint(key.getPublicExponent, key.getModulus)
   }
 
+  def publicKey(key: PublicKey): String = {
+    key match {
+      case k: RSAPublicKey =>
+        new String(Base64.encode(k.getEncoded))
+
+      case k =>
+        throw new IllegalArgumentException(s"Unsupported key: $k")
+    }
+  }
+
+  // ssh-keygen -E md5 -lf /dev/stdin <<< $( ssh-keygen -f private_key.pem -y )
   def fingerprint(publicExponent: BigInteger, modulus: BigInteger): String = {
     val blob = keyBlob(publicExponent, modulus)
-    hexColonDelimited(Hashing.md5().hashBytes(blob))
+    s"MD5:${hexColonDelimited(Hashing.md5().hashBytes(blob))}"
   }
 
   private def keyBlob(publicExponent: BigInteger, modulus: BigInteger): Array[Byte] = {
