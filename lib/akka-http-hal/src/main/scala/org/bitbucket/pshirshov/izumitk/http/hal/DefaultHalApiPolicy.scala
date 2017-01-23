@@ -1,7 +1,6 @@
 package org.bitbucket.pshirshov.izumitk.http.hal
 
 import akka.http.scaladsl.model.MediaType.WithFixedCharset
-import akka.http.scaladsl.model.StatusCodes.InternalServerError
 import akka.http.scaladsl.model.{HttpEntity, _}
 import akka.http.scaladsl.server.Directives.complete
 import akka.http.scaladsl.server.{ExceptionHandler, RejectionHandler, RequestContext, RouteResult}
@@ -86,7 +85,7 @@ class DefaultHalApiPolicy @Inject()
           resp.put("rejected", true)
           resp.put("message", r.toString)
           
-          complete(HttpResponse(InternalServerError
+          complete(HttpResponse(StatusCodes.NotFound
             , entity = HttpEntity(protocol.protocolMapper.writeValueAsString(resp)).withContentType(halContentType)
           ))
       }
@@ -175,7 +174,7 @@ class DefaultHalApiPolicy @Inject()
       .makeRepr(baseUri, fdata, _ => {})
       .toString(RepresentationFactory.HAL_JSON)
 
-    ctx.complete(HttpResponse(InternalServerError
+    ctx.complete(HttpResponse(StatusCodes.InternalServerError
       , entity = HttpEntity(body).withContentType(halContentType)
     ))
   }
