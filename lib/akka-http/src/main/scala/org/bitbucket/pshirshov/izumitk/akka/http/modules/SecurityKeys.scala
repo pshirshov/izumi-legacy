@@ -3,7 +3,7 @@ package org.bitbucket.pshirshov.izumitk.akka.http.modules
 import java.io.{ByteArrayOutputStream, StringReader}
 import java.math.BigInteger
 import java.security.interfaces.RSAPublicKey
-import java.security.{Key, Security}
+import java.security.{Key, KeyPair, Security}
 
 import com.google.common.hash.{HashCode, Hashing}
 import org.bouncycastle.jce.provider.BouncyCastleProvider
@@ -19,7 +19,15 @@ object SecurityKeys {
   def readPemKey(keystr: String): Key = {
     SecurityKeys.initBouncyCastle()
     val reader = new PEMReader(new StringReader(keystr))
-    reader.readObject().asInstanceOf[Key]
+    reader.readObject() match {
+      case k: Key  =>
+        k
+      case k: KeyPair =>
+        k.getPrivate
+      case k =>
+        throw new IllegalArgumentException(s"Unsupported key: $k")
+    }
+
   }
 
   def keyFingerprint(key: Key): String = {
