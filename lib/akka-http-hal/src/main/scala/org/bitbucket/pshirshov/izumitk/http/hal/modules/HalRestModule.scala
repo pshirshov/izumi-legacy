@@ -7,7 +7,7 @@ import org.bitbucket.pshirshov.izumitk.akka.http.modules.AbstractRestModule
 import org.bitbucket.pshirshov.izumitk.akka.http.util._
 import org.bitbucket.pshirshov.izumitk.akka.http.util.cors.{CORS, DefaultCORS}
 import org.bitbucket.pshirshov.izumitk.akka.http.util.serialization.{PermissiveJacksonProtocol, SerializationProtocol}
-import org.bitbucket.pshirshov.izumitk.http.hal.{DefaultHalApiPolicy, HalApiPolicy}
+import org.bitbucket.pshirshov.izumitk.http.hal.{DefaultHalApiPolicy, DefaultLinkExtractor, HalApiPolicy, LinkExtractor}
 
 final class HalRestModule() extends AbstractRestModule {
   override def configure(): Unit = {
@@ -18,6 +18,7 @@ final class HalRestModule() extends AbstractRestModule {
     bind[HalApiPolicy].to[DefaultHalApiPolicy].in[Singleton]
     bind[RequestTransformer].to[NullRequestTransformer].in[Singleton]
     bind[CORS].to[DefaultCORS].in[Singleton]
+    bind[LinkExtractor].to[DefaultLinkExtractor].in[Singleton]
   }
 
   @Provides
