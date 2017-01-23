@@ -64,8 +64,16 @@ class ForwardedBuilder(req: HttpRequest) extends BaseUriBuilder {
   }
 
   protected def extractHost(): Option[String] = {
-    val hostHeader = if (req.uri.authority.host.address.length > 0) Some(req.uri.authority.host.address) else None
-    extract("X-Forwarded-Host").orElse(hostHeader)
+    val hostHeader = if (req.uri.authority.host.address.length > 0) {
+      Some(req.uri.authority.host.address)
+    } else {
+      None
+    }
+    
+    extract("X-Forwarded-Host").orElse(hostHeader).map {
+      s =>
+        s.split(':').head
+    }
   }
 }
 
