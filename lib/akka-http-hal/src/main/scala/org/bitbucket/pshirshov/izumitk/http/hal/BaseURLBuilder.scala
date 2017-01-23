@@ -1,11 +1,12 @@
 package org.bitbucket.pshirshov.izumitk.http.hal
 
+import com.google.inject.{Inject, Singleton}
 import akka.http.scaladsl.model.{HttpHeader, HttpRequest}
 
 // https://github.com/marcuslange/akka-http-hal/blob/master/src/main/scala/akka/http/rest/hal/Href.scala
 
-
-class Href extends LinkExtractor {
+@Singleton
+class DefaultLinkExtractor @Inject()() extends LinkExtractor {
   def extract(maybeRequest: Option[HttpRequest]): String = maybeRequest match {
     case Some(req) => if (containsForwarded(req)) {
       new ForwardedBuilder(req).build()
