@@ -1,8 +1,8 @@
 package org.bitbucket.pshirshov.izumitk.http.hal
 
 import akka.http.scaladsl.model.MediaType.WithFixedCharset
-import akka.http.scaladsl.model.StatusCodes.{Forbidden, InternalServerError}
-import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.StatusCodes.InternalServerError
+import akka.http.scaladsl.model.{HttpEntity, _}
 import akka.http.scaladsl.server.Directives.complete
 import akka.http.scaladsl.server.{ExceptionHandler, RejectionHandler, RequestContext, RouteResult}
 import com.codahale.metrics.MetricRegistry
@@ -43,6 +43,7 @@ class DefaultHalApiPolicy @Inject()
   , serializer: HalSerializerImpl
   , failureRepository: FailureRepository
   , cors: CORS
+  , linkExtractor: LinkExtractor
   , @Named("app.id") override protected val productId: String
   , override val protocol: SerializationProtocol
   , @Named("@http.debug") protected val isDebugMode: Boolean
@@ -81,7 +82,13 @@ class DefaultHalApiPolicy @Inject()
     RejectionHandler.newBuilder()
       .handle {
         case r =>
-          complete((Forbidden, s"REJECTED: $r"))
+          val resp = protocol.protocolMapper.getNodeFactory.objectNode()
+          resp.put("rejected", true)
+          resp.put("message", r.toString)
+          
+          complete(HttpResponse(InternalServerError
+            , entity = HttpEntity(protocol.protocolMapper.writeValueAsString(resp)).withContentType(halContentType)
+          ))
       }
       .result()
   }
@@ -95,7 +102,7 @@ class DefaultHalApiPolicy @Inject()
 
   protected def serializeEntity[R <: Hal : ClassTag : Manifest](value: R, ctx: RequestContext): Representation = {
     import Hal._
-    val baseUri = Href.make(Option(ctx.request))
+    val baseUri = linkExtractor.extract(Option(ctx.request))
 
     value match {
       case Repr(r) =>
@@ -163,7 +170,7 @@ class DefaultHalApiPolicy @Inject()
       , stacktrace
     )
 
-    val baseUri = Href.make(Option(ctx.request))
+    val baseUri = linkExtractor.extract(Option(ctx.request))
     val body = serializer
       .makeRepr(baseUri, fdata, _ => {})
       .toString(RepresentationFactory.HAL_JSON)
