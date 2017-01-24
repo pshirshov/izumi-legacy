@@ -13,7 +13,8 @@ class DefaultLinkExtractor @Inject()() extends LinkExtractor {
     } else {
       new UrlBuilder(req).build()
     }
-    case None => ""
+    case None =>
+      ""
   }
 
   private def containsForwarded(req: HttpRequest) = {
@@ -38,22 +39,42 @@ trait BaseUriBuilder {
 class ForwardedBuilder(req: HttpRequest) extends BaseUriBuilder {
   def build(): String = {
     val b = new StringBuilder()
+
     val proto = extract("X-Forwarded-Proto").getOrElse("http")
-    val port = extract("X-Forwarded-Port").getOrElse("80")
-    val prefix = extract("X-Forwarded-Prefix").getOrElse("")
-    val host = extractHost()
     b.append(proto)
     b.append("://")
-    b.append(extractHost().getOrElse("localhost"))
+
+    val port = extract("X-Forwarded-Port")
+
+    extractHost() match {
+      case None =>
+      case Some(v) =>
+        val parts = v.split(':')
+
+        if (parts.length == 2) {
+          b.append(parts.head)
+          appendPort(b, proto, port.getOrElse(parts.last))
+        } else {
+          b.append(v)
+          appendPort(b, proto, port.getOrElse("80"))
+        }
+    }
+
+    extract("X-Forwarded-Prefix") match {
+      case None =>
+      case Some(prefix) =>
+        b.append('/')
+        b.append(prefix)
+    }
+
+    b.toString()
+  }
+
+  private def appendPort(b: StringBuilder, proto: String, port: String) = {
     if (port != defaultPort(proto).toString) {
       b.append(':')
       b.append(port)
     }
-    if (prefix.nonEmpty) {
-      b.append('/')
-      b.append(prefix)
-    }
-    b.toString()
   }
 
   protected def extract(name: String): Option[String] = {
@@ -70,10 +91,7 @@ class ForwardedBuilder(req: HttpRequest) extends BaseUriBuilder {
       None
     }
     
-    extract("X-Forwarded-Host").orElse(hostHeader).map {
-      s =>
-        s.split(':').head
-    }
+    extract("X-Forwarded-Host").orElse(hostHeader)
   }
 }
 
