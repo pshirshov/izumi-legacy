@@ -3,6 +3,7 @@ package org.bitbucket.pshirshov.izumitk.http.hal
 import java.util
 import java.util.UUID
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.inject.name.Named
@@ -10,9 +11,10 @@ import com.google.inject.{Inject, Singleton}
 import org.bitbucket.pshirshov.izumitk.hal.HalResource
 import org.bitbucket.pshirshov.izumitk.json.JacksonMapper
 import com.theoryinpractise.halbuilder.api._
+import org.apache.commons.lang3.StringUtils
 import org.bitbucket.pshirshov.izumitk.http.hal.Hal.{HalContext, HalHandler}
-import scala.collection.JavaConverters._
 
+import scala.collection.JavaConverters._
 import scala.reflect.runtime.universe._
 
 
@@ -47,17 +49,24 @@ class HalSerializerImpl @Inject()
           self =>
             repr.withLink("self", s"$baseUri/$self")
         }
-        // TODO: anything else?..
+      // TODO: anything else?..
     }
 
     val rm = scala.reflect.runtime.currentMirror
     val instanceMirror = rm.reflect(dto)
 
     rm.classSymbol(dto.getClass).toType.members.collect {
-      case m: MethodSymbol if m.isGetter && m.isPublic => m
+      case m: MethodSymbol if isPublicGetter(m) => m
+      case m: MethodSymbol if isGetterLike(m) => m
     }.foreach {
       acc =>
-        val name = acc.name.decodedName.toString
+        val rawName = acc.name.decodedName.toString
+        val name = if (rawName.startsWith("get")) {
+          StringUtils.uncapitalize(rawName.substring(3))
+        } else {
+          rawName
+        }
+
         val value = instanceMirror.reflectMethod(acc).apply()
         value match {
           case null =>
@@ -94,6 +103,14 @@ class HalSerializerImpl @Inject()
             throw new UnsupportedOperationException(s"We don't know how to serialize `$value` in `$dto`")
         }
     }
+  }
+
+  private def isGetterLike(m: _root_.scala.reflect.runtime.universe.MethodSymbol) = {
+    m.paramLists.forall(_.isEmpty) && m.isPublic && m.name.decodedName.toString.startsWith("get") && !m.annotations.exists(_.tree.tpe == typeTag[JsonIgnore].tpe)
+  }
+
+  private def isPublicGetter(m: _root_.scala.reflect.runtime.universe.MethodSymbol) = {
+    m.isGetter && m.isPublic
   }
 
   private def fillMap(repr: Representation, baseUri: String, name: String, v: Map[_, _], handler: HalHandler): Any = {

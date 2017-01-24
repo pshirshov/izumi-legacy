@@ -1,66 +1,78 @@
 package org.bitbucket.pshirshov.izumitk.akka.http.modules
 
-import java.io.{ByteArrayOutputStream, StringReader}
+import java.io.{ByteArrayOutputStream, StringReader, StringWriter}
 import java.math.BigInteger
-import java.security.interfaces.RSAPublicKey
-import java.security.{Key, KeyPair, PublicKey, Security}
+import java.security.interfaces.{RSAPrivateCrtKey, RSAPublicKey}
+import java.security.{Key, KeyPair, Security}
 
 import com.google.common.hash.{HashCode, Hashing}
 import org.bouncycastle.jce.provider.BouncyCastleProvider
-import org.bouncycastle.openssl.PEMReader
-import org.bouncycastle.util.encoders.Base64
-
+import org.bouncycastle.openssl.{PEMReader, PEMWriter}
+import sun.security.rsa.RSAPublicKeyImpl
+import resource._
 
 object SecurityKeys {
-  def initBouncyCastle(): Unit = {
-    if (Option(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME)).isEmpty) {
-      Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider())
+  def readPemKey(keystr: String): Key = {
+    SecurityKeys.initBouncyCastle()
+
+    managed(new StringReader(keystr.trim)).map(r => new PEMReader(r)).map {
+      reader =>
+        reader.readObject() match {
+          case k: Key =>
+            k
+          case k: KeyPair =>
+            k.getPrivate
+          case k =>
+            throw new IllegalArgumentException(s"Unsupported key: $k")
+        }
+    }.acquireAndGet {
+      b =>
+        b
     }
   }
 
-  def readPemKey(keystr: String): Key = {
-    SecurityKeys.initBouncyCastle()
-    val reader = new PEMReader(new StringReader(keystr))
-    reader.readObject() match {
-      case k: Key =>
-        k
-      case k: KeyPair =>
-        k.getPrivate
+  def writePemKey(key: Key): String = {
+    managed(new StringWriter()).acquireAndGet {
+      out =>
+        managed(new PEMWriter(out)).acquireAndGet(_.writeObject(key))
+        out.toString
+    }
+  }
+
+  def writePublicPemKey(key: Key): String = {
+    key match {
+      case k: RSAPublicKey =>
+        writePemKey(k)
+
+      case k: RSAPrivateCrtKey =>
+        writePemKey(new RSAPublicKeyImpl(k.getModulus, k.getPublicExponent))
+
       case k =>
         throw new IllegalArgumentException(s"Unsupported key: $k")
     }
-
   }
 
   def publicKeyFingerprint(key: Key): String = {
     key match {
       case k: RSAPublicKey =>
         fingerprint(k)
+      case k: RSAPrivateCrtKey =>
+        fingerprint(k.getPublicExponent, k.getModulus)
       case k =>
         throw new IllegalArgumentException(s"Unsupported key: $k")
     }
   }
 
   def keyInfo(key: Key): String = {
-    s"${key.getAlgorithm}@${key.getClass}"
+    s"${key.getAlgorithm}:${key.getClass.getSimpleName}"
   }
 
-  def fingerprint(key: RSAPublicKey): String = {
+  private def fingerprint(key: RSAPublicKey): String = {
     fingerprint(key.getPublicExponent, key.getModulus)
   }
 
-  def publicKey(key: PublicKey): String = {
-    key match {
-      case k: RSAPublicKey =>
-        new String(Base64.encode(k.getEncoded))
-
-      case k =>
-        throw new IllegalArgumentException(s"Unsupported key: $k")
-    }
-  }
-
   // ssh-keygen -E md5 -lf /dev/stdin <<< $( ssh-keygen -f private_key.pem -y )
-  def fingerprint(publicExponent: BigInteger, modulus: BigInteger): String = {
+  private def fingerprint(publicExponent: BigInteger, modulus: BigInteger): String = {
     val blob = keyBlob(publicExponent, modulus)
     s"MD5:${hexColonDelimited(Hashing.md5().hashBytes(blob))}"
   }
@@ -88,6 +100,12 @@ object SecurityKeys {
     import scala.collection.JavaConverters._
 
     fixedLength(2).split(base16().lowerCase().encode(hc.asBytes())).asScala.mkString(":")
+  }
+
+  private def initBouncyCastle(): Unit = synchronized {
+    if (Option(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME)).isEmpty) {
+      Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider())
+    }
   }
 
 }

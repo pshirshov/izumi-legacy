@@ -3,20 +3,23 @@ package org.bitbucket.pshirshov.izumitk.http
 import java.util.UUID
 
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type
-import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo, JsonTypeName}
+import com.fasterxml.jackson.annotation.{JsonIgnore, JsonSubTypes, JsonTypeInfo, JsonTypeName}
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.inject.Module
+import com.google.inject.name.Names
 import com.google.inject.util.Modules
-import org.bitbucket.pshirshov.izumitk.hal.HalResource
-import org.bitbucket.pshirshov.izumitk.TestConfig
-import org.bitbucket.pshirshov.izumitk.app.modules.ConfigExposingModule
-import org.bitbucket.pshirshov.izumitk.http.hal.{HalSerializerImpl, UnreliableHalDecoder}
-import org.bitbucket.pshirshov.izumitk.json.modules.JacksonModule
-import org.bitbucket.pshirshov.izumitk.test.InjectorTestBase
 import com.theoryinpractise.halbuilder.api.RepresentationFactory
+import org.bitbucket.pshirshov.izumitk.TestConfigExtensions._
+import org.bitbucket.pshirshov.izumitk.app.modules.ConfigExposingModule
+import org.bitbucket.pshirshov.izumitk.hal.HalResource
 import org.bitbucket.pshirshov.izumitk.http.HalTestPolymorphics.SimpleTextPayload
 import org.bitbucket.pshirshov.izumitk.http.hal.modules.HalModule
-import org.bitbucket.pshirshov.izumitk.TestConfigExtensions._
+import org.bitbucket.pshirshov.izumitk.http.hal.{HalSerializerImpl, UnreliableHalDecoder}
+import org.bitbucket.pshirshov.izumitk.json.JacksonMapper
+import org.bitbucket.pshirshov.izumitk.json.modules.JacksonModule
+import org.bitbucket.pshirshov.izumitk.test.InjectorTestBase
+import org.bitbucket.pshirshov.izumitk.{HealthStatus, TestConfig}
 
 @JsonTypeInfo(
   use = JsonTypeInfo.Id.NAME,
@@ -30,6 +33,7 @@ import org.bitbucket.pshirshov.izumitk.TestConfigExtensions._
 trait HalTestPolymorphic {}
 
 object HalTestPolymorphics {
+
   @JsonTypeName("text-message")
   case class SimpleTextPayload(text: String) extends HalTestPolymorphic
 
@@ -53,7 +57,22 @@ case class HalTestEntry(message: HalTestMessage
                         , arrayProperty: Seq[HalTestComplexProperty] = Seq(HalTestComplexProperty(), HalTestComplexProperty())
                         , mapProperty: Map[String, HalTestComplexProperty] = Map("test" -> HalTestComplexProperty())
                         , resourceMapProperty: Map[String, HalTestMessage] = Map("test" -> HalTestMessage(UUID.randomUUID(), SimpleTextPayload("xxx")))
-                       )
+                       ) {
+
+  def getStatus: HealthStatus = {
+      HealthStatus.UNKNOWN
+  }
+
+  //noinspection AccessorLikeMethodIsEmptyParen
+  def getEmptyParenStatus(): HealthStatus = {
+    HealthStatus.UNKNOWN
+  }
+
+  @JsonIgnore
+  def getIgnoredStatus: HealthStatus = {
+    HealthStatus.UNKNOWN
+  }
+}
 
 class HalSerializerImplTest extends InjectorTestBase {
   "HAL Serializer" must {
@@ -68,10 +87,16 @@ class HalSerializerImplTest extends InjectorTestBase {
         })
           .toString(RepresentationFactory.HAL_JSON)
 
-        //println(repr) // TODO: XXX: real test
+        val decoder = injector.instance[UnreliableHalDecoder]
+        val decoded = decoder.readHal[HalTestEntry](repr)
+        assert(decoded == sample)
 
-        val decoder =  injector.instance[UnreliableHalDecoder]
-        assert(decoder.readHal[HalTestEntry](repr) == sample)
+        val jMapper = injector.instance[JacksonMapper](Names.named("standardMapper"))
+
+        val tree = jMapper.readTree(repr).asInstanceOf[ObjectNode]
+        assert(tree.has("status"))
+        assert(tree.has("emptyParenStatus"))
+        assert(!tree.has("ignoredStatus"))
     }
   }
 
