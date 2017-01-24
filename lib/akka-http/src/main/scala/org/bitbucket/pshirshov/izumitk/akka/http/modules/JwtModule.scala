@@ -47,12 +47,11 @@ final class JwtModule()
   private def logKey(name: String, keyRef: String, keyString: String, key: PublicJsonWebKey) = {
     if (keyString == keyRef) {
       logger.info(
-        s"""Loaded security key $name: ${SecurityKeys.keyInfo(key.getPublicKey)}:${Option(key.getPrivateKey).map(SecurityKeys.keyInfo)}
-           |Public Key fingerprint=${SecurityKeys.publicKeyFingerprint(key.getPublicKey)}
-           |Public Key:
-           |${SecurityKeys.publicKey(key.getPublicKey)}
-           |Orignal key:
-           |$keyString""".stripMargin)
+        s"""Loaded security key $name:
+           |- Public Key with fingerprint ${SecurityKeys.publicKeyFingerprint(key.getPublicKey)} and class ${SecurityKeys.keyInfo(key.getPublicKey)}:
+           |${SecurityKeys.writePublicPemKey(key.getPublicKey)}
+           |- Private Key: ${Option(key.getPrivateKey).fold("N/A")(SecurityKeys.keyInfo)}
+           |""".stripMargin)
     } else {
       logger.info(s"Loaded security key $name as reference to $keyRef")
     }
