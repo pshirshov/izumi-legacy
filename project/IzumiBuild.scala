@@ -9,8 +9,7 @@ import sbt._
 import xerial.sbt.Sonatype.SonatypeKeys._
 
 object IzumiBuild extends PerfectBuild {
-
-  def mydep(args: sbt.ClasspathDep[sbt.ProjectReference]*): Seq[sbt.ClasspathDep[sbt.ProjectReference]] = Seq[sbt.ClasspathDep[sbt.ProjectReference]](args:_*)
+  def customDep(args: sbt.ClasspathDep[sbt.ProjectReference]*): Seq[sbt.ClasspathDep[sbt.ProjectReference]] = Seq[sbt.ClasspathDep[sbt.ProjectReference]](args:_*)
 
   override lazy val allProjects: Map[String, Project] = Seq(
     // common tools
@@ -20,15 +19,18 @@ object IzumiBuild extends PerfectBuild {
     )
     , mkProject(
       base = file("lib/commons-formats"),
-      dependencies = mydep(allProjects("commons-test") % "test")
+      dependencies = customDep(allProjects("commons-test") % "test")
     )
     , mkProject(
       base = file("lib/commons-config"),
-      dependencies = mydep(allProjects("commons-test") % "test")
+      dependencies = customDep(allProjects("commons-test") % "test")
     )
     , mkProject(
       base = file("lib/commons-cdi"),
-      dependencies = mydep("commons-test", "commons-formats", allProjects("commons-config") % "compile->compile;test->compile,test")
+      dependencies = customDep(allProjects("commons-test") % "test"
+        , "commons-formats"
+        , allProjects("commons-config") % "compile->compile;test->compile,test"
+      )
     )
     // generic libraries
     , mkProject(
