@@ -21,13 +21,13 @@ trait CassandraQueries extends StrictLogging {
   protected def ddl: Seq[String]
 
   def createTables(): Unit = {
-    ddl.foreach {
-      q =>
-        session.execute(q)
+    classOf[CassandraQueries].synchronized {
+      ddl.foreach {
+        q =>
+          session.execute(q)
+      }
     }
   }
-
-  createTables()
 
   def execute(statement: Statement, timerName: String): ResultSet = {
     logger.trace(s"C* Query: ${log(statement).mkString(";")} [$timerName]")
