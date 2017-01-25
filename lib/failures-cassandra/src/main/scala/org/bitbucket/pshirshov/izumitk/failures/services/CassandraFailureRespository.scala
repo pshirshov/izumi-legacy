@@ -90,19 +90,19 @@ class FailureRepositoryQueries @Inject()
   stripMargin
   )
 
-  val selectFailure: PreparedStatement = {
+  lazy val selectFailure: PreparedStatement = {
     val stmt = psCache.get("SELECT * FROM failures02 WHERE id = ?")
     stmt.setConsistencyLevel(ConsistencyLevel.LOCAL_ONE)
     stmt
   }
 
-  val selectAllFailures: PreparedStatement = {
+  lazy val selectAllFailures: PreparedStatement = {
     val stmt = psCache.get("SELECT * FROM failures02 ALLOW FILTERING")
     stmt.setConsistencyLevel(ConsistencyLevel.LOCAL_ONE)
     stmt
   }
 
-  val writeFailure: PreparedStatement = {
+  lazy val writeFailure: PreparedStatement = {
     val stmt = psCache.get("UPDATE failures02 SET data = ?, meta = ?, stacktraces = ?, exceptions = ? WHERE id = ?")
     stmt.setConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM)
     stmt
