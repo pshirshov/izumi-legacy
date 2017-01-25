@@ -6,12 +6,16 @@ import com.google.inject.name.Named
 import com.google.inject.{Provides, Singleton}
 import com.typesafe.config.Config
 import net.codingwell.scalaguice.ScalaModule
+import org.bitbucket.pshirshov.izumitk.akka.util.AkkaShutdownAdapter
 
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
 
+
 final class AkkaModule() extends ScalaModule {
-  override def configure(): Unit = {}
+  override def configure(): Unit = {
+    bind[AkkaShutdownAdapter].in[Singleton]
+  }
 
   // To ensure config presence
   @Provides
