@@ -9,7 +9,6 @@ import akka.stream.scaladsl.Flow
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import com.typesafe.scalalogging.StrictLogging
-import org.bitbucket.pshirshov.izumitk.akka.util.AkkaUtils
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -38,6 +37,5 @@ final class AkkaHttpApp @Inject()
   }
 
   override def shutdown(): Unit = {
-    AkkaUtils.shutdown(actorSystem)
   }
 }
