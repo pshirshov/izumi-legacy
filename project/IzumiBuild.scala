@@ -9,8 +9,6 @@ import sbt._
 import xerial.sbt.Sonatype.SonatypeKeys._
 
 object IzumiBuild extends PerfectBuild {
-  def customDep(args: sbt.ClasspathDep[sbt.ProjectReference]*): Seq[sbt.ClasspathDep[sbt.ProjectReference]] = Seq[sbt.ClasspathDep[sbt.ProjectReference]](args:_*)
-
   override lazy val allProjects: Map[String, Project] = Seq(
     // common tools
     mkProject(
