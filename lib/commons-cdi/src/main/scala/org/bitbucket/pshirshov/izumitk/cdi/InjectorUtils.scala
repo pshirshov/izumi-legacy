@@ -24,6 +24,15 @@ class InjectorListenerModule extends ScalaModule with StrictLogging {
     binder().bindListener(Matchers.any(), new ProvisionListener {
       override def onProvision[T](provision: ProvisionInvocation[T]): Unit = {
         val obj = provision.provision()
+        
+        obj match {
+          case initializable: Initializable =>
+            logger.debug(s"Initializing $initializable...")
+            initializable.init()
+
+          case _ =>
+        }
+
         val closeables = toCloseable(obj)
 
         if (closeables.nonEmpty) {

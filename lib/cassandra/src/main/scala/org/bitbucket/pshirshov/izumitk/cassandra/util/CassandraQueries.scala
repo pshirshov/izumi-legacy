@@ -5,11 +5,14 @@ import com.codahale.metrics.MetricRegistry
 import com.datastax.driver.core._
 import com.typesafe.scalalogging.StrictLogging
 import org.bitbucket.pshirshov.izumitk.cassandra.PSCache
+import org.bitbucket.pshirshov.izumitk.cdi.Initializable
 
 import scala.collection.JavaConverters._
 
 
-trait CassandraQueries extends StrictLogging {
+trait CassandraQueries
+  extends Initializable
+    with StrictLogging {
   protected val psCache: PSCache
 
   protected val session: Session
@@ -27,6 +30,11 @@ trait CassandraQueries extends StrictLogging {
           session.execute(q)
       }
     }
+  }
+
+  abstract override def init(): Unit = {
+    super.init()
+    createTables()
   }
 
   def execute(statement: Statement, timerName: String): ResultSet = {
