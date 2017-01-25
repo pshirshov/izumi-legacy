@@ -68,6 +68,7 @@ final class CassandraTestModule() extends CassandraModuleBase with WithReusableR
           logger.info(s"Keyspace `$defaultKeyspace` dropped")
           cluster.close()
       }
+      , identifier = Some(defaultKeyspace)
     )
   }
 }
