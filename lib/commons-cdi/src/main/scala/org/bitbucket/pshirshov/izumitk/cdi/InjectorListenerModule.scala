@@ -9,6 +9,7 @@ import com.google.inject.spi.ProvisionListener
 import com.google.inject.spi.ProvisionListener.ProvisionInvocation
 import com.typesafe.scalalogging.StrictLogging
 import net.codingwell.scalaguice.ScalaModule
+import scala.collection.JavaConverters._
 
 class InjectorListenerModule extends ScalaModule with StrictLogging {
   private val provisions = new ConcurrentLinkedQueue[AutoCloseable]()
