@@ -14,7 +14,6 @@ import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 
 final class AkkaModule() extends ScalaModule {
   override def configure(): Unit = {
-    bind[AkkaShutdownAdapter].in[Singleton]
   }
 
   // To ensure config presence
