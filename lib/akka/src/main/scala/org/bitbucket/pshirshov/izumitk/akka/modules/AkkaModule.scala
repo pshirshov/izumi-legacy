@@ -27,8 +27,15 @@ final class AkkaModule() extends ScalaModule {
 
   @Provides
   @Singleton
-  def actorSystem(@Named("app.config") appConfig: Config): ActorSystem = {
-    ActorSystem("akka", appConfig)
+  def closeableActorSystem(@Named("app.config") appConfig: Config): AkkaShutdownAdapter = {
+    new AkkaShutdownAdapter()(ActorSystem("akka", appConfig))
+  }
+
+
+  @Provides
+  @Singleton
+  def actorSystem(akkaShutdownAdapter: AkkaShutdownAdapter): ActorSystem = {
+    akkaShutdownAdapter.system
   }
 
   @Provides
