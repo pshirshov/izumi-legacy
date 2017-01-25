@@ -82,7 +82,7 @@ object InjectorUtils extends StrictLogging {
     val instancesToClose = injector.instance[Seq[AutoCloseable]](Names.named("closeableObjects"))
     logger.info(s"Closing ${instancesToClose.size} closeables..")
 
-    instancesToClose.map {
+    instancesToClose.reverse.map {
       closeable =>
         if (!instancesToSkip.exists(clz => clz.isAssignableFrom(closeable.getClass))) {
           logger.info(s"Closing $closeable...")
