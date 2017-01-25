@@ -9,6 +9,7 @@ trait WithReusableResources {
                       , constructor: () => R
                       , destructor: (R) => Unit = {_: R =>}
                       , handler: (R) => R = {r: R => r}
+                      , identifier: Option[String] = None
                     ): R = {
     ReusableHeavyTestResources.lock().synchronized {
       Option(ReusableHeavyTestResources.get[R](name)) match {
@@ -22,6 +23,8 @@ trait WithReusableResources {
             override def get(): R = resource
 
             override def destroy(): Unit = destructor(resource)
+
+            override def toString: String = identifier.getOrElse(resource.toString)
           }
 
           ReusableHeavyTestResources.register(name, wrapper)

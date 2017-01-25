@@ -108,13 +108,17 @@ public final class FileUtils {
                 return new File(pathAsString);
             }
 
-
             @Override
             public void destroy() throws Exception {
                 File file = get();
                 if (file.exists()) {
                     org.apache.commons.io.FileUtils.forceDelete(file);
                 }
+            }
+
+            @Override
+            public String toString() {
+                return pathAsString;
             }
         });
         return tempPath.resolve(path.getFileName());

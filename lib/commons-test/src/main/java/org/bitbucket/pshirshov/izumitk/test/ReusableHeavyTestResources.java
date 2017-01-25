@@ -39,7 +39,7 @@ public final class ReusableHeavyTestResources {
         synchronized (RESOURCES) {
             for (Map.Entry<String, ReusableTestResource<?>> resource : RESOURCES.entrySet()) {
                 try {
-                    LOG.info("Destroying resource {}...", resource.getKey());
+                    LOG.info("Destroying resource {}={}...", resource.getKey(), resource.getValue());
                     resource.getValue().destroy();
                 } catch (Throwable e) {
                     e.printStackTrace();
@@ -57,7 +57,7 @@ public final class ReusableHeavyTestResources {
                 return resource.get();
             } else {
                 throw new IllegalArgumentException(
-                        MessageFormatter.format("Resource {} already exists", name).getMessage());
+                        MessageFormatter.format("Resource {}={} already exists", name, resource).getMessage());
             }
         }
     }
