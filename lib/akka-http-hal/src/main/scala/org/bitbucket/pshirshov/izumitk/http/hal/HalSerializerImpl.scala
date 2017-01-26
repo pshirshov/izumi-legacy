@@ -106,7 +106,11 @@ class HalSerializerImpl @Inject()
   }
 
   private def isGetterLike(m: _root_.scala.reflect.runtime.universe.MethodSymbol) = {
-    m.paramLists.forall(_.isEmpty) && m.isPublic && m.name.decodedName.toString.startsWith("get") && !m.annotations.exists(_.tree.tpe == typeTag[JsonIgnore].tpe)
+    m.paramLists.forall(_.isEmpty) &&
+      m.isPublic &&
+      m.name.decodedName.toString.startsWith("get") &&
+      !(m.returnType.erasure =:= typeTag[Class[_]].tpe.erasure) &&
+      !m.annotations.exists(_.tree.tpe == typeTag[JsonIgnore].tpe)
   }
 
   private def isPublicGetter(m: _root_.scala.reflect.runtime.universe.MethodSymbol) = {
