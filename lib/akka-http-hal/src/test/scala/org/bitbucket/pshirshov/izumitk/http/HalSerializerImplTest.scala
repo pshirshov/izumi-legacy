@@ -97,6 +97,7 @@ class HalSerializerImplTest extends InjectorTestBase {
         assert(tree.has("status"))
         assert(tree.has("emptyParenStatus"))
         assert(!tree.has("ignoredStatus"))
+        assert(!tree.has("class"))
     }
   }
 
