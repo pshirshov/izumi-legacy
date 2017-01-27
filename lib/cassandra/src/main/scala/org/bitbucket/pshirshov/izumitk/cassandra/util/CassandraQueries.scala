@@ -10,6 +10,7 @@ import org.bitbucket.pshirshov.izumitk.cdi.Initializable
 import scala.collection.JavaConverters._
 
 
+@deprecated(message = "CassandraQueries is deprecated, use CassandraFacade instead", since = "Jan 2017")
 trait CassandraQueries
   extends Initializable
     with StrictLogging {
