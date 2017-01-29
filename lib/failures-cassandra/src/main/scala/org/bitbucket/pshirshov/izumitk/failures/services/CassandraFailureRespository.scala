@@ -9,8 +9,6 @@ import org.bitbucket.pshirshov.izumitk.cassandra.facade._
 import org.bitbucket.pshirshov.izumitk.json.JacksonMapper
 import org.bitbucket.pshirshov.izumitk.util.{ExceptionUtils, SerializationUtils}
 
-import scala.collection.JavaConverters._
-
 @Singleton
 class CassandraFailureRespository @Inject()
 (
