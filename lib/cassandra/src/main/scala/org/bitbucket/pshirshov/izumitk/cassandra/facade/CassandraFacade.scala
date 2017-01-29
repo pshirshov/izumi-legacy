@@ -7,11 +7,12 @@ import com.google.common.util.concurrent.{FutureCallback, Futures}
 import com.typesafe.scalalogging.StrictLogging
 import org.bitbucket.pshirshov.izumitk.cdi.Initializable
 
-import scala.collection.JavaConverters._
+import scala.collection.convert.{DecorateAsJava, DecorateAsScala}
 import scala.concurrent.{Future, Promise}
 
 
-trait WithCassandraFacade {
+trait WithCassandraFacade
+  extends DecorateAsJava with DecorateAsScala {
   protected def facade: CassandraFacade
 
   implicit class Binder(query: CPreparedStatement) {
