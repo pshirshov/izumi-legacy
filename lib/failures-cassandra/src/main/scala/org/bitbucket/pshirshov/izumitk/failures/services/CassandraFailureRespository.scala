@@ -82,7 +82,7 @@ class FailureRepositoryQueries @Inject()
          |   stacktraces text,
          |   exceptions blob,
          |   PRIMARY KEY (id)
-         | ) WITH WITH ${ctx.config.render} ;
+         | ) WITH ${ctx.config.render} ;
       """.stripMargin
     )
   )
