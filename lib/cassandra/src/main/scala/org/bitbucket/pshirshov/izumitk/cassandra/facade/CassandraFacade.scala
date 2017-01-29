@@ -21,6 +21,9 @@ trait WithCassandraFacade
     }
   }
 
+  def execute(query: CPreparedStatement, args: AnyRef*): ResultSet = {
+    facade.execute(facade.bind(query, args: _*))
+  }
 }
 
 trait CassandraFacade
