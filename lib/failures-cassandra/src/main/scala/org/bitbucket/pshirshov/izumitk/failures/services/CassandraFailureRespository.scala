@@ -1,14 +1,13 @@
 package org.bitbucket.pshirshov.izumitk.failures.services
 
 import com.codahale.metrics.MetricRegistry
-import com.datastax.driver.core.{ConsistencyLevel, PreparedStatement, Row, Session}
-import com.google.inject.{Inject, Singleton}
+import com.datastax.driver.core.Row
 import com.google.inject.name.Named
-import org.bitbucket.pshirshov.izumitk.cassandra.PSCache
-import org.bitbucket.pshirshov.izumitk.cassandra.util.CassandraQueries
+import com.google.inject.{Inject, Singleton}
+import org.apache.commons.lang3.exception
+import org.bitbucket.pshirshov.izumitk.cassandra.facade._
 import org.bitbucket.pshirshov.izumitk.json.JacksonMapper
 import org.bitbucket.pshirshov.izumitk.util.{ExceptionUtils, SerializationUtils}
-import org.apache.commons.lang3.exception
 
 import scala.collection.JavaConverters._
 
@@ -22,8 +21,10 @@ class CassandraFailureRespository @Inject()
 )
   extends FailureRepository {
 
+  import query._
+
   override def readFailure(failureId: String): Option[RestoredFailureRecord] = {
-    query.execute(query.selectFailure.bind(failureId), "failure-get").asScala.map(instantiate).headOption
+    execute(selectFailure.bind(failureId)).asScala.map(instantiate).headOption
   }
 
   override protected def writeFailureRecord(id: String, failure: FailureRecord): Unit = {
@@ -38,16 +39,16 @@ class CassandraFailureRespository @Inject()
 
     import scala.collection.JavaConverters._
 
-    query.execute(query.writeFailure.bind(
+    execute(writeFailure.bind(
       mapper.writeValueAsString(failure.data.asJava)
       , mapper.writeValueAsString(meta.asJava)
       , mapper.writeValueAsString(failure.causes.map(exception.ExceptionUtils.getStackTrace).toList.asJava)
       , SerializationUtils.toByteBuffer(failure.causes)
-      , id), "failure-put")
+      , id))
   }
 
   override def enumerate(visitor: (RestoredFailureRecord) => Unit): Unit = {
-    query.execute(query.selectAllFailures.bind(), "failure-enumerate")
+    execute(query.selectAllFailures.bind())
       .asScala
       .toIterator
       .map(instantiate)
@@ -66,45 +67,35 @@ class CassandraFailureRespository @Inject()
 
 class FailureRepositoryQueries @Inject()
 (
-  protected val psCache: PSCache
-  , protected val session: Session
-  , protected val metrics: MetricRegistry
-  , @Named("cassandra.keyspace") protected val keyspace: String
-  , @Named("app.id") override protected val productId: String
-) extends CassandraQueries {
+  protected val cassandra: CassandraContext
+) extends CassandraFacade {
 
-  override def ddl = Seq(
-  """
-    | CREATE TABLE IF NOT EXISTS failures02 (
-    |   id text,
-    |   data text,
-    |   meta text,
-    |   stacktraces text,
-    |   exceptions blob,
-    |   PRIMARY KEY (id)
-    | ) WITH
-    | compaction = {'class': 'LeveledCompactionStrategy'}
-    | AND
-    | compression = { 'sstable_compression' : 'SnappyCompressor' };
-  """.
-  stripMargin
+  private val tFailures = CTable("failures")
+
+  override protected val ddl: Seq[CBaseStatement] = Seq(
+    CTextTableStatement(CQWrite("ddl"), tFailures, ctx =>
+      s"""
+         | CREATE TABLE IF NOT EXISTS ${ctx.table.name} (
+         |   id text,
+         |   data text,
+         |   meta text,
+         |   stacktraces text,
+         |   exceptions blob,
+         |   PRIMARY KEY (id)
+         | ) WITH WITH ${ctx.config.render} ;
+      """.stripMargin
+    )
   )
 
-  lazy val selectFailure: PreparedStatement = {
-    val stmt = psCache.get("SELECT * FROM failures02 WHERE id = ?")
-    stmt.setConsistencyLevel(ConsistencyLevel.LOCAL_ONE)
-    stmt
+  lazy val selectFailure: CPreparedStatement = prepareQuery(CQRead("failures-get"), tFailures) {
+    ctx => s"SELECT * FROM ${ctx.table.name} WHERE id = ?"
   }
 
-  lazy val selectAllFailures: PreparedStatement = {
-    val stmt = psCache.get("SELECT * FROM failures02 ALLOW FILTERING")
-    stmt.setConsistencyLevel(ConsistencyLevel.LOCAL_ONE)
-    stmt
+  lazy val selectAllFailures: CPreparedStatement = prepareQuery(CQRead("failures-get-all"), tFailures) {
+    ctx => s"SELECT * FROM ${ctx.table.name} ALLOW FILTERING"
   }
 
-  lazy val writeFailure: PreparedStatement = {
-    val stmt = psCache.get("UPDATE failures02 SET data = ?, meta = ?, stacktraces = ?, exceptions = ? WHERE id = ?")
-    stmt.setConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM)
-    stmt
+  lazy val writeFailure: CPreparedStatement = prepareQuery(CQRead("failures-put"), tFailures) {
+    ctx => s"UPDATE ${ctx.table.name} SET data = ?, meta = ?, stacktraces = ?, exceptions = ? WHERE id = ?"
   }
 }
