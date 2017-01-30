@@ -47,7 +47,7 @@ trait PluginsSupport
 
     val loadedPlugins = activeAndValidPluginClasses.flatMap {
       clz =>
-        logger.debug(s"Processing plugin `${clz.getCanonicalName}`...")
+        logger.trace(s"Processing plugin `${clz.getCanonicalName}`...")
 
         val instance = loadConfigurablePlugin(clz).recoverWith {
           bad =>
@@ -56,7 +56,7 @@ trait PluginsSupport
 
         instance match {
           case Good(p) =>
-            logger.debug(s"Plugin `${clz.getCanonicalName}` instantiated: $p")
+            logger.info(s"Plugin `${clz.getCanonicalName}` instantiated: $p")
             Some(p)
 
           case Bad(f) =>
