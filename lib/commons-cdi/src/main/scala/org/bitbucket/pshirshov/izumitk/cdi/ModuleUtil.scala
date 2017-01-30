@@ -18,12 +18,22 @@ case class BunchOfModules(name: String, modules: Seq[Module]) {
 }
 
 object ModuleUtil extends StrictLogging {
+  def formattedModules(modules: BunchOfModules): String = {
+    formattedModules(modules.modules)
+  }
+
+  def formattedModules(modules: Seq[Module]): String = {
+    modules.map(m => s" -> ${m.getClass.getTypeName}").mkString("\n")
+  }
+
   def multipleOverride(allModules: Seq[BunchOfModules]): Module = {
     import scala.collection.JavaConverters._
 
     allModules.flatMap(_.asOption).foldLeft(Modules.EMPTY_MODULE) {
       case (acc, modules) =>
-        logger.debug(s"Injector: overriding `${shortModuleName(acc)}` with `$modules`")
+        logger.debug(
+          s"""Injector: overriding `${shortModuleName(acc)}` with
+             |${formattedModules(modules)}""".stripMargin)
         val result = Modules.`override`(acc).`with`(modules.modules.asJava)
         logger.trace(s"Got new module: ${shortModuleName(result)}")
         result
