@@ -2,7 +2,7 @@ package org.bitbucket.pshirshov.izumitk.modularity
 
 import com.typesafe.scalalogging.StrictLogging
 import org.bitbucket.pshirshov.izumitk.app.modules.AppConstantsModule
-import org.bitbucket.pshirshov.izumitk.cdi.{BootstrapPlugin, BunchOfModules, Plugin}
+import org.bitbucket.pshirshov.izumitk.cdi.{BootstrapPlugin, BunchOfModules, InjectorListenerModule, Plugin}
 import org.bitbucket.pshirshov.izumitk.modularity.model.PluginsInitiated
 import org.bitbucket.pshirshov.izumitk.modularity.tools.{PluginsIntrospectionModule, WithTargetSupport}
 
@@ -41,6 +41,7 @@ trait GuicePluginsSupport
     val internalModules = BunchOfModules("plugin-support", Seq(
       new AppConstantsModule(appId)
       , new PluginsIntrospectionModule(allPlugins)
+      , new InjectorListenerModule()
     ))
 
     PluginsInitiated(allPlugins, Seq(modules, internalModules))
