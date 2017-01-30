@@ -5,7 +5,7 @@ import com.typesafe.config.Config
 import com.typesafe.scalalogging.StrictLogging
 import org.bitbucket.pshirshov.izumitk.RequiredConfig
 import org.bitbucket.pshirshov.izumitk.cdi.Plugin
-import org.bitbucket.pshirshov.izumitk.modularity.tools.{WithPluginsConfig, WithTargetSupport}
+import org.bitbucket.pshirshov.izumitk.modularity.tools.WithPluginsConfig
 import org.scalactic._
 
 import scala.collection.JavaConverters._
@@ -15,12 +15,11 @@ import scala.collection.immutable.ListSet
   */
 trait PluginsSupport
   extends WithPluginsConfig
-    with WithTargetSupport
     with StrictLogging {
 
   protected lazy val appId: String = "noapp" // override in implementation to support per-application plugin scan
 
-  protected def loadPlugins(): Seq[Plugin] = {
+  def loadPlugins(): Seq[Plugin] = {
     if (!pluginsConfig.enabled) {
       logger.warn("Plugins support is disabled")
       return Seq()
@@ -44,7 +43,7 @@ trait PluginsSupport
             .asScala.map(_.load())
       }
 
-    val activeAndValidPluginClasses = allLoadabalePluginClasses.filter(isValidTarget)
+    val activeAndValidPluginClasses = filterPluginClasses(allLoadabalePluginClasses)
 
     val loadedPlugins = activeAndValidPluginClasses.flatMap {
       clz =>
@@ -69,14 +68,17 @@ trait PluginsSupport
     loadedPlugins
   }
 
+  protected def filterPluginClasses(classes: Seq[Class[_]]): Seq[Class[_]] = classes
+
   protected def pluginsPackages(): Seq[String] = {
-    val companyPackage = getClass.getPackage.getName.split('.').take(2).toList.mkString(".")
+    val pkgCompany = companyPackage()
+    val pkgClass = classPackage()
 
     ListSet(
       s"org.bitbucket.pshirshov.izumitk.plugins"
-      , s"$companyPackage.plugins"
-      , s"$companyPackage.$appId.plugins"
-      , s"${getClass.getPackage.getName}.plugins"
+      , s"$pkgCompany.plugins"
+      , s"$pkgCompany.$appId.plugins"
+      , s"$pkgClass.plugins"
     ).toSeq // lookup in org.bitbucket.pshirshov.izumitk and org.bitbucket.pshirshov.izumitk.<appId>
   }
 
@@ -108,5 +110,7 @@ trait PluginsSupport
     }
   }
 
+  protected def companyPackage(): String = getClass.getPackage.getName.split('.').take(2).toList.mkString(".")
 
+  protected def classPackage(): String = getClass.getPackage.getName
 }
