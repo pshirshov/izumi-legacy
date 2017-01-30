@@ -4,7 +4,7 @@ import com.typesafe.scalalogging.StrictLogging
 import org.bitbucket.pshirshov.izumitk.app.modules.AppConstantsModule
 import org.bitbucket.pshirshov.izumitk.cdi.{BootstrapPlugin, BunchOfModules, Plugin}
 import org.bitbucket.pshirshov.izumitk.modularity.model.PluginsInitiated
-import org.bitbucket.pshirshov.izumitk.modularity.tools.PluginsIntrospectionModule
+import org.bitbucket.pshirshov.izumitk.modularity.tools.{PluginsIntrospectionModule, WithTargetSupport}
 
 
 
@@ -28,7 +28,10 @@ object GuicePluginsSupport {
 
 
 
-trait GuicePluginsSupport extends PluginsSupport with StrictLogging {
+trait GuicePluginsSupport
+  extends PluginsSupport
+    with WithTargetSupport
+    with StrictLogging {
   protected def loadPluginModules(): PluginsInitiated = {
     val allPlugins = loadPlugins()
 

@@ -2,9 +2,11 @@ package org.bitbucket.pshirshov.izumitk.test
 
 import com.google.inject.Module
 import com.google.inject.util.Modules
+import net.codingwell.scalaguice.ScalaModule
 import org.bitbucket.pshirshov.izumitk.TestConfig.{TestConfigSection, references}
 import org.bitbucket.pshirshov.izumitk.TestConfigExtensions
 import org.bitbucket.pshirshov.izumitk.app.modules.ConfigExposingModule
+import org.bitbucket.pshirshov.izumitk.cdi.GuicePlugin
 
 /**
   */
@@ -63,4 +65,5 @@ trait EnvironmentalTest
     }.toSeq
   }
 
+  protected def plugins(plugins: GuicePlugin*): Seq[ScalaModule] = plugins.flatMap(_.createPluginModules)
 }
