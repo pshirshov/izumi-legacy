@@ -3,13 +3,18 @@ package org.bitbucket.pshirshov.izumitk.modularity.tools
 import com.typesafe.scalalogging.StrictLogging
 import org.bitbucket.pshirshov.izumitk.TargetPoint
 import org.bitbucket.pshirshov.izumitk.cdi.Plugin
+import org.bitbucket.pshirshov.izumitk.modularity.PluginsSupport
 
 /**
   */
 protected[modularity] trait WithTargetSupport
   extends StrictLogging {
 
-  this: WithPluginsConfig =>
+  this: PluginsSupport =>
+
+  abstract protected override def filterPluginClasses(classes: Seq[Class[_]]): Seq[Class[_]] = {
+    classes.filter(isValidTarget)
+  }
 
   protected def isValidTarget(pclass: Class[_]): Boolean = {
     classOf[Plugin].isAssignableFrom(pclass) &&
