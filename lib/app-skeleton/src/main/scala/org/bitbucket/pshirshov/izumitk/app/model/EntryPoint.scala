@@ -6,7 +6,7 @@ import scopt.OptionParser
 trait EntryPoint {
   def name: String
 
-  def configure[T <: EPArguments](parser: OptionParser[T]): Unit
+  def configure(parser: OptionParser[AppArguments]): Unit
 
-  def run(args: EPArguments, config: LoadedConfig): Unit
+  def run(args: AppArguments, config: LoadedConfig): Unit
 }
