@@ -6,7 +6,7 @@ import net.codingwell.scalaguice.ScalaModule
 import org.bitbucket.pshirshov.izumitk.TestConfig.{TestConfigSection, references}
 import org.bitbucket.pshirshov.izumitk.TestConfigExtensions
 import org.bitbucket.pshirshov.izumitk.app.modules.ConfigExposingModule
-import org.bitbucket.pshirshov.izumitk.cdi.GuicePlugin
+import org.bitbucket.pshirshov.izumitk.cdi.Plugin
 
 /**
   */
@@ -65,5 +65,5 @@ trait EnvironmentalTest
     }.toSeq
   }
 
-  protected def plugins(plugins: GuicePlugin*): Seq[ScalaModule] = plugins.flatMap(_.createPluginModules)
+  protected def plugins(plugins: Plugin*): Seq[ScalaModule] = plugins.flatMap(_.createPluginModules)
 }
