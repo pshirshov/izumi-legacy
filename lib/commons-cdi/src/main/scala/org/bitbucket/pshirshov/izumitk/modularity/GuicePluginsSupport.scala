@@ -1,7 +1,7 @@
 package org.bitbucket.pshirshov.izumitk.modularity
 
 import com.typesafe.scalalogging.StrictLogging
-import org.bitbucket.pshirshov.izumitk.app.modules.AppConstantsModule
+import org.bitbucket.pshirshov.izumitk.app.modules.{AppConstantsModule, ConfigExposingModule}
 import org.bitbucket.pshirshov.izumitk.cdi._
 import org.bitbucket.pshirshov.izumitk.modularity.model.PluginsInitiated
 import org.bitbucket.pshirshov.izumitk.modularity.tools.{PluginsIntrospectionModule, WithTargetSupport}
@@ -43,6 +43,7 @@ trait GuicePluginsSupport
       new AppConstantsModule(appId)
       , new PluginsIntrospectionModule(allPlugins)
       , new InjectorListenerModule()
+      , new ConfigExposingModule(config.effectiveApp)
     ))
 
     PluginsInitiated(allPlugins, Seq(modules, internalModules))
