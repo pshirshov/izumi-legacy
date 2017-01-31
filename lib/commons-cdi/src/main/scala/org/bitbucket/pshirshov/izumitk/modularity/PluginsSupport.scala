@@ -9,15 +9,15 @@ import org.bitbucket.pshirshov.izumitk.modularity.tools.WithPluginsConfig
 import org.scalactic._
 
 import scala.collection.JavaConverters._
-import scala.collection.immutable.ListSet
 
-/**
-  */
+
+
+
+
 trait PluginsSupport
-  extends WithPluginsConfig
+  extends WithPluginsPackages
+    with WithPluginsConfig
     with StrictLogging {
-
-  protected lazy val appId: String = "noapp" // override in implementation to support per-application plugin scan
 
   def loadPlugins(): Seq[Plugin] = {
     if (!pluginsConfig.enabled) {
@@ -47,7 +47,7 @@ trait PluginsSupport
 
     val loadedPlugins = activeAndValidPluginClasses.flatMap {
       clz =>
-        logger.debug(s"Processing plugin `${clz.getCanonicalName}`...")
+        logger.trace(s"Processing plugin `${clz.getCanonicalName}`...")
 
         val instance = loadConfigurablePlugin(clz).recoverWith {
           bad =>
@@ -56,11 +56,11 @@ trait PluginsSupport
 
         instance match {
           case Good(p) =>
-            logger.debug(s"Plugin `${clz.getCanonicalName}` instantiated: $p")
+            logger.info(s"Plugin `${clz.getCanonicalName}` instantiated: $p")
             Some(p)
 
           case Bad(f) =>
-            logger.warn(s"Loading of plugin `${clz.getCanonicalName}` failed: $f")
+            logger.error(s"Loading of plugin `${clz.getCanonicalName}` failed: $f")
             None
         }
     }
@@ -70,19 +70,7 @@ trait PluginsSupport
 
   protected def filterPluginClasses(classes: Seq[Class[_]]): Seq[Class[_]] = classes
 
-  protected def pluginsPackages(): Seq[String] = {
-    val pkgCompany = companyPackage()
-    val pkgClass = classPackage()
-
-    ListSet(
-      s"org.bitbucket.pshirshov.izumitk.plugins"
-      , s"$pkgCompany.plugins"
-      , s"$pkgCompany.$appId.plugins"
-      , s"$pkgClass.plugins"
-    ).toSeq // lookup in org.bitbucket.pshirshov.izumitk and org.bitbucket.pshirshov.izumitk.<appId>
-  }
-
-  private def loadSimplePlugin(clz: Class[_]): Plugin Or Every[Throwable] = {
+  private def loadSimplePlugin(clz: Class[_]): Or[Plugin, Every[Throwable]] = {
     try {
       Good(clz.getConstructor().newInstance().asInstanceOf[Plugin])
     } catch {
@@ -91,7 +79,7 @@ trait PluginsSupport
     }
   }
 
-  private def loadConfigurablePlugin(clz: Class[_]): Plugin Or Every[Throwable] = {
+  protected def loadConfigurablePlugin(clz: Class[_]): Or[Plugin, Every[Throwable]] = {
     try {
       val constructor = clz.getConstructor(classOf[Config])
       val configAnnotation = constructor.getAnnotation(classOf[RequiredConfig])
@@ -109,8 +97,5 @@ trait PluginsSupport
         Bad(One(t))
     }
   }
-
-  protected def companyPackage(): String = getClass.getPackage.getName.split('.').take(2).toList.mkString(".")
-
-  protected def classPackage(): String = getClass.getPackage.getName
 }
+

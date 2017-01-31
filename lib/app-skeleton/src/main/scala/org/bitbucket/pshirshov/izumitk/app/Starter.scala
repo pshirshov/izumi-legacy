@@ -9,7 +9,7 @@ import ch.qos.logback.core.util.StatusPrinter
 import com.typesafe.config.{Config, ConfigFactory, ConfigRenderOptions}
 import org.bitbucket.pshirshov.izumitk.config._
 import org.apache.commons.io.{FileUtils, IOUtils}
-import org.bitbucket.pshirshov.izumitk.app.model.AppModel._
+import org.bitbucket.pshirshov.izumitk.app.model.{AppArguments, StartupConfiguration}
 import org.slf4j.LoggerFactory
 
 import scala.util.{Failure, Success, Try}
@@ -17,13 +17,13 @@ import scala.util.{Failure, Success, Try}
 
 /**
   */
-abstract class Starter[ArgsType <: WithBaseArguments] {
+abstract class Starter {
   protected val referenceConfigName: String
   protected val defaultLogbackPath: String = Starter.defaultLogbackPath
 
-  protected val parser: scopt.OptionParser[ArgsType]
+  protected val parser: scopt.OptionParser[AppArguments]
 
-  def handleConfigLoadingResult(loadedConfig: Try[LoadedConfig], args: ArgsType): LoadedConfig = {
+  def handleConfigLoadingResult(loadedConfig: Try[LoadedConfig], args: AppArguments): LoadedConfig = {
     val config = loadedConfig.map {
       case c: LoadedResource =>
         println(s"Loaded REFERENCE resource. You should explicitly define config in filesystem. Here is your reference:")
@@ -50,7 +50,7 @@ abstract class Starter[ArgsType <: WithBaseArguments] {
     }
   }
 
-  protected final def configuration(args: Array[String], defaults: ArgsType): StartupConfiguration[ArgsType] = {
+  protected final def configuration(args: Array[String], defaults: AppArguments): StartupConfiguration = {
     parser.parse(args, defaults) match {
       case Some(appArgs) =>
         parser.showHeader
@@ -65,8 +65,8 @@ abstract class Starter[ArgsType <: WithBaseArguments] {
     }
   }
 
-  protected final def config(args: ArgsType): LoadedConfig = {
-    val path = args.base.configFile match {
+  protected final def config(args: AppArguments): LoadedConfig = {
+    val path = args.configFile match {
       case None =>
         referenceConfigName
 
@@ -82,12 +82,12 @@ abstract class Starter[ArgsType <: WithBaseArguments] {
   }
 
 
-  protected def doLoadConfig(args: ArgsType, path: String): Try[LoadedConfig] = {
+  protected def doLoadConfig(args: AppArguments, path: String): Try[LoadedConfig] = {
     TypesafeConfigLoader.loadConfig(path, referenceConfigName)
   }
 
-  protected def handleReference(args: ArgsType, c: LoadedConfig): LoadedConfig = {
-    if (!args.base.allowReferenceStartup.get) {
+  protected def handleReference(args: AppArguments, c: LoadedConfig): LoadedConfig = {
+    if (!args.allowReferenceStartup.get) {
       println(s"Exiting due to absence of explicitly defined config...")
       println(s"Use `--reference-startup` (`-rs`) option to override")
       System.exit(1)
@@ -97,29 +97,29 @@ abstract class Starter[ArgsType <: WithBaseArguments] {
     }
   }
 
-  protected def processParsedArguments(args: ArgsType, config: LoadedConfig) {
-    args.base.dump match {
+  protected def processParsedArguments(args: AppArguments, config: LoadedConfig): Unit = {
+    args.dump match {
       case Some(true) =>
         printEffectiveConfig(config.effective)
         System.exit(0)
       case _ =>
     }
 
-    args.base.showReference match {
+    args.showReference match {
       case Some(true) =>
         printReference(config)
         System.exit(0)
       case _ =>
     }
 
-    args.base.writeReference match {
+    args.writeReference match {
       case Some(true) =>
         writeReference(config)
         System.exit(0)
       case _ =>
     }
 
-    args.base.logbackFile match {
+    args.logbackFile match {
       case Some(value) =>
         configureLogback(Some(value.getCanonicalPath))
 
@@ -174,7 +174,7 @@ abstract class Starter[ArgsType <: WithBaseArguments] {
     }
   }
 
-  protected def configureLogback(logbackXmlPath: Option[String]) {
+  protected def configureLogback(logbackXmlPath: Option[String]): Unit = {
     val context: LoggerContext = LoggerFactory.getILoggerFactory.asInstanceOf[LoggerContext]
     context.reset()
 
