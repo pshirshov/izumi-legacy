@@ -1,29 +1,20 @@
-package org.bitbucket.pshirshov.izumitk.app
+package org.bitbucket.pshirshov.izumitk.app.entrypoints
 
 import com.typesafe.config.{Config, ConfigFactory}
 import com.typesafe.scalalogging.StrictLogging
-import org.bitbucket.pshirshov.izumitk.app.model.AppModel.{StartupConfiguration, WithBaseArguments}
-import org.bitbucket.pshirshov.izumitk.app.model.{EPArguments, EntryPoint}
+import org.bitbucket.pshirshov.izumitk.app.Starter
+import org.bitbucket.pshirshov.izumitk.app.model.{AppArguments, EntryPoint, StartupConfiguration}
 import org.bitbucket.pshirshov.izumitk.config.{LoadedConfig, ResolvedConfig}
-import org.bitbucket.pshirshov.izumitk.modularity.PluginsSupport
 
-class BootstrapPluginsLoader
-(
-  override protected val basePackage: Package
-  , override protected val appId: String
-  , override protected val config: LoadedConfig
-)
-  extends PluginsSupport {
-  override protected def namespace: String = "entrypoints"
-}
 
-abstract class EntrypointLoader[T <: WithBaseArguments with EPArguments]
-  extends Starter[T]
+
+abstract class EntrypointLoader
+  extends Starter
     with StrictLogging {
 
   protected def appId: String
 
-  protected def defaultArguments(): T
+  protected def defaultArguments(): AppArguments
 
   protected val bootstrapReference: Config = ConfigFactory.load("izumi-entrypoint-bootstrap.conf")
   // TODO: looks shitty
@@ -37,11 +28,12 @@ abstract class EntrypointLoader[T <: WithBaseArguments with EPArguments]
     configuration(args, defaultArguments()) match {
       case StartupConfiguration(arguments, config) =>
         safeMain {
-          epMap.get(arguments.entrypoint) match {
+          val epName = arguments.value[String](EntrypointLoader.EP_KEY)
+          epMap.get(epName) match {
             case Some(e) =>
               e.run(arguments, config)
             case None =>
-              throw new IllegalArgumentException(s"Unknown entry point: ${arguments.entrypoint}")
+              throw new IllegalArgumentException(s"Unknown entry point: $epName")
           }
         }
     }
@@ -59,4 +51,8 @@ abstract class EntrypointLoader[T <: WithBaseArguments with EPArguments]
     }
     epMap
   }
+}
+
+object EntrypointLoader {
+  final val EP_KEY = "izumi.entrypoint"
 }
