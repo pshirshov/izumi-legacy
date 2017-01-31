@@ -14,7 +14,7 @@ abstract class EntrypointLoader
 
   protected def appId: String
 
-  protected def defaultArguments(): AppArguments
+  protected def defaultArguments(): AppArguments = AppArguments()
 
   protected val bootstrapReference: Config = ConfigFactory.load("izumi-entrypoint-bootstrap.conf")
   // TODO: looks shitty
