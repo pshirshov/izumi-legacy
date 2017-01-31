@@ -14,6 +14,9 @@ import scala.language.postfixOps
 
 class TestLoader extends GuicePluginsSupport {
   private val testConfig = ConfigFactory.load("plugins-test.conf")
+
+  override protected def appId: String = "nothing"
+
   override protected val config: LoadedConfig = LoadedResource(testConfig, testConfig, testConfig)
 
   def loadModulesTest(): Seq[BunchOfModules] = loadPluginModules().modules

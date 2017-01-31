@@ -10,9 +10,9 @@ import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
 sealed trait LoadedConfig {
-  val effective: Config
-  val effectiveApp: Config
-  val reference: Config
+  def effective: Config
+  def effectiveApp: Config
+  def reference: Config
 }
 
 case class ResolvedConfig(effective: Config, effectiveApp: Config, reference: Config) extends LoadedConfig
