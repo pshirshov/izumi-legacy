@@ -13,6 +13,6 @@ The most convenient workflow:
 Convenience oneliner:
 
     sbt -Dpb.config=perfect-build.json.SAMPLE updateBugfix && \
-      git push --mirror && git checkout HEAD~1 && \
+      git push --all --follow-tags && git checkout HEAD~1 && \
       sbt -Dpb.strict-version=false clean publish sonatypeRelease && \
       git checkout master
