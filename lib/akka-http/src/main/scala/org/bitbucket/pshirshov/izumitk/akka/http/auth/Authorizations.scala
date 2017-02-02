@@ -1,23 +1,18 @@
 package org.bitbucket.pshirshov.izumitk.akka.http.auth
 
-import akka.http.scaladsl.server
-import akka.http.scaladsl.server.RequestContext
-import org.bitbucket.pshirshov.izumitk.akka.http.auth.model.{AuthorizationContext, Credentials}
+import akka.http.scaladsl.server.{Directive0, RequestContext}
 
+import scala.reflect.ClassTag
+
+trait Credentials {}
 
 trait Authorizations {
   type Cred <: Credentials
 
-  def inFrameworkContext(credentials: Cred): (RequestContext) => Boolean = {
-    contextAuthorization(AuthorizationContext.Framework)(credentials)
-  }
-
-  def withFrameworkCredentials: server.Directive1[Cred]
-
-  protected def contextAuthorization(context: AuthorizationContext): (Cred) => ((RequestContext) => Boolean)
+  def genericAuthorize[T:ClassTag]: Directive0
 
   protected val forbidden: PartialFunction[Cred, RequestContext => Boolean] = {
-    case _: Cred =>
+    case _ =>
       _: RequestContext =>
         false
   }

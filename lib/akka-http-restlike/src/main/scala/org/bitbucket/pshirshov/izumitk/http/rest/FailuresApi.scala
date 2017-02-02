@@ -6,7 +6,7 @@ import akka.http.scaladsl.server.PathMatchers.Segment
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import org.bitbucket.pshirshov.izumitk.akka.http.auth.Authorizations
-import org.bitbucket.pshirshov.izumitk.akka.http.services.HttpService
+import org.bitbucket.pshirshov.izumitk.akka.http.services.{HttpService, IzumiHttpService}
 import org.bitbucket.pshirshov.izumitk.failures.services.FailureRepository
 import org.bitbucket.pshirshov.izumitk.json.JacksonMapper
 import org.scalactic.Good
@@ -19,29 +19,32 @@ class FailuresApi @Inject()
   , protected val failureRepository: FailureRepository
   , protected val authorizations: Authorizations
 ) extends HttpService
+  with IzumiHttpService
   with JsonAPI {
 
+  private val authorization = authorizations.genericAuthorize[FailuresApi]
+
   override val routes: server.Route =
-    pathPrefix("failures") {
-      authorizations.withFrameworkCredentials {
-        cred =>
-          authorize(authorizations.inFrameworkContext(cred)) {
-            (get & path(Segment)) {
-              failureId =>
-                completeJson {
-                  val failure = failureRepository.readFailure(failureId) /*.map {
-                    f =>
-                      import scala.collection.JavaConverters._
-                      val output = mapper.valueToTree[ObjectNode](f.copy(causes = Vector()))
-                      val causes = JsonNodeFactory.instance.arrayNode()
-                      causes.addAll(f.causes.map(t => new TextNode(ExceptionUtils.getStackTrace(t))))
-                      output.set("causes", causes)
-                      output
-                  }*/
-                  JsonAPI.Result(Good(failure), endpointName = "private-failures")
-                }
+    prefix {
+      authorization {
+        (get & path(Segment)) {
+          failureId =>
+            completeJson {
+              val failure = failureRepository.readFailure(failureId)
+              /*.map {
+                                 f =>
+                                   import scala.collection.JavaConverters._
+                                   val output = mapper.valueToTree[ObjectNode](f.copy(causes = Vector()))
+                                   val causes = JsonNodeFactory.instance.arrayNode()
+                                   causes.addAll(f.causes.map(t => new TextNode(ExceptionUtils.getStackTrace(t))))
+                                   output.set("causes", causes)
+                                   output
+                               }*/
+              JsonAPI.Result(Good(failure), endpointName = "private-failures")
             }
-          }
+        }
       }
     }
+
+  override protected def defaultPrefix: String = "failures"
 }
