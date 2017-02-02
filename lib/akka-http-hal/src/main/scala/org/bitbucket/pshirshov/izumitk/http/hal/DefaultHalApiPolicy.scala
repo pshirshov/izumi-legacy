@@ -1,10 +1,13 @@
 package org.bitbucket.pshirshov.izumitk.http.hal
 
+import akka.http.javadsl.server.CustomRejection
 import akka.http.scaladsl.model.MediaType.WithFixedCharset
+import akka.http.scaladsl.model.StatusCodes.ClientError
 import akka.http.scaladsl.model.{HttpEntity, _}
 import akka.http.scaladsl.server.Directives.complete
-import akka.http.scaladsl.server.{ExceptionHandler, RejectionHandler, RequestContext, RouteResult}
+import akka.http.scaladsl.server._
 import com.codahale.metrics.MetricRegistry
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import com.theoryinpractise.halbuilder.api.{Representation, RepresentationFactory}
@@ -34,6 +37,8 @@ case class HalFailure(
                        , failureMessage: String
                        , stacktrace: Option[String]
                      )
+
+case class JwtRejection(token: String) extends CustomRejection
 
 @Singleton
 class DefaultHalApiPolicy @Inject()
@@ -80,16 +85,27 @@ class DefaultHalApiPolicy @Inject()
   override def rejectionHandler(): RejectionHandler = {
     RejectionHandler.newBuilder()
       .handle {
-        case r =>
+        case r: JwtRejection =>
           val resp = protocol.protocolMapper.getNodeFactory.objectNode()
-          resp.put("rejected", true)
-          resp.put("message", r.toString)
+          resp.put("error", "invalid_token")
+          resp.put("error_description", s"Access token expired: ${r.token}")
+
+          respond(StatusCodes.Unauthorized, resp)
+
+        case r: Rejection =>
+          val resp = protocol.protocolMapper.getNodeFactory.objectNode()
+          resp.put("error", "request_rejected")
+          resp.put("error_description", r.toString)
           
-          complete(HttpResponse(StatusCodes.NotFound
-            , entity = HttpEntity(protocol.protocolMapper.writeValueAsString(resp)).withContentType(halContentType)
-          ))
+          respond(StatusCodes.NotFound, resp)
       }
       .result()
+  }
+
+  private def respond(code: ClientError, resp: ObjectNode) = {
+    complete(HttpResponse(code
+      , entity = HttpEntity(protocol.protocolMapper.writeValueAsString(resp)).withContentType(halContentType)
+    ))
   }
 
   override def exceptionHandler(): ExceptionHandler = {

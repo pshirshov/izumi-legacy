@@ -15,6 +15,7 @@ import org.bitbucket.pshirshov.izumitk.akka.http.util.client.LoopbackProxy
 
 import scala.concurrent.ExecutionContext
 
+
 @Singleton
 class JmxProxyService @Inject()
 (
@@ -26,30 +27,30 @@ class JmxProxyService @Inject()
   , protected implicit val materializer: Materializer
 )
   extends HttpService
+    with IzumiHttpService
     with StrictLogging {
 
   private val proxy = LoopbackProxy.create(system, jettyJmxHost, jettyJmxPort)
 
+  private val authorization = authorizations.genericAuthorize[JmxProxyService]
+
   override val routes: Route = prefix {
     pathPrefix("jmx") {
-      authorizations.withFrameworkCredentials {
-        cred =>
-          authorize(authorizations.inFrameworkContext(cred)) {
-            (pathPrefix("jolokia") | pathPrefix("console")) {
-              mapRequest(requestMapper) {
-                mapResponse {
-                  res =>
-                    if (res.status == StatusCodes.MovedPermanently) {
-                      rewriteLocation(res)
-                    } else {
-                      res
-                    }
-                } {
-                  proxy
+      authorization {
+        (pathPrefix("jolokia") | pathPrefix("console")) {
+          mapRequest(requestMapper) {
+            mapResponse {
+              res =>
+                if (res.status == StatusCodes.MovedPermanently) {
+                  rewriteLocation(res)
+                } else {
+                  res
                 }
-              }
+            } {
+              proxy
             }
           }
+        }
       }
     }
   }
@@ -64,16 +65,12 @@ class JmxProxyService @Inject()
     res.copy(headers = newHeaders)
   }
 
-  protected def prefix: Directive0 = {
-    pathPrefix(defaultPrefix)
-  }
-
-  protected def defaultPrefix: String = "diag"
-
   protected def requestMapper(r: HttpRequest): HttpRequest = {
     val newUri: Uri = JmxProxyService.dropTopSegments(r, 3)
     r.copy(uri = newUri)
   }
+
+  override protected def defaultPrefix: String = "diag"
 }
 
 object JmxProxyService {
