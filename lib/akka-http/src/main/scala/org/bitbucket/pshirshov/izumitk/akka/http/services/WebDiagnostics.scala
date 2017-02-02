@@ -21,18 +21,21 @@ class WebDiagnostics @Inject()
   , protected implicit val executionContext: ExecutionContext
   , protected implicit val materializer: Materializer
 )
-  extends HttpService {
+  extends HttpService
+  with IzumiHttpService {
 
-  override val routes: Route = pathPrefix("diag") {
-    authorizations.withFrameworkCredentials {
-      cred =>
-        authorize(authorizations.inFrameworkContext(cred)) {
-          (get & path("config") & pathEndOrSingleSlash) {
-            complete(appConfig.root().render())
-          } ~ (get & path("log")) {
-            handleWebSocketMessagesForProtocol(WSLogger.createLoggerFlow(), "ws-logger")
-          }
-        }
+  private val authorization = authorizations.genericAuthorize[WebDiagnostics]
+
+  override val routes: Route = prefix {
+    authorization {
+      (get & path("config") & pathEndOrSingleSlash) {
+        complete(appConfig.root().render())
+      } ~ (get & path("log")) {
+        handleWebSocketMessagesForProtocol(WSLogger.createLoggerFlow(), "ws-logger")
+      }
     }
   }
+
+  override protected def defaultPrefix: String = "diag"
+
 }
