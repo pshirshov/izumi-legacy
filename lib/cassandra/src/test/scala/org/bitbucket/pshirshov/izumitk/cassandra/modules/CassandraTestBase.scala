@@ -1,9 +1,12 @@
 package org.bitbucket.pshirshov.izumitk.cassandra.modules
 
+import java.net.UnknownHostException
+
 import com.datastax.driver.core.Session
 import com.datastax.driver.core.exceptions.{ConnectionException, NoHostAvailableException}
 import com.google.inject.Injector
 import org.bitbucket.pshirshov.izumitk.test.{ExposedTestScope, ResourceVerifier, TestResourceAvailabilityChecker}
+import org.bitbucket.pshirshov.izumitk.util.ExceptionUtils
 
 
 @ExposedTestScope
@@ -14,10 +17,11 @@ trait CassandraTestBase extends TestResourceAvailabilityChecker {
     }
 
     override def resourceUnavailable(e: Throwable): Boolean = {
-      val exceptionClass = e.getCause.getClass
+      val causes = ExceptionUtils.causes(e).map(_.getClass)
 
-      classOf[ConnectionException].isAssignableFrom(exceptionClass) ||
-        classOf[NoHostAvailableException].isAssignableFrom(exceptionClass)
+      causes.exists(classOf[ConnectionException].isAssignableFrom) ||
+      causes.exists(classOf[NoHostAvailableException].isAssignableFrom) ||
+      causes.exists(classOf[UnknownHostException].isAssignableFrom)
     }
   }
 }
