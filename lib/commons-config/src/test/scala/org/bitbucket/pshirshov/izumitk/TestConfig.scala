@@ -23,8 +23,8 @@ object TestConfig {
         throw new IllegalStateException()
     }
 
-    out
-      .withFallback(ConfigFactory.defaultReference())
+    ConfigFactory.defaultReference()
+      .withFallback(out)
       .resolve()
   }
 
