@@ -17,11 +17,14 @@ trait CassandraTestBase extends TestResourceAvailabilityChecker {
     }
 
     override def resourceUnavailable(e: Throwable): Boolean = {
-      val causes = ExceptionUtils.causes(e).map(_.getClass)
 
-      causes.exists(classOf[ConnectionException].isAssignableFrom) ||
-      causes.exists(classOf[NoHostAvailableException].isAssignableFrom) ||
-      causes.exists(classOf[UnknownHostException].isAssignableFrom)
+      val unavailabilityMarkers = Seq(
+        classOf[ConnectionException]
+        , classOf[NoHostAvailableException]
+        , classOf[UnknownHostException]
+      )
+
+      oneOf(e, unavailabilityMarkers)
     }
   }
 }
