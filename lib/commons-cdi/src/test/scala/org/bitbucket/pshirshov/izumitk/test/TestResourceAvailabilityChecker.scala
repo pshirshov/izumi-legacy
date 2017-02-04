@@ -4,6 +4,7 @@ import java.net.{InetSocketAddress, Socket, URI, URL}
 
 import com.google.inject.Injector
 import com.typesafe.scalalogging.StrictLogging
+import org.bitbucket.pshirshov.izumitk.util.ExceptionUtils
 import org.scalatest.exceptions.TestPendingException
 import resource.managed
 
@@ -16,6 +17,11 @@ trait ResourceVerifier {
   def verifyResource(injector: Injector): Unit
 
   def resourceUnavailable(e: Throwable): Boolean
+
+  protected def oneOf(e: Throwable, unavailabilityMarkers: Seq[Class[_ <: Exception]]): Boolean = {
+    val causes = ExceptionUtils.causes(e).map(_.getClass)
+    unavailabilityMarkers.exists(m => causes.exists(m.isAssignableFrom))
+  }
 }
 
 @ExposedTestScope
