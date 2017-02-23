@@ -9,13 +9,16 @@ import org.bitbucket.pshirshov.izumitk.cassandra.facade._
 import org.bitbucket.pshirshov.izumitk.json.JacksonMapper
 import org.bitbucket.pshirshov.izumitk.util.{ExceptionUtils, SerializationUtils}
 
+import scala.concurrent.duration.FiniteDuration
+
 @Singleton
-class CassandraFailureRespository @Inject()
+class CassandraFailureRepository @Inject()
 (
   @Named("standardMapper") protected val mapper: JacksonMapper
   , protected val query: FailureRepositoryQueries
   , protected val metrics: MetricRegistry
   , @Named("app.id") protected val productId: String
+  , @Named("failures.records-ttl") protected val ttl: FiniteDuration
 )
   extends FailureRepository {
 
@@ -38,7 +41,8 @@ class CassandraFailureRespository @Inject()
     import scala.collection.JavaConverters._
 
     execute(writeFailure.bind(
-      mapper.writeValueAsString(failure.data.asJava)
+      ttl.toSeconds.toInt.asInstanceOf[java.lang.Integer] // asInstanceOf cause bind doesn't accept AnyVal, only AnyRef
+      , mapper.writeValueAsString(failure.data.asJava)
       , mapper.writeValueAsString(meta.asJava)
       , mapper.writeValueAsString(failure.causes.map(exception.ExceptionUtils.getStackTrace).toList.asJava)
       , SerializationUtils.toByteBuffer(failure.causes)
@@ -94,6 +98,6 @@ class FailureRepositoryQueries @Inject()
   }
 
   lazy val writeFailure: CPreparedStatement = prepareQuery(CQRead("failures-put"), tFailures) {
-    ctx => s"UPDATE ${ctx.table.name} SET data = ?, meta = ?, stacktraces = ?, exceptions = ? WHERE id = ?"
+    ctx => s"UPDATE ${ctx.table.name} USING TTL ? SET data = ?, meta = ?, stacktraces = ?, exceptions = ? WHERE id = ?"
   }
 }
