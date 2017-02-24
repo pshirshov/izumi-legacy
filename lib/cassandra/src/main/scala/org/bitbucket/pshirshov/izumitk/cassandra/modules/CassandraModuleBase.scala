@@ -3,7 +3,7 @@ package org.bitbucket.pshirshov.izumitk.cassandra.modules
 import com.datastax.driver.core.exceptions.AlreadyExistsException
 import com.datastax.driver.core.policies.{DCAwareRoundRobinPolicy, RoundRobinPolicy, TokenAwarePolicy}
 import com.datastax.driver.core.querybuilder.QueryBuilder
-import com.datastax.driver.core.{Cluster, PreparedStatement, Session}
+import com.datastax.driver.core.{Cluster, PreparedStatement, ProtocolOptions, Session}
 import com.google.common.cache.{CacheBuilder, CacheLoader}
 import com.google.inject.{Provides, Scopes, Singleton}
 import com.google.inject.name.Named
@@ -12,7 +12,8 @@ import com.typesafe.scalalogging.StrictLogging
 import net.codingwell.scalaguice.{ScalaModule, ScalaMultibinder}
 import org.bitbucket.pshirshov.izumitk.HealthChecker
 import org.bitbucket.pshirshov.izumitk.cassandra._
-import org.bitbucket.pshirshov.izumitk.cassandra.util.NetworkUtils
+import org.bitbucket.pshirshov.izumitk.util.network.NetworkUtils
+
 import scala.collection.JavaConverters._
 
 
@@ -31,7 +32,7 @@ abstract class CassandraModuleBase() extends ScalaModule with StrictLogging {
 
     endpoints.foreach {
       e =>
-        val addr = NetworkUtils.getAddress(e)
+        val addr = NetworkUtils.getAddress(e, ProtocolOptions.DEFAULT_PORT)
         builder.addContactPoint(addr.getHostName).withPort(addr.getPort)
     }
 
