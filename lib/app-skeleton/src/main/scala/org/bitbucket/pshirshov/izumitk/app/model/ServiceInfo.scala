@@ -4,8 +4,8 @@ import java.lang.management.ManagementFactory
 import java.time.ZonedDateTime
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import org.bitbucket.pshirshov.izumitk.util.types.TimeUtils
 import org.bitbucket.pshirshov.izumitk.{HealthCheck, HealthStatus}
-import org.bitbucket.pshirshov.izumitk.util.TimeUtils
 
 import scala.concurrent.duration.Duration
 

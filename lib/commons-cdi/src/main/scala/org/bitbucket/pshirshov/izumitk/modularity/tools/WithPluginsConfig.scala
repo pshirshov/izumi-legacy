@@ -6,8 +6,9 @@ import com.typesafe.config.Config
 import com.typesafe.scalalogging.StrictLogging
 import org.bitbucket.pshirshov.izumitk.config.LoadedConfig
 import org.bitbucket.pshirshov.izumitk.modularity.model.PluginsConfig
-import org.bitbucket.pshirshov.izumitk.util.StringUtils
+import org.bitbucket.pshirshov.izumitk.util.types.StringUtils
 import org.scalactic.ErrorMessage
+
 import scala.collection.JavaConverters._
 
 /**

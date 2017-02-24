@@ -5,9 +5,9 @@ import com.google.inject.{Inject, Singleton}
 import com.google.inject.name.Named
 import com.typesafe.scalalogging.StrictLogging
 import org.bitbucket.pshirshov.izumitk.test.ExposedTestScope
-import org.bitbucket.pshirshov.izumitk.util.SerializationUtils
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.bitbucket.pshirshov.izumitk.failures.services.{FailureRecord, FailureRepository, RestoredFailureRecord}
+import org.bitbucket.pshirshov.izumitk.util.types.SerializationUtils
 
 
 @ExposedTestScope

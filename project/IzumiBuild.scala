@@ -16,7 +16,11 @@ object IzumiBuild extends PerfectBuild {
       dependencies = Seq()
     )
     , mkProject(
-      base = file("lib/commons-formats"),
+      base = file("lib/commons-model"),
+      dependencies = customDep(allProjects("commons-test") % "test")
+    )
+    , mkProject(
+      base = file("lib/commons-util"),
       dependencies = customDep(allProjects("commons-test") % "test")
     )
     , mkProject(
@@ -26,7 +30,7 @@ object IzumiBuild extends PerfectBuild {
     , mkProject(
       base = file("lib/commons-cdi"),
       dependencies = customDep(allProjects("commons-test") % "test"
-        , "commons-formats"
+        , "commons-util"
         , allProjects("commons-config") % "compile->compile;test->compile,test"
       )
     )
