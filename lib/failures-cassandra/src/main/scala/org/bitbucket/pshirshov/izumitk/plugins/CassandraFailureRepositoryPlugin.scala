@@ -6,7 +6,7 @@ import org.bitbucket.pshirshov.izumitk.Depends
 import org.bitbucket.pshirshov.izumitk.cdi.GuicePlugin
 import org.bitbucket.pshirshov.izumitk.failures.services.{CassandraFailureRepository, FailureRepository}
 import org.bitbucket.pshirshov.izumitk.failures.targets.FailureRepositoryTarget
-import org.bitbucket.pshirshov.izumitk.util.TimeUtils
+import org.bitbucket.pshirshov.izumitk.util.types.TimeUtils
 
 import scala.concurrent.duration.FiniteDuration
 

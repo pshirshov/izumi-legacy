@@ -17,7 +17,7 @@ import org.bitbucket.pshirshov.izumitk.akka.http.util.{APIPolicy, MetricDirectiv
 import org.bitbucket.pshirshov.izumitk.failures.model.{CommonDomainExceptions, DomainException, ServiceException, ServiceFailure}
 import org.bitbucket.pshirshov.izumitk.failures.services.{FailureRecord, FailureRepository}
 import org.bitbucket.pshirshov.izumitk.hal.HalResource
-import org.bitbucket.pshirshov.izumitk.util.ExceptionUtils
+import org.bitbucket.pshirshov.izumitk.util.types.ExceptionUtils
 import org.scalactic.{Bad, Every, Good}
 
 import scala.concurrent.{ExecutionContext, Future}

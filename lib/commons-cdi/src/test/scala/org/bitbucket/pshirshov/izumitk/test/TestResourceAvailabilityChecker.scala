@@ -4,7 +4,7 @@ import java.net.{InetSocketAddress, Socket, URI, URL}
 
 import com.google.inject.Injector
 import com.typesafe.scalalogging.StrictLogging
-import org.bitbucket.pshirshov.izumitk.util.ExceptionUtils
+import org.bitbucket.pshirshov.izumitk.util.types.ExceptionUtils
 import org.scalatest.exceptions.TestPendingException
 import resource.managed
 

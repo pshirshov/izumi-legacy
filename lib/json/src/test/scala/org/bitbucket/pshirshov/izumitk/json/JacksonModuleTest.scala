@@ -11,7 +11,7 @@ import org.bitbucket.pshirshov.izumitk.TestConfigExtensions._
 import org.bitbucket.pshirshov.izumitk.app.modules.ConfigExposingModule
 import org.bitbucket.pshirshov.izumitk.json.modules.JacksonModule
 import org.bitbucket.pshirshov.izumitk.test.InjectorTestBase
-import org.bitbucket.pshirshov.izumitk.util.TimeUtils
+import org.bitbucket.pshirshov.izumitk.util.types.TimeUtils
 
 
 /**
