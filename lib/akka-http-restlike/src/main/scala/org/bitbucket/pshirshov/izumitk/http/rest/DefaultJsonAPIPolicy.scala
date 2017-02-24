@@ -15,7 +15,7 @@ import org.bitbucket.pshirshov.izumitk.akka.http.util.serialization.Serializatio
 import org.bitbucket.pshirshov.izumitk.failures.model._
 import org.bitbucket.pshirshov.izumitk.failures.services.{FailureRecord, FailureRepository}
 import org.bitbucket.pshirshov.izumitk.json.JacksonMapper
-import org.bitbucket.pshirshov.izumitk.util.{ExceptionUtils, TimeUtils}
+import org.bitbucket.pshirshov.izumitk.util.types.{ExceptionUtils, TimeUtils}
 import org.scalactic.{Bad, Every, Good}
 
 import scala.util.control.NonFatal

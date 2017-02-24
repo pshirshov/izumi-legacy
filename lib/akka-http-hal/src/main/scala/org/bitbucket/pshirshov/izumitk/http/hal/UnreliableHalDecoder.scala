@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.node.{ArrayNode, ObjectNode}
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import org.bitbucket.pshirshov.izumitk.json.JacksonMapper
-import org.bitbucket.pshirshov.izumitk.util.TypeUtils
+import org.bitbucket.pshirshov.izumitk.util.types.TypeUtils
 
 
 @Singleton
