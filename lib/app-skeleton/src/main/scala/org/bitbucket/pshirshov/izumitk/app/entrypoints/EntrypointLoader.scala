@@ -7,7 +7,6 @@ import org.bitbucket.pshirshov.izumitk.app.model.{AppArguments, EntryPoint, Star
 import org.bitbucket.pshirshov.izumitk.config.{LoadedConfig, ResolvedConfig}
 
 
-
 abstract class EntrypointLoader
   extends Starter
     with StrictLogging {
@@ -23,11 +22,11 @@ abstract class EntrypointLoader
   protected val bootstrap: BootstrapPluginsLoader = new BootstrapPluginsLoader(getClass.getPackage, appId, bootstrapConfig)
 
   def main(args: Array[String]): Unit = {
-    val epMap = loadEntrypoints()
-    epMap.values.foreach(_.configure(parser))
-    configuration(args, defaultArguments()) match {
-      case StartupConfiguration(arguments, config) =>
-        safeMain {
+    safeMain {
+      val epMap = loadEntrypoints()
+      epMap.values.foreach(_.configure(parser))
+      configuration(args, defaultArguments()) match {
+        case StartupConfiguration(arguments, config) =>
           val epName = arguments.value[String](EntrypointLoader.EP_KEY)
           epMap.get(epName) match {
             case Some(e) =>
@@ -35,7 +34,7 @@ abstract class EntrypointLoader
             case None =>
               throw new IllegalArgumentException(s"Unknown entry point: $epName")
           }
-        }
+      }
     }
   }
 
