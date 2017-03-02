@@ -1,5 +1,7 @@
 package org.bitbucket.pshirshov.izumitk.cassandra.modules
 
+import java.util.concurrent.TimeUnit
+
 import com.datastax.driver.core.policies.TokenAwarePolicy
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.{Cluster, Session}
@@ -9,6 +11,8 @@ import org.bitbucket.pshirshov.izumitk.cassandra.PSCache
 import org.bitbucket.pshirshov.izumitk.test.{ExposedTestScope, WithReusableResources}
 import net.codingwell.scalaguice.ScalaMultibinder
 import org.apache.commons.lang3.RandomStringUtils
+
+import scala.util.{Failure, Success, Try}
 
 
 object CassandraTestModule {
@@ -64,8 +68,13 @@ final class CassandraTestModule() extends CassandraModuleBase with WithReusableR
       , () => super.getSession(cluster, defaultReplication, defaultKeyspace)
       , {
         session: Session =>
-          session.execute(s"DROP KEYSPACE ${QueryBuilder.quote(defaultKeyspace)}")
-          logger.info(s"Keyspace `$defaultKeyspace` dropped")
+          val future = session.executeAsync(s"DROP KEYSPACE ${QueryBuilder.quote(defaultKeyspace)}")
+          Try(future.get(2, TimeUnit.SECONDS)) match {
+            case Success(_) =>
+              logger.info(s"Keyspace `$defaultKeyspace` dropped")
+            case Failure(f) =>
+              logger.info(s"Keyspace `$defaultKeyspace` was not dropped until timeout, but probably it would be dropped later: $f")
+          }
           cluster.close()
       }
       , identifier = Some(defaultKeyspace)
