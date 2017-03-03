@@ -11,15 +11,18 @@ abstract class EntrypointLoader
   extends Starter
     with StrictLogging {
 
-  protected def appId: String
-
   protected def defaultArguments(): AppArguments = AppArguments()
 
-  protected val bootstrapReference: Config = ConfigFactory.load("izumi-entrypoint-bootstrap.conf")
-  // TODO: looks shitty
-  protected val bootstrapConfig: LoadedConfig = ResolvedConfig(bootstrapReference, bootstrapReference, bootstrapReference)
+  protected def bootstrapReference: Config = ConfigFactory.load("izumi-entrypoint-bootstrap.conf")
 
-  protected val bootstrap: BootstrapPluginsLoader = new BootstrapPluginsLoader(getClass.getPackage, appId, bootstrapConfig)
+  // TODO: looks shitty
+  protected def bootstrapConfig: LoadedConfig = ResolvedConfig(
+    bootstrapReference
+    , bootstrapReference
+    , bootstrapReference
+  )
+
+  protected def bootstrapLoader: BootstrapPluginsLoader = new BootstrapPluginsLoader(getClass.getPackage, bootstrapConfig)
 
   def main(args: Array[String]): Unit = {
     safeMain {
@@ -40,7 +43,7 @@ abstract class EntrypointLoader
 
   protected def loadEntrypoints(): Map[String, EntryPoint] = {
     val epMap: Map[String, EntryPoint] = {
-      val entrypoints = bootstrap.loadPlugins().filter(_.isInstanceOf[EntryPoint]).map(_.asInstanceOf[EntryPoint])
+      val entrypoints = bootstrapLoader.loadPlugins().filter(_.isInstanceOf[EntryPoint]).map(_.asInstanceOf[EntryPoint])
       logger.info(s"Entrypoints loaded: ${entrypoints.map(_.name)}")
 
       entrypoints.groupBy(_.name).map {

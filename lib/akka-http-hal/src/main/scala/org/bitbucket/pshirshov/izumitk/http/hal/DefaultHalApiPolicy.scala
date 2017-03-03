@@ -17,6 +17,7 @@ import org.bitbucket.pshirshov.izumitk.akka.http.util.{APIPolicy, MetricDirectiv
 import org.bitbucket.pshirshov.izumitk.failures.model.{CommonDomainExceptions, DomainException, ServiceException, ServiceFailure}
 import org.bitbucket.pshirshov.izumitk.failures.services.{FailureRecord, FailureRepository}
 import org.bitbucket.pshirshov.izumitk.hal.HalResource
+import org.bitbucket.pshirshov.izumitk.model.cluster.AppId
 import org.bitbucket.pshirshov.izumitk.util.types.ExceptionUtils
 import org.scalactic.{Bad, Every, Good}
 
@@ -48,7 +49,7 @@ class DefaultHalApiPolicy @Inject()
   , failureRepository: FailureRepository
   , cors: CORS
   , linkExtractor: LinkExtractor
-  , @Named("app.id") override protected val productId: String
+  , @Named("app.id") override protected val productId: AppId
   , override val protocol: SerializationProtocol
   , @Named("@http.debug") protected val isDebugMode: Boolean
   , override protected val metrics: MetricRegistry
