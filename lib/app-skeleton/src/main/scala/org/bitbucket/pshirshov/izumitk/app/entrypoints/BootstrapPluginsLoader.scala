@@ -6,7 +6,6 @@ import org.bitbucket.pshirshov.izumitk.modularity.PluginsSupport
 class BootstrapPluginsLoader
 (
   override protected val basePackage: Package
-  , override protected val appId: String
   , override protected val config: LoadedConfig
 )
   extends PluginsSupport {

@@ -7,6 +7,7 @@ import akka.http.scaladsl.server.directives.BasicDirectives
 import akka.http.scaladsl.server.{Directive0, RequestContext, Route, RouteResult}
 import com.codahale.metrics._
 import com.typesafe.scalalogging.StrictLogging
+import org.bitbucket.pshirshov.izumitk.model.cluster.AppId
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -25,7 +26,7 @@ trait MetricDirectives extends BasicDirectives with StrictLogging {
             val operationDuration = System.nanoTime() - before
             r.headers.find(_.is(MetricDirectives.ENDPOINT_NAME_HEADER)).foreach {
               h =>
-                val metricName = s"$productId-${h.value()}"
+                val metricName = s"${productId.id}-${h.value()}"
                 val timer = metrics.timer(metricName)
                 timer.update(operationDuration, TimeUnit.NANOSECONDS)
                 logger.trace(s"Metric recorded: $metricName=$operationDuration")
@@ -55,9 +56,9 @@ trait MetricDirectives extends BasicDirectives with StrictLogging {
     }
   }
 
-  protected implicit val executionContext: ExecutionContext
-  protected val metrics: MetricRegistry
-  protected val productId: String
+  protected implicit def executionContext: ExecutionContext
+  protected def metrics: MetricRegistry
+  protected def productId: AppId
 }
 
 object MetricDirectives {

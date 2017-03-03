@@ -10,13 +10,14 @@ import com.google.inject.{Inject, Singleton}
 import com.google.inject.name.Named
 import org.bitbucket.pshirshov.izumitk.json.JacksonMapper
 import com.typesafe.scalalogging.StrictLogging
+import org.bitbucket.pshirshov.izumitk.model.cluster.AppId
 import resource._
 
 @Singleton
 class FailuresDump @Inject()(
                             failureRepository: FailureRepository
                             , @Named("typingMapper") mapper: JacksonMapper
-                            , @Named("app.id") appName: String
+                            , @Named("app.id") appName: AppId
                             ) extends StrictLogging {
   def dump(): Unit = {
     val m = new ObjectMapper(mapper) {} // to avoid side effects
@@ -26,7 +27,7 @@ class FailuresDump @Inject()(
 
 //    falureRepository.recordFailure(FailureRecord(Map("test" -> "xxx"), Vector(new RuntimeException())))
 
-    val target = Paths.get(s"failures-$appName-${System.currentTimeMillis()}.zip")
+    val target = Paths.get(s"failures-${appName.id}-${System.currentTimeMillis()}.zip")
     managed(new ZipOutputStream(new FileOutputStream(target.toFile))) foreach {
       out =>
         logger.info(s"Dumping into $target...")

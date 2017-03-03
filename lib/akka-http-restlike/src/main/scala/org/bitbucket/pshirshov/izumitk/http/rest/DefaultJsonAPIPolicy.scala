@@ -15,6 +15,7 @@ import org.bitbucket.pshirshov.izumitk.akka.http.util.serialization.Serializatio
 import org.bitbucket.pshirshov.izumitk.failures.model._
 import org.bitbucket.pshirshov.izumitk.failures.services.{FailureRecord, FailureRepository}
 import org.bitbucket.pshirshov.izumitk.json.JacksonMapper
+import org.bitbucket.pshirshov.izumitk.model.cluster.AppId
 import org.bitbucket.pshirshov.izumitk.util.types.{ExceptionUtils, TimeUtils}
 import org.scalactic.{Bad, Every, Good}
 
@@ -29,14 +30,14 @@ class DefaultJsonAPIPolicy @Inject()
   , protected val metrics: MetricRegistry
   , @Named("@http.debug") protected val isDebugMode: Boolean
   , @Named("standardMapper") protected val exceptionMapper: JacksonMapper
-  , @Named("app.id") protected val productId: String
+  , @Named("app.id") protected val productId: AppId
   , cors: CORS
 ) extends JsonAPIPolicy
   with StrictLogging {
 
   import JsonAPI._
 
-  private val expPrefix = s"$productId-ncrt"
+  private val expPrefix = s"${productId.asString}-ncrt"
 
   override def rejectionHandler(): RejectionHandler = {
     RejectionHandler.newBuilder()

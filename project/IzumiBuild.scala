@@ -21,7 +21,7 @@ object IzumiBuild extends PerfectBuild {
     )
     , mkProject(
       base = file("lib/commons-util"),
-      dependencies = customDep(allProjects("commons-test") % "test")
+      dependencies = customDep(allProjects("commons-test") % "test", allProjects("commons-model"))
     )
     , mkProject(
       base = file("lib/commons-config"),

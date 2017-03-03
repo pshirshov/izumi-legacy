@@ -7,6 +7,7 @@ import com.google.inject.{Inject, Singleton}
 import org.apache.commons.lang3.exception
 import org.bitbucket.pshirshov.izumitk.cassandra.facade._
 import org.bitbucket.pshirshov.izumitk.json.JacksonMapper
+import org.bitbucket.pshirshov.izumitk.model.cluster.AppId
 import org.bitbucket.pshirshov.izumitk.util.types.{ExceptionUtils, SerializationUtils}
 
 import scala.concurrent.duration.FiniteDuration
@@ -17,7 +18,7 @@ class CassandraFailureRepository @Inject()
   @Named("standardMapper") protected val mapper: JacksonMapper
   , protected val query: FailureRepositoryQueries
   , protected val metrics: MetricRegistry
-  , @Named("app.id") protected val productId: String
+  , @Named("app.id") protected val productId: AppId
   , @Named("failures.records-ttl") protected val ttl: FiniteDuration
 )
   extends FailureRepository {

@@ -7,6 +7,7 @@ import com.typesafe.scalalogging.StrictLogging
 import org.bitbucket.pshirshov.izumitk.test.ExposedTestScope
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.bitbucket.pshirshov.izumitk.failures.services.{FailureRecord, FailureRepository, RestoredFailureRecord}
+import org.bitbucket.pshirshov.izumitk.model.cluster.AppId
 import org.bitbucket.pshirshov.izumitk.util.types.SerializationUtils
 
 
@@ -15,7 +16,7 @@ import org.bitbucket.pshirshov.izumitk.util.types.SerializationUtils
 class DummyFailureRepository @Inject()
 (
   protected override val metrics: MetricRegistry
-  , @Named("app.id") protected override val productId: String
+  , @Named("app.id") protected override val productId: AppId
 ) extends FailureRepository with StrictLogging {
 
   protected val failures = new scala.collection.mutable.HashMap[String, FailureRecord]()
