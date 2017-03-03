@@ -1,8 +1,6 @@
 package org.bitbucket.pshirshov.izumitk.modularity
 
 trait WithPluginsPackages {
-  protected def appId: String
-
   protected def namespace: String = "plugins"
 
   protected def basePackage: Package = getClass.getPackage
@@ -23,7 +21,6 @@ trait WithPluginsPackages {
 
     Seq(
       s"$pkgCompany"
-      , s"$pkgCompany.$appId"
       , s"$pkgClass"
     )
   }

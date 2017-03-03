@@ -4,11 +4,12 @@ import java.net.{InetSocketAddress, NetworkInterface}
 import java.util.regex.{Matcher, Pattern}
 
 import com.google.common.hash.Hashing
+import org.bitbucket.pshirshov.izumitk.model.cluster.HostId
 
 import scala.collection.JavaConverters._
 
 object NetworkUtils {
-  def hostId: String = {
+  def hostId: HostId = {
     // this is a host identifier which should persist between app restarts
     val hasher = Hashing.murmur3_128().newHasher
 
@@ -21,8 +22,7 @@ object NetworkUtils {
         }
     }
 
-    val hostId = hasher.hash().toString
-    hostId
+    HostId(hasher.hash().toString)
   }
 
   private val IPV6_PATTERN = Pattern.compile("^\\[([:a-fA-F0-9]+)\\](:(\\d+))?$")

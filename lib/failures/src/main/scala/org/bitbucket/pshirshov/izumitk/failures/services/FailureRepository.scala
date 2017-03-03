@@ -8,6 +8,7 @@ import java.util.UUID
 import com.codahale.metrics.MetricRegistry
 import com.google.common.io.BaseEncoding
 import com.typesafe.scalalogging.StrictLogging
+import org.bitbucket.pshirshov.izumitk.model.cluster.AppId
 
 import scala.util.{Failure, Success, Try}
 
@@ -30,8 +31,8 @@ object FailureRecord {
 }
 
 trait FailureRepository extends StrictLogging {
-  protected val metrics: MetricRegistry
-  protected val productId: String
+  protected def metrics: MetricRegistry
+  protected def productId: AppId
 
   private val critPrefix = s"$productId-crit"
   /**
