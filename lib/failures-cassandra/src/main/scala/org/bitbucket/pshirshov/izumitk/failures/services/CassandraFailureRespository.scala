@@ -6,8 +6,8 @@ import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import org.apache.commons.lang3.exception
 import org.bitbucket.pshirshov.izumitk.cassandra.facade._
+import org.bitbucket.pshirshov.izumitk.cluster.model.AppId
 import org.bitbucket.pshirshov.izumitk.json.JacksonMapper
-import org.bitbucket.pshirshov.izumitk.model.cluster.AppId
 import org.bitbucket.pshirshov.izumitk.util.types.{ExceptionUtils, SerializationUtils}
 
 import scala.concurrent.duration.FiniteDuration

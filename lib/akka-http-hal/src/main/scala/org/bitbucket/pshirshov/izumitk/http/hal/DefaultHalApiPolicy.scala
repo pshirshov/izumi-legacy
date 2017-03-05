@@ -14,10 +14,10 @@ import com.theoryinpractise.halbuilder.api.{Representation, RepresentationFactor
 import org.bitbucket.pshirshov.izumitk.akka.http.util.cors.CORS
 import org.bitbucket.pshirshov.izumitk.akka.http.util.serialization.SerializationProtocol
 import org.bitbucket.pshirshov.izumitk.akka.http.util.{APIPolicy, MetricDirectives}
+import org.bitbucket.pshirshov.izumitk.cluster.model.AppId
 import org.bitbucket.pshirshov.izumitk.failures.model.{CommonDomainExceptions, DomainException, ServiceException, ServiceFailure}
 import org.bitbucket.pshirshov.izumitk.failures.services.{FailureRecord, FailureRepository}
 import org.bitbucket.pshirshov.izumitk.hal.HalResource
-import org.bitbucket.pshirshov.izumitk.model.cluster.AppId
 import org.bitbucket.pshirshov.izumitk.util.types.ExceptionUtils
 import org.scalactic.{Bad, Every, Good}
 

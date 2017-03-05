@@ -10,7 +10,7 @@ import com.google.inject.{Inject, Singleton}
 import com.google.inject.name.Named
 import org.bitbucket.pshirshov.izumitk.json.JacksonMapper
 import com.typesafe.scalalogging.StrictLogging
-import org.bitbucket.pshirshov.izumitk.model.cluster.AppId
+import org.bitbucket.pshirshov.izumitk.cluster.model.AppId
 import resource._
 
 @Singleton
