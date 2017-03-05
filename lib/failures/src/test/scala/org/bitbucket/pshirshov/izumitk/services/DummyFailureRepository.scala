@@ -6,8 +6,8 @@ import com.google.inject.name.Named
 import com.typesafe.scalalogging.StrictLogging
 import org.bitbucket.pshirshov.izumitk.test.ExposedTestScope
 import org.apache.commons.lang3.exception.ExceptionUtils
+import org.bitbucket.pshirshov.izumitk.cluster.model.AppId
 import org.bitbucket.pshirshov.izumitk.failures.services.{FailureRecord, FailureRepository, RestoredFailureRecord}
-import org.bitbucket.pshirshov.izumitk.model.cluster.AppId
 import org.bitbucket.pshirshov.izumitk.util.types.SerializationUtils
 
 

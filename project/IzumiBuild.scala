@@ -52,12 +52,12 @@ object IzumiBuild extends PerfectBuild {
       dependencies = dep()
     )
     , mkProject(
-      base = file("lib/akka"),
+      base = file("lib/clustering"),
       dependencies = dep()
     )
     , mkProject(
-      base = file("lib/akka-cdi"),
-      dependencies = dep("akka")
+      base = file("lib/akka"),
+      dependencies = dep()
     )
     , mkProject(
       base = file("lib/cassandra"),
@@ -66,6 +66,10 @@ object IzumiBuild extends PerfectBuild {
     , mkProject(
       base = file("lib/failures-cassandra"),
       dependencies = dep("cassandra", "failures", "json")
+    )
+    , mkProject(
+      base = file("lib/akka-cdi"),
+      dependencies = dep("akka")
     )
     , mkProject(
       base = file("lib/akka-http"),
