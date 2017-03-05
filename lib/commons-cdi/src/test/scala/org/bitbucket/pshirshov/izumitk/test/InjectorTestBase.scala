@@ -4,8 +4,8 @@ import com.google.inject.util.Modules
 import com.google.inject.{Guice, Injector, Module}
 import com.typesafe.scalalogging.StrictLogging
 import net.codingwell.scalaguice.ScalaModule
-import org.bitbucket.pshirshov.izumitk.cdi.InjectorListenerModule
 import org.bitbucket.pshirshov.izumitk.cdi.InjectorUtils._
+import org.bitbucket.pshirshov.izumitk.cdi.{InjectorListenerModule, WithScalaInjector}
 import org.bitbucket.pshirshov.izumitk.config.FailingConfigLoadingStrategy
 import org.scalatest.TestData
 import org.scalatest.exceptions.TestPendingException
@@ -14,30 +14,26 @@ import org.slf4j.MDC
 import scala.util.{Failure, Success, Try}
 
 
-
-
-
-
-
 @ExposedTestScope
-trait InjectorTestBase extends IzumiTestBase with StrictLogging {
-  // just to avoid implicit conversions in inherited classes
-  protected implicit class VisibleScalaInjector(injector: Injector) extends net.codingwell.scalaguice.InjectorExtensions.ScalaInjector(injector)
+trait InjectorTestBase
+  extends IzumiTestBase
+    with WithScalaInjector
+    with StrictLogging {
 
-  protected val modules: Module
+  protected def modules: Module
 
   protected def check(injector: Injector): Unit = {}
 
   FailingConfigLoadingStrategy.init()
 
-  protected def withInjected[Fixture : Manifest, R](test: (Fixture, Injector) => R): TestData => R = {
+  protected def withInjected[Fixture: Manifest, R](test: (Fixture, Injector) => R): TestData => R = {
     withInjector {
       injector =>
         test(injector.instance[Fixture], injector)
     }
   }
 
-  protected def withInjected[Fixture : Manifest, R](times: Int)(test: (Fixture, Injector) => R): TestData => Unit = {
+  protected def withInjected[Fixture: Manifest, R](times: Int)(test: (Fixture, Injector) => R): TestData => Unit = {
     withInjector {
       injector =>
         for (n <- 1 to times) {
@@ -59,15 +55,15 @@ trait InjectorTestBase extends IzumiTestBase with StrictLogging {
       Try(Guice.createInjector(Modules.combine(modules, testDataModule, injectorListenerModule))) match {
         case Failure(f) =>
           throw f
-//          logger.warn(s"Unexpected exception during injector creation", f)
-//          Try(checkInjectorException(f)) match {
-//            case Failure(pending: TestPendingException) =>
-//              throw pending
-//            case Failure(e) =>
-//              throw e
-//            case Success(e) =>
-//              throw e
-//          }
+        //          logger.warn(s"Unexpected exception during injector creation", f)
+        //          Try(checkInjectorException(f)) match {
+        //            case Failure(pending: TestPendingException) =>
+        //              throw pending
+        //            case Failure(e) =>
+        //              throw e
+        //            case Success(e) =>
+        //              throw e
+        //          }
 
         case Success(injector) =>
           Try(check(injector)) match {

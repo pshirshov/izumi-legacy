@@ -1,9 +1,4 @@
-/*
- * Copyright (c) 2016. Teckro, Ltd.
- * All rights reserved.
- */
-
-package org.bitbucket.pshirshov.izumitk.model.cluster
+package org.bitbucket.pshirshov.izumitk.cluster.model
 
 import org.bitbucket.pshirshov.izumitk.model.Identifier
 

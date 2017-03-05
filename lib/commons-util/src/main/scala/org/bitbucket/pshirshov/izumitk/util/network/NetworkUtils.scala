@@ -1,30 +1,9 @@
 package org.bitbucket.pshirshov.izumitk.util.network
 
-import java.net.{InetSocketAddress, NetworkInterface}
+import java.net.InetSocketAddress
 import java.util.regex.{Matcher, Pattern}
 
-import com.google.common.hash.Hashing
-import org.bitbucket.pshirshov.izumitk.model.cluster.HostId
-
-import scala.collection.JavaConverters._
-
 object NetworkUtils {
-  def hostId: HostId = {
-    // this is a host identifier which should persist between app restarts
-    val hasher = Hashing.murmur3_128().newHasher
-
-    NetworkInterface.getNetworkInterfaces.asScala.foreach {
-      i =>
-        Option(i.getHardwareAddress) match {
-          case Some(mac) =>
-            hasher.putBytes(mac)
-          case None =>
-        }
-    }
-
-    HostId(hasher.hash().toString)
-  }
-
   private val IPV6_PATTERN = Pattern.compile("^\\[([:a-fA-F0-9]+)\\](:(\\d+))?$")
   private val IPV4_PATTERN = Pattern.compile("^([\\.0-9]+)(:(\\d+))?$")
   private val ENDPOINT_TOKENS_PATTERN: Pattern = Pattern.compile(":")
@@ -52,7 +31,7 @@ object NetworkUtils {
   private def getAddress(addressMatcher: Matcher, defaultPort: Int): InetSocketAddress = {
     val rawPort = addressMatcher.group(3)
     val port = if (rawPort == null) {
-     defaultPort
+      defaultPort
     } else {
       java.lang.Integer.parseInt(rawPort)
     }

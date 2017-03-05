@@ -12,10 +12,10 @@ import com.google.inject.{Inject, Singleton}
 import com.typesafe.scalalogging.StrictLogging
 import org.bitbucket.pshirshov.izumitk.akka.http.util.cors.CORS
 import org.bitbucket.pshirshov.izumitk.akka.http.util.serialization.SerializationProtocol
+import org.bitbucket.pshirshov.izumitk.cluster.model.AppId
 import org.bitbucket.pshirshov.izumitk.failures.model._
 import org.bitbucket.pshirshov.izumitk.failures.services.{FailureRecord, FailureRepository}
 import org.bitbucket.pshirshov.izumitk.json.JacksonMapper
-import org.bitbucket.pshirshov.izumitk.model.cluster.AppId
 import org.bitbucket.pshirshov.izumitk.util.types.{ExceptionUtils, TimeUtils}
 import org.scalactic.{Bad, Every, Good}
 

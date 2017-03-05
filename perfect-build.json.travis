@@ -7,7 +7,7 @@
     "credentials": "credentials.sonatype-nexus.properties"
   }],
   "properties": {
-    "project.version": "1.2.55",
+    "project.version": "1.2.56",
     "project.organization": "org.bitbucket.pshirshov.izumitk"
   }
 }

@@ -6,7 +6,7 @@ import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import com.typesafe.scalalogging.StrictLogging
 import org.bitbucket.pshirshov.izumitk.app.util.JMXUtils.JMXMPContext
-import org.bitbucket.pshirshov.izumitk.model.cluster.NodeAddress
+import org.bitbucket.pshirshov.izumitk.cluster.model.NodeAddress
 import org.eclipse.jetty.server.Server
 
 import scala.concurrent.Await
