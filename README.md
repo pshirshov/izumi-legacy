@@ -14,5 +14,5 @@ Convenience oneliner:
 
     sbt -Dpb.config=perfect-build.json.SAMPLE updateBugfix && \
       git push --all --follow-tags && git checkout HEAD~1 && \
-      sbt -Dpb.strict-version=false clean publish sonatypeRelease && \
+      sbt -Dpb.strict-version=false +clean +publish sonatypeRelease && \
       git checkout master
