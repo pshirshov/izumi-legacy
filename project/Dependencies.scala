@@ -4,9 +4,8 @@ import sbt.Keys._
 import sbt._
 
 object Dependencies {
-  val scala_version = "2.11.8"
   val Versions = Seq(
-    crossScalaVersions := Seq(scala_version),
+    crossScalaVersions := Seq("2.11.8", "2.12.1"),
     scalaVersion := crossScalaVersions.value.head
   )
 
