@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,7 +32,7 @@ public final class Version {
 
         if (resource != null) {
             try (InputStream inputStream = resource.openStream()) {
-                String manifest = IOUtils.toString(inputStream);
+                String manifest = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
 
                 for (String line : NEWLINE.split(manifest)) {
                     String[] entries = SEMICOLON.split(line);

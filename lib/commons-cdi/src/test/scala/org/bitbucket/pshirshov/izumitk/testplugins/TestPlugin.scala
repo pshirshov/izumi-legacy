@@ -1,11 +1,11 @@
-package org.bitbucket.pshirshov.izumitk.plugins
+package org.bitbucket.pshirshov.izumitk.testplugins
 
 import com.google.inject
 import com.google.inject.Inject
 import com.typesafe.config.Config
 import net.codingwell.scalaguice.ScalaModule
-import org.bitbucket.pshirshov.izumitk.cdi.{GuicePlugin, Plugin}
 import org.bitbucket.pshirshov.izumitk._
+import org.bitbucket.pshirshov.izumitk.cdi.{GuicePlugin, Plugin}
 
 @ExtensionPoint
 trait TestExtender1 {

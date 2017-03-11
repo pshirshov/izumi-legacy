@@ -7,8 +7,8 @@ import net.codingwell.scalaguice.InjectorExtensions._
 import org.bitbucket.pshirshov.izumitk.cdi.{BunchOfModules, Plugin}
 import org.bitbucket.pshirshov.izumitk.config.{LoadedConfig, LoadedResource}
 import org.bitbucket.pshirshov.izumitk.modularity.GuicePluginsSupport
-import org.bitbucket.pshirshov.izumitk.plugins._
 import org.bitbucket.pshirshov.izumitk.test.IzumiTestBase
+import org.bitbucket.pshirshov.izumitk.testplugins._
 
 import scala.language.postfixOps
 
@@ -18,6 +18,8 @@ class TestLoader extends GuicePluginsSupport {
   override protected val config: LoadedConfig = LoadedResource(testConfig, testConfig, testConfig)
 
   def loadModulesTest(): Seq[BunchOfModules] = loadPluginModules().modules
+
+  override protected def namespace: String = "testplugins"
 }
 
 class PluginsTest extends IzumiTestBase {

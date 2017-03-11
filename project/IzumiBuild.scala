@@ -5,7 +5,6 @@ import pbuild._
 import sbt.Keys._
 import sbt._
 
-//import scoverage.ScoverageKeys._
 import xerial.sbt.Sonatype.SonatypeKeys._
 
 object IzumiBuild extends PerfectBuild {
