@@ -1,15 +1,16 @@
 package org.bitbucket.pshirshov.izumitk.app
 
 import java.io.File
+import java.nio.charset.StandardCharsets
 
 import ch.qos.logback.classic.LoggerContext
 import ch.qos.logback.classic.util.ContextInitializer
 import ch.qos.logback.core.joran.spi.JoranException
 import ch.qos.logback.core.util.StatusPrinter
 import com.typesafe.config.{Config, ConfigFactory, ConfigRenderOptions}
-import org.bitbucket.pshirshov.izumitk.config._
 import org.apache.commons.io.{FileUtils, IOUtils}
 import org.bitbucket.pshirshov.izumitk.app.model.{AppArguments, StartupConfiguration}
+import org.bitbucket.pshirshov.izumitk.config._
 import org.slf4j.LoggerFactory
 
 import scala.util.{Failure, Success, Try}
@@ -169,7 +170,7 @@ abstract class Starter {
     if (target.exists()) {
       Console.err.println(s"Can't overwrite existing config ${target.getCanonicalPath}, continuing...")
     } else {
-      FileUtils.writeStringToFile(target, content)
+      FileUtils.writeStringToFile(target, content, StandardCharsets.UTF_8)
       println(s"Reference config saved to ${target.getCanonicalPath}")
     }
   }
