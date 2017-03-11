@@ -80,7 +80,8 @@ object Dependencies {
     private val slf4j_api = "org.slf4j" % "slf4j-api" % slf4j_version
     private val slf4j_log4j = "org.slf4j" % "log4j-over-slf4j" % slf4j_version
     private val jsr305 = "com.google.code.findbugs" % "jsr305" % "3.0.1"
-    private val guava = "com.google.guava" % "guava" % "21.0"
+    //private val guava = "com.google.guava" % "guava" % "21.0"
+    private val guava = "com.google.guava" % "guava" % "19.0" // c* driver depends on 16.0
     private val metrics_core =  "io.dropwizard.metrics" % "metrics-core" % "3.1.2"
 
     val string_template: ModuleID = "org.antlr" % "ST4" % "4.0.8"
