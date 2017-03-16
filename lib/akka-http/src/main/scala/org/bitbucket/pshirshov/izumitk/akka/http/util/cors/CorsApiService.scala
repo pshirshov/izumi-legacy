@@ -4,28 +4,16 @@ import akka.http.scaladsl.server
 import akka.http.scaladsl.server.Directives._
 import com.typesafe.scalalogging.StrictLogging
 import org.bitbucket.pshirshov.izumitk.akka.http.services.HttpService
-import org.bitbucket.pshirshov.izumitk.akka.http.util.logging.HttpDebug
-import org.bitbucket.pshirshov.izumitk.akka.http.util.MetricDirectives
 
 
 trait CorsApiService
   extends HttpService
-    with MetricDirectives
     with StrictLogging {
 
-  protected val httpDebug: HttpDebug
-  protected val cors: CORS
-
-  import httpDebug._
-
-  final override val routes: server.Route = withDebug {
+  abstract override val routes: server.Route =
     options {
       cors.CORSOptions
-    } ~
-      timerDirective {
-        serviceRoutes
-      }
-  }
+    } ~ super.routes
 
-  protected def serviceRoutes: server.Route
+  protected def cors: CORS
 }
