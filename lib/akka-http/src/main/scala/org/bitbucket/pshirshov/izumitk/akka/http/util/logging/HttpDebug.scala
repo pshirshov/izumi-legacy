@@ -16,8 +16,8 @@ import scala.collection.immutable.Seq
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{Await, ExecutionContext}
 import scala.language.{postfixOps, reflectiveCalls}
-import scala.util.{Failure, Success, Try}
 import scala.util.control.NonFatal
+import scala.util.{Failure, Success, Try}
 
 // we need that because default logger is common for all the akka, not specific for http
 trait HttpDebugLogHandler {
@@ -31,7 +31,7 @@ class NoopHttpDebugLogHandler extends HttpDebugLogHandler {
 @Singleton
 class HttpDebug @Inject()
 (
-  @Named("@http.debug")protected val isDebugMode: Boolean
+  @Named("@http.debug") protected val isDebugMode: Boolean
   , @Named("@http.debug-printall") protected val printAll: Boolean
   , protected val httpDebugLogHandler: HttpDebugLogHandler
   , protected implicit val materializer: Materializer
@@ -61,14 +61,12 @@ class HttpDebug @Inject()
   }
 
   def withDebug(route: Route): Route = {
-    if (isDebugMode) {
-      toStrict {
+    toStrict {
+      if (isDebugMode) {
         logRequestResult(show) {
           route
         }
-      }
-    } else {
-      toStrict {
+      } else {
         route
       }
     }
@@ -93,13 +91,17 @@ class HttpDebug @Inject()
     }
   }
 
-  private def show: HttpRequest => RouteResult => Option[LogEntry] = {
+  private def show: HttpRequest => RouteResult => Option[LogEntry]
+
+  = {
     request =>
       result =>
         requestResponseLog(request, result)
   }
 
-  private def requestResponseLog(request: HttpRequest, result: RouteResult) = {
+  private def requestResponseLog(request: HttpRequest, result: RouteResult)
+
+  = {
     val out: Option[String] = result match {
       case complete: Complete =>
         Some(requestResponsePairToString(request, complete.response))
@@ -123,12 +125,16 @@ class HttpDebug @Inject()
     }
   }
 
-  private def requestResponsePairToString(request: HttpRequest, response: HttpResponse): String = {
+  private def requestResponsePairToString(request: HttpRequest, response: HttpResponse): String
+
+  = {
     formatRequest(request) +
       formatResponse(response)
   }
 
-  private def formatResponse(response: HttpResponse): String = {
+  private def formatResponse(response: HttpResponse): String
+
+  = {
     val stringBuilder = new StringBuilder()
     addMessage(stringBuilder, s"RESPONSE", '-')
     stringBuilder.append('\n')
@@ -143,7 +149,9 @@ class HttpDebug @Inject()
     stringBuilder.toString()
   }
 
-  private def formatRequest(request: HttpRequest): String = {
+  private def formatRequest(request: HttpRequest): String
+
+  = {
     val stringBuilder = new StringBuilder()
     stringBuilder.append('\n')
     addMessage(stringBuilder, s"REQUEST", '=')
@@ -162,7 +170,9 @@ class HttpDebug @Inject()
     stringBuilder.toString()
   }
 
-  private def entityToString(entity: HttpEntity, moreData: String) = {
+  private def entityToString(entity: HttpEntity, moreData: String)
+
+  = {
     val strict = Await.result(entity.toStrict(marshallingTimeout), marshallingTimeout)
     val asString = strict.getData().utf8String
 
@@ -175,7 +185,9 @@ class HttpDebug @Inject()
     stringBuilder.toString()
   }
 
-  private def addMessage(stringBuilder: StringBuilder, message: String, filler: Char) = {
+  private def addMessage(stringBuilder: StringBuilder, message: String, filler: Char)
+
+  = {
     val fillersSize = (splitterSize - message.length - 2) / 2
     stringBuilder.append(filler.toString * fillersSize)
     stringBuilder.append(' ')
@@ -184,7 +196,9 @@ class HttpDebug @Inject()
     stringBuilder.append(filler.toString * fillersSize)
   }
 
-  private def requestRejectionPairToString(request: HttpRequest, rejections: Seq[Rejection]): String = {
+  private def requestRejectionPairToString(request: HttpRequest, rejections: Seq[Rejection]): String
+
+  = {
     val stringBuilder = new StringBuilder()
     stringBuilder.append(formatRequest(request))
     addMessage(stringBuilder, s"RESPONSE (REJECTION)", '-')
@@ -195,9 +209,11 @@ class HttpDebug @Inject()
     stringBuilder.toString()
   }
 
-  private def formatRejection(rejections: Seq[Rejection]): String = {
+  private def formatRejection(rejections: Seq[Rejection]): String
+
+  = {
     rejections.map {
-      case r @ ExceptionCause(t) =>
+      case r@ExceptionCause(t) =>
         s"==> Rejection caused by Exception: $r, $t"
 
       case r =>
@@ -206,7 +222,7 @@ class HttpDebug @Inject()
   }
 }
 
-object  ExceptionCause {
+object ExceptionCause {
   def unapply(rejection: AnyRef): Option[AnyRef] = {
     try {
       val causeMethod = rejection.getClass.getMethod("cause", Array[Class[_]](): _*)
