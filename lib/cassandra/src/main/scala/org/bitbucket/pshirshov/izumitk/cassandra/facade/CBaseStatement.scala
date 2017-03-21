@@ -23,7 +23,7 @@ final case class CRawStatement(meta: CMeta, statement: Statement) extends CState
 
 final case class CTextTableStatement(meta: CMeta, table: CTable, text: QueryContext => String) extends CStatement {
   override def toStatement(context: CassandraContext): Statement = {
-    new SimpleStatement(text(QueryContext(table, context.table(table), context)))
+    new SimpleStatement(text(QueryContext(table, context.config(table), context)))
   }
 }
 

@@ -11,16 +11,17 @@ import org.bitbucket.pshirshov.izumitk.cluster.model.AppId
 @Singleton
 case class CassandraContext @Inject()
 (
-  @Named("cassandra.keyspace") keyspace: String
+  querySettings: Map[String, CQueryConfig]
+  , tableSettings: Map[String, CassandraConfig]
   , @Named("app.id") productId: AppId
-  , tableSettings: Map[CTable, CassandraConfig]
-  , querySettings: Map[String, CQueryConfig]
   , metrics: MetricRegistry
   , session: Session
   , psCache: PSCache
+  , @Named("cassandra.keyspaces") keyspaceAliases: Map[CKeyspaceId, CKeyspace]
 ) {
   val defaultQueryConfig: CQueryConfig = querySettings("default")
-  val defaultTableSettings: CassandraConfig = tableSettings(CTable("default"))
 
-  def table(t: CTable): CassandraConfig = tableSettings.getOrElse(t, defaultTableSettings)
+  def config(t: CTable): CassandraConfig = tableSettings.get(t.fqName)
+    .orElse(tableSettings.get(t.name))
+    .getOrElse(tableSettings("default"))
 }

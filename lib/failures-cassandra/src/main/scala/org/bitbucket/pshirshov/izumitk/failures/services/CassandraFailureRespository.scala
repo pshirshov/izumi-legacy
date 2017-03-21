@@ -73,12 +73,12 @@ class FailureRepositoryQueries @Inject()
   protected val cassandra: CassandraContext
 ) extends CassandraFacade {
 
-  private val tFailures = CTable("failures")
+  private val tFailures = inDefaultKeyspace("failures")
 
   override protected val ddl: Seq[CBaseStatement] = Seq(
     CTextTableStatement(CQWrite("ddl"), tFailures, ctx =>
       s"""
-         | CREATE TABLE IF NOT EXISTS ${ctx.table.name} (
+         | CREATE TABLE IF NOT EXISTS ${ctx.table} (
          |   id text,
          |   data text,
          |   meta text,
@@ -91,14 +91,14 @@ class FailureRepositoryQueries @Inject()
   )
 
   lazy val selectFailure: CPreparedStatement = prepareQuery(CQRead("failures-get"), tFailures) {
-    ctx => s"SELECT * FROM ${ctx.table.name} WHERE id = ?"
+    ctx => s"SELECT * FROM ${ctx.table} WHERE id = ?"
   }
 
   lazy val selectAllFailures: CPreparedStatement = prepareQuery(CQRead("failures-get-all"), tFailures) {
-    ctx => s"SELECT * FROM ${ctx.table.name} ALLOW FILTERING"
+    ctx => s"SELECT * FROM ${ctx.table} ALLOW FILTERING"
   }
 
   lazy val writeFailure: CPreparedStatement = prepareQuery(CQRead("failures-put"), tFailures) {
-    ctx => s"UPDATE ${ctx.table.name} USING TTL ? SET data = ?, meta = ?, stacktraces = ?, exceptions = ? WHERE id = ?"
+    ctx => s"UPDATE ${ctx.table} USING TTL ? SET data = ?, meta = ?, stacktraces = ?, exceptions = ? WHERE id = ?"
   }
 }

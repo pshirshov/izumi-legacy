@@ -2,15 +2,16 @@ package org.bitbucket.pshirshov.izumitk.akka.http.util.cors
 
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.model.{HttpEntity, HttpResponse, StatusCodes}
+import akka.http.scaladsl.server
+import akka.http.scaladsl.server.Directives.options
 import akka.http.scaladsl.server.{RequestContext, RouteResult}
-import com.google.inject.name.Named
 
 import scala.concurrent.Future
 
 /**
   */
 trait CORS {
-  val corsHeaders: Seq[RawHeader]
+  def corsHeaders: Seq[RawHeader]
 
   def CORSOptions: (RequestContext) => Future[RouteResult] = {
     ctx: RequestContext =>
@@ -21,14 +22,12 @@ trait CORS {
         , headers = corsHeaders.to[collection.immutable.Seq]
       ))
   }
+
+  def corsOptionsRoute: server.Route = {
+    options {
+      CORSOptions
+    }
+  }
 }
 
-import com.google.inject.{Inject, Singleton}
 
-@Singleton
-class DefaultCORS @Inject()
-(
-  @Named("headers.cors") override val corsHeaders: Seq[RawHeader]
-) extends CORS {
-
-}

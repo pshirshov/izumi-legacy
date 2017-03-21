@@ -31,11 +31,15 @@ trait CassandraFacade
     with WithCassandraFacade
     with StrictLogging {
 
-  override protected def facade: CassandraFacade = this
-
   protected def cassandra: CassandraContext
 
   protected def ddl: Seq[CBaseStatement]
+  
+  override protected def facade: CassandraFacade = this
+
+  protected def defaultKeyspaceId: CKeyspaceId = CKeyspaceId("default")
+  protected def inDefaultKeyspace(name: String): CTable = CTable(aliasToName(defaultKeyspaceId), name)
+  protected def aliasToName(ksId: CKeyspaceId): CKeyspace = cassandra.keyspaceAliases(ksId)
 
   def createTables(): Unit = {
     classOf[CassandraFacade].synchronized {
@@ -49,14 +53,14 @@ trait CassandraFacade
   }
 
   def prepareQuery(meta: CMeta, table: CTable)(text: QueryContext => String): CPreparedStatement = {
-    val qctx = QueryContext(table, cassandra.table(table), cassandra)
+    val qctx = QueryContext(table, cassandra.config(table), cassandra)
     val statement = text(qctx)
     val prepared = cassandra.psCache.get(statement)
     CPreparedStatement(meta, prepared)
   }
 
   def prepareStatement(meta: CMeta, table: CTable)(statement: QueryContext => CRegularStatement): CPreparedStatement = {
-    val qctx = QueryContext(table, cassandra.table(table), cassandra)
+    val qctx = QueryContext(table, cassandra.config(table), cassandra)
     val cs = statement(qctx)
     val prepared = cassandra.session.prepare(cs.toStatement(cassandra))
     CPreparedStatement(meta, prepared)
