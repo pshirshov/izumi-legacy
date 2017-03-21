@@ -20,7 +20,7 @@ import scala.util.{Failure, Success, Try}
 
 
 object CassandraTestModule {
-  final val uid: String = RandomStringUtils.randomAlphanumeric(4)
+  final val uid: String = RandomStringUtils.randomAlphanumeric(4).toLowerCase
 }
 
 @ExposedTestScope
