@@ -11,7 +11,14 @@ case class CassandraConfig(values: Map[String, String]) {
 
 case class CQueryConfig(consistencyLevel: Option[ConsistencyLevel] = None)
 
-case class CTable(name: String)
+case class CTable(keyspaceName: CKeyspace, name: String) {
+  def fqName: String = s"${keyspaceName.name}.$name"
+}
 
-case class QueryContext(table: CTable, config: CassandraConfig, cassandra: CassandraContext)
+case class CKeyspaceId(id: String)
+case class CKeyspace(name: String)
+
+case class QueryContext(cTable: CTable, config: CassandraConfig, cassandra: CassandraContext) {
+  def table: String = cTable.fqName
+}
 

@@ -1,5 +1,6 @@
 package org.bitbucket.pshirshov.izumitk.cassandra.modules
 
+import java.lang.management.ManagementFactory
 import java.util.concurrent.TimeUnit
 
 import com.datastax.driver.core.policies.TokenAwarePolicy
@@ -7,16 +8,19 @@ import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.{Cluster, Session}
 import com.google.inject.name.{Named, Names}
 import com.google.inject.{Provides, Singleton}
+import com.typesafe.config.Config
 import org.bitbucket.pshirshov.izumitk.cassandra.PSCache
 import org.bitbucket.pshirshov.izumitk.test.{ExposedTestScope, WithReusableResources}
 import net.codingwell.scalaguice.ScalaMultibinder
 import org.apache.commons.lang3.RandomStringUtils
+import org.bitbucket.pshirshov.izumitk.cassandra.facade.{CKeyspace, CKeyspaceId}
 
 import scala.util.{Failure, Success, Try}
+import scala.collection.JavaConverters._
 
 
 object CassandraTestModule {
-  final val defaultKeyspace: String = s"tst_fp_${RandomStringUtils.randomAlphabetic(8).toLowerCase}"
+  final val uid: String = RandomStringUtils.randomAlphanumeric(4)
 }
 
 @ExposedTestScope
@@ -31,9 +35,13 @@ final class CassandraTestModule() extends CassandraModuleBase with WithReusableR
 
   @Provides
   @Singleton
-  @Named("cassandra.keyspace")
-  def keyspace(): String = {
-    CassandraTestModule.defaultKeyspace
+  @Named("cassandra.keyspaces")
+  def keyspace(@Named("@cassandra.defaults.keyspaces.*") defaultKeyspaces: Config): Map[String, String] = {
+    defaultKeyspaces.root().unwrapped().asScala.toMap.asInstanceOf[Map[String, String]].mapValues {
+        ks =>
+          val startTime = ManagementFactory.getRuntimeMXBean.getStartTime
+          s"tst_${ks}_${startTime}_${CassandraTestModule.uid}"
+      }
   }
 
   @Provides
@@ -58,26 +66,27 @@ final class CassandraTestModule() extends CassandraModuleBase with WithReusableR
 
   @Provides
   @Singleton
-  override def getSession
-  (
-    cluster: Cluster
-    , @Named("@cassandra.defaults.replication") defaultReplication: String
-    , @Named("cassandra.keyspace") defaultKeyspace: String
-  ): Session = {
-    getResource("CASSANDRA-SESSION"
-      , () => super.getSession(cluster, defaultReplication, defaultKeyspace)
+  protected override def getSession(
+                                     cluster: Cluster
+                                     , @Named("@cassandra.defaults.replication") defaultReplication: String
+                                     , @Named("cassandra.keyspaces") keyspaceAliases: Map[CKeyspaceId, CKeyspace]
+                                   ): Session = {
+    getResource(s"CASSANDRA-SESSION"
+      , () => super.getSession(cluster, defaultReplication, keyspaceAliases)
       , {
         session: Session =>
-          val future = session.executeAsync(s"DROP KEYSPACE ${QueryBuilder.quote(defaultKeyspace)}")
-          Try(future.get(2, TimeUnit.SECONDS)) match {
-            case Success(_) =>
-              logger.info(s"Keyspace `$defaultKeyspace` dropped")
-            case Failure(f) =>
-              logger.info(s"Keyspace `$defaultKeyspace` was not dropped until timeout, but probably it would be dropped later: $f")
+          keyspaceAliases.foreach {
+            case (alias, keyspace) =>
+              val future = session.executeAsync(s"DROP KEYSPACE ${QueryBuilder.quote(keyspace.name)}")
+              Try(future.get(2, TimeUnit.SECONDS)) match {
+                case Success(_) =>
+                  logger.info(s"Keyspace `${keyspace.name}` dropped")
+                case Failure(f) =>
+                  logger.info(s"Keyspace `${keyspace.name}` was not dropped until timeout, but probably it would be dropped later: $f")
+              }
           }
           cluster.close()
       }
-      , identifier = Some(defaultKeyspace)
     )
   }
 }
