@@ -1,6 +1,7 @@
 package org.bitbucket.pshirshov.izumitk.cassandra.facade
 
 import com.datastax.driver.core.ConsistencyLevel
+import com.datastax.driver.core.querybuilder.QueryBuilder
 
 case class CassandraConfig(values: Map[String, String]) {
   def render: String = {
@@ -12,7 +13,7 @@ case class CassandraConfig(values: Map[String, String]) {
 case class CQueryConfig(consistencyLevel: Option[ConsistencyLevel] = None)
 
 case class CTable(keyspaceName: CKeyspace, name: String) {
-  def fqName: String = s"${keyspaceName.name}.$name"
+  def fqName: String = s"${QueryBuilder.quote(keyspaceName.name)}.${QueryBuilder.quote(name)}"
 }
 
 case class CKeyspaceId(id: String)
