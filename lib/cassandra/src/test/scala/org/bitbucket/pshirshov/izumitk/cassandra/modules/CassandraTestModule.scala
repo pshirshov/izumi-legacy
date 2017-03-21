@@ -9,14 +9,14 @@ import com.datastax.driver.core.{Cluster, Session}
 import com.google.inject.name.{Named, Names}
 import com.google.inject.{Provides, Singleton}
 import com.typesafe.config.Config
-import org.bitbucket.pshirshov.izumitk.cassandra.PSCache
-import org.bitbucket.pshirshov.izumitk.test.{ExposedTestScope, WithReusableResources}
 import net.codingwell.scalaguice.ScalaMultibinder
 import org.apache.commons.lang3.RandomStringUtils
+import org.bitbucket.pshirshov.izumitk.cassandra.PSCache
 import org.bitbucket.pshirshov.izumitk.cassandra.facade.{CKeyspace, CKeyspaceId}
+import org.bitbucket.pshirshov.izumitk.test.{ExposedTestScope, WithReusableResources}
 
-import scala.util.{Failure, Success, Try}
 import scala.collection.JavaConverters._
+import scala.util.{Failure, Success, Try}
 
 
 object CassandraTestModule {
@@ -36,12 +36,12 @@ final class CassandraTestModule() extends CassandraModuleBase with WithReusableR
   @Provides
   @Singleton
   @Named("cassandra.keyspaces")
-  def keyspace(@Named("@cassandra.defaults.keyspaces.*") defaultKeyspaces: Config): Map[String, String] = {
-    defaultKeyspaces.root().unwrapped().asScala.toMap.asInstanceOf[Map[String, String]].mapValues {
-        ks =>
-          val startTime = ManagementFactory.getRuntimeMXBean.getStartTime
-          s"tst_${ks}_${startTime}_${CassandraTestModule.uid}"
-      }
+  def keyspace(@Named("@cassandra.defaults.keyspaces.*") defaultKeyspaces: Config): Map[CKeyspaceId, CKeyspace] = {
+    defaultKeyspaces.root().unwrapped().asScala.toMap.asInstanceOf[Map[String, String]].map {
+      case (alias, ks) =>
+        val startTime = ManagementFactory.getRuntimeMXBean.getStartTime
+        (CKeyspaceId(alias), CKeyspace(s"tst_${ks}_${startTime}_${CassandraTestModule.uid}"))
+    }
   }
 
   @Provides
