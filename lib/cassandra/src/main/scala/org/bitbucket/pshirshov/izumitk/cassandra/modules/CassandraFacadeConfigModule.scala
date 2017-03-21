@@ -5,7 +5,7 @@ import com.google.inject.name.Named
 import com.google.inject.{Provides, Singleton}
 import com.typesafe.config.{Config, ConfigObject, ConfigValue}
 import net.codingwell.scalaguice.ScalaModule
-import org.bitbucket.pshirshov.izumitk.cassandra.facade.{CQueryConfig, CTable, CassandraConfig}
+import org.bitbucket.pshirshov.izumitk.cassandra.facade.{CQueryConfig, CassandraConfig}
 
 import scala.collection.JavaConverters._
 
@@ -27,12 +27,12 @@ final class CassandraFacadeConfigModule() extends ScalaModule {
 
   @Provides
   @Singleton
-  def tableConfigs(@Named("@cassandra.settings.tables.*") config: Config): Map[CTable, CassandraConfig] = {
+  def tableConfigs(@Named("@cassandra.settings.tables.*") config: Config): Map[String, CassandraConfig] = {
     val values = dereference(config)
 
     values.map {
       case (name, cfg) =>
-        CTable(name) -> CassandraConfig(cfg.root().unwrapped().asScala.toMap.asInstanceOf[Map[String, String]])
+        name -> CassandraConfig(cfg.root().unwrapped().asScala.toMap.asInstanceOf[Map[String, String]])
     }
   }
 

@@ -4,14 +4,20 @@ import com.datastax.driver.core.policies.TokenAwarePolicy
 import com.datastax.driver.core.{Cluster, Session}
 import com.google.inject.name.Named
 import com.google.inject.{Provides, Singleton}
+import com.typesafe.config.Config
 import org.bitbucket.pshirshov.izumitk.cassandra.PSCache
+import org.bitbucket.pshirshov.izumitk.cassandra.facade.{CKeyspace, CKeyspaceId}
+
+import scala.collection.JavaConverters._
 
 /**
   */
-class CassandraModule() extends CassandraModuleBase {
+class CassandraModule()
+  extends CassandraModuleBase {
 
   override def configure(): Unit = {
     super.configure()
+
   }
 
   @Provides
@@ -32,9 +38,9 @@ class CassandraModule() extends CassandraModuleBase {
 
   @Provides
   @Singleton
-  @Named("cassandra.keyspace")
-  def keyspace(@Named("@cassandra.defaults.keyspace") defaultKeyspace: String): String = {
-    defaultKeyspace
+  @Named("cassandra.keyspaces")
+  def keyspace(@Named("@cassandra.defaults.keyspaces.*") defaultKeyspaces: Config): Map[CKeyspaceId, CKeyspace] = {
+    defaultKeyspaces.root().unwrapped().asScala.toMap.asInstanceOf[Map[String, String]].map(kv => (CKeyspaceId(kv._1), CKeyspace(kv._2)))
   }
 
   @Provides
@@ -43,6 +49,6 @@ class CassandraModule() extends CassandraModuleBase {
   (
     cluster: Cluster
     , @Named("@cassandra.defaults.replication") defaultReplication: String
-    , @Named("cassandra.keyspace") defaultKeyspace: String
-  ): Session = super.getSession(cluster, defaultReplication, defaultKeyspace)
+    , @Named("cassandra.keyspaces") keyspaceAliases: Map[CKeyspaceId, CKeyspace]
+  ): Session = super.getSession(cluster, defaultReplication, keyspaceAliases)
 }

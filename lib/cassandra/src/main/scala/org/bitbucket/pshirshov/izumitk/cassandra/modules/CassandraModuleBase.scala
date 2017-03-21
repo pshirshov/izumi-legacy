@@ -12,6 +12,7 @@ import com.typesafe.scalalogging.StrictLogging
 import net.codingwell.scalaguice.{ScalaModule, ScalaMultibinder}
 import org.bitbucket.pshirshov.izumitk.HealthChecker
 import org.bitbucket.pshirshov.izumitk.cassandra._
+import org.bitbucket.pshirshov.izumitk.cassandra.facade.{CKeyspace, CKeyspaceId}
 import org.bitbucket.pshirshov.izumitk.util.network.NetworkUtils
 
 import scala.collection.JavaConverters._
@@ -23,63 +24,6 @@ abstract class CassandraModuleBase() extends ScalaModule with StrictLogging {
   override def configure(): Unit = {
     val healthCheckers = ScalaMultibinder.newSetBinder[HealthChecker](binder)
     healthCheckers.addBinding.to(classOf[CassandraHealthChecker]).in(Scopes.SINGLETON)
-  }
-
-  protected def createCluster(policy: TokenAwarePolicy, endpoints: List[String]): Cluster = {
-    import scala.collection.JavaConverters._
-
-    val builder = Cluster.builder()
-
-    endpoints.foreach {
-      e =>
-        val addr = NetworkUtils.getAddress(e, ProtocolOptions.DEFAULT_PORT)
-        builder.addContactPoint(addr.getHostName).withPort(addr.getPort)
-    }
-
-    logger.info(s"Using policy `$policy`...")
-
-    builder.withLoadBalancingPolicy(policy)
-
-    val newCluster = builder.build()
-
-    val metadata = newCluster.getMetadata
-    logger.info("Using to cassandra cluster: {}", metadata.getClusterName)
-    metadata.getAllHosts.asScala.foreach {
-      host =>
-        logger.info("Cassandra node - Datacenter: {}; Host: {}; Rack: {}", host.getDatacenter, host.getAddress,
-          host.getRack)
-    }
-
-    newCluster
-  }
-
-  protected def createPreparedStatementsCache(
-                                               session: Session
-                                               , cacheSpec: String
-                                             ): PSCache = {
-    CacheBuilder.from(cacheSpec)
-      .build(new CacheLoader[String, PreparedStatement]() {
-        override def load(key: String): PreparedStatement = {
-          session.prepare(key)
-        }
-      })
-  }
-
-  protected def getSession(cluster: Cluster
-                           , defaultReplication: String
-                           , defaultKeyspace: String
-                          ): Session = {
-    val session = cluster.newSession()
-
-    try {
-      session.execute(s"CREATE KEYSPACE ${QueryBuilder.quote(defaultKeyspace)} WITH REPLICATION = $defaultReplication")
-      logger.info(s"Keyspace `$defaultKeyspace` with replication $defaultReplication created")
-    } catch {
-      case _: AlreadyExistsException =>
-        logger.debug(s"Keyspace already exists: $defaultKeyspace")
-    }
-    session.execute(s"USE ${QueryBuilder.quote(defaultKeyspace)}")
-    session
   }
 
   @Provides
@@ -115,5 +59,63 @@ abstract class CassandraModuleBase() extends ScalaModule with StrictLogging {
         new TokenAwarePolicy(new RoundRobinPolicy())
     }
     policy
+  }
+
+  protected def createCluster(policy: TokenAwarePolicy, endpoints: List[String]): Cluster = {
+    import scala.collection.JavaConverters._
+
+    val builder = Cluster.builder()
+
+    endpoints.foreach {
+      e =>
+        val addr = NetworkUtils.getAddress(e, ProtocolOptions.DEFAULT_PORT)
+        builder.addContactPoint(addr.getHostName).withPort(addr.getPort)
+    }
+
+    logger.info(s"Using policy `$policy`...")
+
+    builder.withLoadBalancingPolicy(policy)
+
+    val newCluster = builder.build()
+
+    val metadata = newCluster.getMetadata
+    logger.info("Using to cassandra cluster: {}", metadata.getClusterName)
+    metadata.getAllHosts.asScala.foreach {
+      host =>
+        logger.info("Cassandra node - Datacenter: {}; Host: {}; Rack: {}", host.getDatacenter, host.getAddress,
+          host.getRack)
+    }
+
+    newCluster
+  }
+
+  protected def getSession(cluster: Cluster, defaultReplication: String, keyspaceAliases: Map[CKeyspaceId, CKeyspace]): Session = {
+    val session = cluster.newSession()
+
+    keyspaceAliases.foreach {
+      case (alias, keyspace) =>
+        try {
+          session.execute(s"CREATE KEYSPACE ${QueryBuilder.quote(keyspace.name)} WITH REPLICATION = $defaultReplication")
+          logger.info(s"Keyspace `${keyspace.name}` aliased as `${alias.id}` with replication $defaultReplication created")
+        } catch {
+          case _: AlreadyExistsException =>
+            logger.debug(s"Keyspace already exists: `${keyspace.name}` aliased as `${alias.id}`")
+        }
+    }
+
+    //session.execute(s"USE ${QueryBuilder.quote(keyspace)}")
+    session
+  }
+
+  protected def createPreparedStatementsCache(
+                                               session: Session
+                                               , cacheSpec: String
+                                             ): PSCache = {
+    CacheBuilder.from(cacheSpec)
+      .build(new CacheLoader[String, PreparedStatement]() {
+        override def load(key: String): PreparedStatement = {
+          session.prepare(key)
+        }
+      })
   }
 }
