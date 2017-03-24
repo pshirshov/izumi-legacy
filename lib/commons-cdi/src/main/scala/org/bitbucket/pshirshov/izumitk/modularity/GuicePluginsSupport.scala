@@ -41,7 +41,8 @@ trait GuicePluginsSupport
 
     val internalModules = BunchOfModules("plugin-support", Seq(
       new PluginsIntrospectionModule(allPlugins)
-      , new InjectorListenerModule()
+      , new InjectorCloseablesRecorderListenerModule()
+      , new InjectorInitializationListenerModule()
       , new ConfigExposingModule(config.effectiveApp)
     ))
 
