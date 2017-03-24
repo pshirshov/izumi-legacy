@@ -20,11 +20,13 @@ trait InjectorTestBase
     with WithScalaInjector
     with StrictLogging {
 
+  FailingConfigLoadingStrategy.init()
+
   protected def modules: Module
 
-  protected def check(injector: Injector): Unit = {}
+  protected final lazy val cachedModules: Seq[Module] = Seq(modules)
 
-  FailingConfigLoadingStrategy.init()
+  protected def check(injector: Injector): Unit = {}
 
   protected def withInjected[Fixture: Manifest, R](test: (Fixture, Injector) => R): TestData => R = {
     withInjector {
@@ -50,23 +52,12 @@ trait InjectorTestBase
         }
       }
 
-      val injectorListenerModule = new InjectorListenerModule()
-
-      Try(Guice.createInjector(Modules.combine(modules, testDataModule, injectorListenerModule))) match {
-        case Failure(f) =>
-          throw f
-        //          logger.warn(s"Unexpected exception during injector creation", f)
-        //          Try(checkInjectorException(f)) match {
-        //            case Failure(pending: TestPendingException) =>
-        //              throw pending
-        //            case Failure(e) =>
-        //              throw e
-        //            case Success(e) =>
-        //              throw e
-        //          }
-
+      createTestInjector(Seq(new InjectorListenerModule(), testDataModule)) match {
         case Success(injector) =>
           Try(check(injector)) match {
+            case Success(_) =>
+              runTest(test, td, injector)
+
             case Failure(f: TestPendingException) =>
               injector.shutdown()
               throw f
@@ -75,20 +66,29 @@ trait InjectorTestBase
               logger.warn(s"Unexpected exception during test pre-conditions check", f)
               injector.shutdown()
               throw f
-
-            case Success(_) =>
-              try {
-                val mdcCtx = s"${getClass.getSimpleName}.${td.name}"
-                MDC.put("test-name", mdcCtx)
-                GlobalDiscriminator.setValue(mdcCtx)
-                test(injector)
-              } finally {
-                injector.shutdown()
-                GlobalDiscriminator.setValue(null)
-                MDC.remove("test-name")
-              }
           }
 
+        case Failure(f) =>
+          throw f
       }
+  }
+
+  protected def runTest[T](test: (Injector) => T, td: FixtureParam, injector: Injector): T = {
+    try {
+      val mdcCtx = s"${getClass.getSimpleName}.${td.name}"
+      MDC.put("test-name", mdcCtx)
+      GlobalDiscriminator.setValue(mdcCtx)
+      test(injector)
+    } finally {
+      injector.shutdown()
+      GlobalDiscriminator.setValue(null)
+      MDC.remove("test-name")
+    }
+  }
+
+  protected def createTestInjector[T](testSpecificModules: Seq[Module]): Try[Injector] = {
+    import scala.collection.JavaConverters._
+    val allModules = cachedModules ++ testSpecificModules
+    Try(Guice.createInjector(Modules.combine(allModules.asJava)))
   }
 }
