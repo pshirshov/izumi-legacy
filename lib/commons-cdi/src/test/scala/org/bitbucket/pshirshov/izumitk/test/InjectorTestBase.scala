@@ -1,6 +1,5 @@
 package org.bitbucket.pshirshov.izumitk.test
 
-import com.google.inject.util.Modules
 import com.google.inject.{Guice, Injector, Module}
 import com.typesafe.scalalogging.StrictLogging
 import net.codingwell.scalaguice.ScalaModule
@@ -22,9 +21,9 @@ trait InjectorTestBase
 
   FailingConfigLoadingStrategy.init()
 
-  protected def modules: Module
+  protected def mainTestModule: Module
 
-  protected final lazy val cachedModules: Seq[Module] = Seq(modules)
+  protected final lazy val cachedInjector: Try[Injector] = Try(Guice.createInjector(mainTestModule))
 
   protected def check(injector: Injector): Unit = {}
 
@@ -88,7 +87,6 @@ trait InjectorTestBase
 
   protected def createTestInjector[T](testSpecificModules: Seq[Module]): Try[Injector] = {
     import scala.collection.JavaConverters._
-    val allModules = cachedModules ++ testSpecificModules
-    Try(Guice.createInjector(Modules.combine(allModules.asJava)))
+    cachedInjector.map(_.createChildInjector(testSpecificModules.asJava))
   }
 }

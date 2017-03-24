@@ -15,7 +15,7 @@ trait EnvironmentalTest
   extends InjectorTestBase
     with TestConfigExtensions {
 
-  override protected val modules: Module = {
+  override protected val mainTestModule: Module = {
     val referencesToUse = verifyReferences(requiredReferences.toSet)
 
     val mainModules = verifyModules(environment ++ Seq(
