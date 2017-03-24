@@ -101,7 +101,7 @@ class HalSerializerImplTest extends InjectorTestBase {
     }
   }
 
-  override protected val modules: Module = Modules.combine(
+  override protected val mainTestModule: Module = Modules.combine(
     new JacksonModule()
     , new HalModule()
     , new ConfigExposingModule(TestConfig.references("json"))
