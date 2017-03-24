@@ -31,7 +31,7 @@ class JacksonModuleTest extends InjectorTestBase {
     }
   }
 
-  override protected val modules: Module = Modules.combine(
+  override protected val mainTestModule: Module = Modules.combine(
     new JacksonModule()
     , new ConfigExposingModule(TestConfig.references("json"))
   )
