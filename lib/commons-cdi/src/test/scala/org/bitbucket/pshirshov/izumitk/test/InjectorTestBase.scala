@@ -1,13 +1,14 @@
 package org.bitbucket.pshirshov.izumitk.test
 
+import java.util.concurrent.atomic.AtomicReference
+
 import com.google.inject.{Guice, Injector, Module}
 import com.typesafe.scalalogging.StrictLogging
 import net.codingwell.scalaguice.ScalaModule
-import org.bitbucket.pshirshov.izumitk.cdi.InjectorUtils._
-import org.bitbucket.pshirshov.izumitk.cdi.{InjectorListenerModule, WithScalaInjector}
+import org.bitbucket.pshirshov.izumitk.cdi.{InjectorCloseablesRecorderListenerModule, InjectorInitializationListenerModule, WithScalaInjector}
 import org.bitbucket.pshirshov.izumitk.config.FailingConfigLoadingStrategy
-import org.scalatest.TestData
 import org.scalatest.exceptions.TestPendingException
+import org.scalatest.{BeforeAndAfterAll, TestData}
 import org.slf4j.MDC
 
 import scala.util.{Failure, Success, Try}
@@ -17,14 +18,29 @@ import scala.util.{Failure, Success, Try}
 trait InjectorTestBase
   extends IzumiTestBase
     with WithScalaInjector
+    with BeforeAndAfterAll
     with StrictLogging {
 
   FailingConfigLoadingStrategy.init()
 
   protected def mainTestModule: Module
 
-  protected final lazy val cachedInjector: Try[Injector] = {
-    Try(Guice.createInjector(mainTestModule, new InjectorListenerModule()))
+  protected final val cachedInjector: AtomicReference[Try[Injector]] = new AtomicReference[Try[Injector]]()
+
+
+  override protected def beforeAll(): Unit = {
+    super.beforeAll()
+    cachedInjector.set(Try(Guice.createInjector(
+      mainTestModule
+      , new InjectorInitializationListenerModule()
+      , new InjectorCloseablesRecorderListenerModule()
+    )))
+  }
+
+  override protected def afterAll(): Unit = {
+    super.afterAll()
+    import org.bitbucket.pshirshov.izumitk.cdi.InjectorUtils._
+    cachedInjector.get().map(_.shutdown())
   }
 
   protected def check(injector: Injector): Unit = {}
@@ -53,19 +69,17 @@ trait InjectorTestBase
         }
       }
 
-      createTestInjector(Seq(new InjectorListenerModule(), testDataModule)) match {
+      createTestInjector(Seq(testDataModule)) match {
         case Success(injector) =>
           Try(check(injector)) match {
             case Success(_) =>
               runTest(test, td, injector)
 
             case Failure(f: TestPendingException) =>
-              injector.shutdown()
               throw f
 
             case Failure(f) =>
               logger.warn(s"Unexpected exception during test pre-conditions check", f)
-              injector.shutdown()
               throw f
           }
 
@@ -81,7 +95,6 @@ trait InjectorTestBase
       GlobalDiscriminator.setValue(mdcCtx)
       test(injector)
     } finally {
-      injector.shutdown()
       GlobalDiscriminator.setValue(null)
       MDC.remove("test-name")
     }
@@ -89,6 +102,6 @@ trait InjectorTestBase
 
   protected def createTestInjector[T](testSpecificModules: Seq[Module]): Try[Injector] = {
     import scala.collection.JavaConverters._
-    cachedInjector.map(_.createChildInjector(testSpecificModules.asJava))
+    cachedInjector.get().map(_.createChildInjector(testSpecificModules.asJava))
   }
 }
