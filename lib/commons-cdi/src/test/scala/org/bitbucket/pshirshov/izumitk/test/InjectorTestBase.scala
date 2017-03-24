@@ -23,7 +23,9 @@ trait InjectorTestBase
 
   protected def mainTestModule: Module
 
-  protected final lazy val cachedInjector: Try[Injector] = Try(Guice.createInjector(mainTestModule))
+  protected final lazy val cachedInjector: Try[Injector] = {
+    Try(Guice.createInjector(mainTestModule, new InjectorListenerModule()))
+  }
 
   protected def check(injector: Injector): Unit = {}
 
