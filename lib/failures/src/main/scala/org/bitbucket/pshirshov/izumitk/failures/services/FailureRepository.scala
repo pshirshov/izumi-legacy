@@ -35,44 +35,54 @@ trait FailureRepository extends StrictLogging {
   protected def productId: AppId
 
   private val critPrefix = s"$productId-crit"
-  /**
-    * Never throws
-    */
-  final def recordFailure(failure: FailureRecord): String = {
-    metrics.counter(critPrefix).inc()
-    failure.causes.foreach {
-      p =>
-        metrics.counter(s"$critPrefix-${p.getClass.getCanonicalName}").inc()
-    }
-
-    val id = generateRandomId
-    Try(writeFailureRecord(id, failure)) match {
-      case Success(_) =>
-        logger.error(s"Got failure: $failure", failure.causes.headOption.orNull)
-        id
-
-      case Failure(t) =>
-        metrics.counter(s"$critPrefix-repository").inc()
-        val failedId = transformIdAfterFailedSave(id)
-        logger.error(s"$failedId: Failed while writing failure", t)
-        logger.error(s"$failedId: original failure is $failure", failure.causes.headOption.orNull)
-        failedId
-    }
-  }
 
   def readFailure(failureId: String): Option[RestoredFailureRecord]
 
   def enumerate(visitor: RestoredFailureRecord => Unit): Unit
 
+  protected def writeFailureRecord(id: String, failure: FailureRecord): Unit
+  
+  /**
+    * Never throws
+    */
+  final def recordFailure(failure: FailureRecord): String = {
+    metrics.counter(critPrefix).inc()
+
+    failure.causes.foreach {
+      p =>
+        metrics.counter(s"$critPrefix-${p.getClass.getCanonicalName}").inc()
+    }
+
+    val id = generateRandomId()
+    Try(writeFailureRecord(id, failure)) match {
+      case Success(_) =>
+        handleSuccessfulSave(failure)
+        id
+
+      case Failure(t) =>
+        metrics.counter(s"$critPrefix-repository").inc()
+        val failedId = transformIdAfterFailedSave(id)
+        handleFailedSave(failure, t, failedId)
+        failedId
+    }
+  }
+
+  protected def handleSuccessfulSave(failure: FailureRecord): Unit = {
+    logger.error(s"Got failure: $failure", failure.causes.headOption.orNull)
+  }
+
+  protected def handleFailedSave(failure: FailureRecord, repositoryFailure: Throwable, failedId: String): Unit = {
+    logger.error(s"$failedId: Failed while writing failure", repositoryFailure)
+    logger.error(s"$failedId: original failure is $failure", failure.causes.headOption.orNull)
+  }
+
   protected def transformIdAfterFailedSave(id: String): String = {
     s"FAILED:$id"
   }
 
-  protected def generateRandomId: String = {
+  protected def generateRandomId(): String = {
     FailureRepository.createHumanReadableId()
   }
-
-  protected def writeFailureRecord(id: String, failure: FailureRecord): Unit
 }
 
 
