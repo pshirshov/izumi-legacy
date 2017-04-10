@@ -5,7 +5,7 @@ import java.security.interfaces.{RSAKey, RSAPrivateCrtKey}
 
 import com.google.inject.name.Named
 import com.google.inject.{Provides, Singleton}
-import com.typesafe.config.Config
+import com.typesafe.config.{Config, ConfigObject}
 import com.typesafe.scalalogging.StrictLogging
 import net.codingwell.scalaguice.ScalaModule
 import org.bitbucket.pshirshov.izumitk.akka.http.auth.jwt.{JwtKeyId, KeyPair}
@@ -24,35 +24,33 @@ final class JwtModule()
   def jwtKey(@Named("@jwt.jwt-keys.*") jwtKeys: Config): Map[JwtKeyId, KeyPair] = {
     import scala.collection.JavaConverters._
 
-    val values = jwtKeys.root().unwrapped()
-      .asScala
-      .toMap
-      .asInstanceOf[Map[String, Config]]
+    val values = jwtKeys
 
     @scala.annotation.tailrec
     def deref(keyConfig: Config): Config = {
       if (keyConfig.hasPath("ref")) {
-        deref(values(keyConfig.getString("ref")))
+        deref(values.getConfig(keyConfig.getString("ref")))
       } else {
         keyConfig
       }
     }
 
-    values.map {
-      case (name, keyRef) =>
-        val keyConfig = deref(keyRef)
+    values.root().entrySet().asScala.map {
+      v =>
+        val name = v.getKey
+        val keyConfig = deref(v.getValue.asInstanceOf[ConfigObject].toConfig)
         val key = decodeKey(name, keyConfig)
         logKey(name, keyConfig, key)
         JwtKeyId(name) -> key
-    }
+    }.toMap
   }
 
   private def logKey(name: String, keyConfig: Config, key: KeyPair): Unit = {
     if (keyConfig.hasPath("ref")) {
-      logger.info(s"Loaded security key $name as reference to ${keyConfig.getString("ref")}")
+      logger.info(s"Loaded security key `$name` as reference to `${keyConfig.getString("ref")}`")
     } else {
       logger.info(
-        s"""Loaded security key $name:
+        s"""Loaded security key `$name`:
            |- JWT Algorithm   : ${key.algorithmIdentifier}
            |- Encryption Key  : ${key.encryption.fold("N/A")(SecurityKeys.keyInfo)}
            |- Verification Key: ${SecurityKeys.keyInfo(key.verification)}
@@ -62,7 +60,7 @@ final class JwtModule()
       key.verification match {
         case rsa: RSAKey =>
           logger.info(
-            s""" Key $name is RSA key. Below are key details:
+            s""" Key `$name` is RSA key. Below are key details:
                | - Public Key fingerprint: ${SecurityKeys.publicKeyFingerprint(key.verification)}
                | - Public Key as PEM:
                | ${SecurityKeys.writePublicPemKey(key.verification)}
