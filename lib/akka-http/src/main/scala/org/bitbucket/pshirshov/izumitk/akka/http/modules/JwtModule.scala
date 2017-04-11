@@ -96,9 +96,9 @@ final class JwtModule()
 
     key match {
       case k: RsaJsonWebKey =>
-        KeyPair(algo, Some(k.getRsaPrivateKey), k.getRsaPublicKey)
+        KeyPair(algo, Option(k.getRsaPrivateKey), k.getRsaPublicKey)
       case k: EllipticCurveJsonWebKey =>
-        KeyPair(algo, Some(k.getEcPrivateKey), k.getECPublicKey)
+        KeyPair(algo, Option(k.getEcPrivateKey), k.getECPublicKey)
       case k: PublicKey =>
         KeyPair(algo, None, k)
       case k: OctetSequenceJsonWebKey =>
