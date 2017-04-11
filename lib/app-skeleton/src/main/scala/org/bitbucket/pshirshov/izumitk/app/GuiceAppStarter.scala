@@ -12,7 +12,7 @@ abstract class GuiceAppStarter
     with StrictLogging
     with WithInjector
 {
-  protected final val injector: Injector = {
+  protected final lazy val injector: Injector = {
     val modules = injectorModules()
     val appModule = ModuleUtil.multipleOverride(modules)
     Guice.createInjector(appModule)

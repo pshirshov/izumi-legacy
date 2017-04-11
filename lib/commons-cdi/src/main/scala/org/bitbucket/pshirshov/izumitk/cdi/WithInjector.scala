@@ -4,5 +4,5 @@ import com.google.inject.Injector
 
 
 trait WithInjector {
-  protected val injector: Injector
+  protected def injector: Injector
 }
