@@ -53,11 +53,8 @@ final class JacksonModule() extends ScalaModule {
   @Named("basicMapper")
   protected def createBasicMapper(@Named("@json.compact") compact: Boolean): JacksonMapper = {
     val m = new JacksonMapper
-    if (!compact) {
-      m.enable(SerializationFeature.INDENT_OUTPUT)
-    }
     m.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-    m.configure(SerializationFeature.INDENT_OUTPUT, true)
+    m.configure(SerializationFeature.INDENT_OUTPUT, !compact)
     m
   }
 
