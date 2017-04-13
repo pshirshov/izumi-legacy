@@ -60,11 +60,13 @@ final class JwtModule()
       key.verification match {
         case rsa: RSAKey =>
           logger.info(
-            s""" Key `$name` is RSA key. Below are key details:
+            s"""Key `$name` is RSA key. Below are key details:
                | - Public Key fingerprint: ${SecurityKeys.publicKeyFingerprint(key.verification)}
                | - Public Key as PEM:
                | ${SecurityKeys.writePublicPemKey(key.verification)}
             """.stripMargin)
+        case o =>
+          logger.info(s"Key `$name` is of type ${o.getAlgorithm}")
       }
     }
   }
