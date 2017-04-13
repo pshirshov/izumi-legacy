@@ -117,7 +117,8 @@ class HttpDebug @Inject()
 
     out match {
       case Some(repr) =>
-        val entry = LogEntry(repr, debugMarker, loggingLevel)
+        val shifted = repr.split("\n").mkString("\n    ")
+        val entry = LogEntry(shifted, debugMarker, loggingLevel)
         httpDebugLogHandler.handleLog(entry)
         Some(entry)
       case None =>
