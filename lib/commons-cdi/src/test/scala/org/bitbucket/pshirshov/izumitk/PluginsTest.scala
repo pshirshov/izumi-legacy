@@ -30,7 +30,7 @@ class PluginsTest extends IzumiTestBase {
         val modules = loader.loadModulesTest()
         assert(modules.size >= 2)
         val injector = Guice.createInjector(modules.flatMap(_.modules) : _*)
-        assert(injector.instance[Seq[Plugin]](Names.named("app.plugins")).size == 11)
+        assert(injector.instance[Seq[Plugin]](Names.named("app.plugins")).size == 12)
 
         assert(injector.instance[Plugin](Names.named(s"app.plugins.${classOf[TestPlugin].getCanonicalName}"))
           .asInstanceOf[TestPlugin].config.getInt("xxx") == 123)

@@ -119,3 +119,11 @@ class TestGuicePlugin extends GuicePlugin {
   }
 }
 
+class TestOverridablePlugin extends Plugin {
+}
+
+@Suppresses(Array("org.bitbucket.pshirshov.izumitk.testplugins.TestOverridablePlugin"))
+class TestOverridingPlugin extends Plugin {
+}
+
+
