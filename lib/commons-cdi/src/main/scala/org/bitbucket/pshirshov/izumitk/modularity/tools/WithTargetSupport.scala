@@ -1,9 +1,9 @@
 package org.bitbucket.pshirshov.izumitk.modularity.tools
 
 import com.typesafe.scalalogging.StrictLogging
-import org.bitbucket.pshirshov.izumitk.TargetPoint
 import org.bitbucket.pshirshov.izumitk.cdi.Plugin
 import org.bitbucket.pshirshov.izumitk.modularity.PluginsSupport
+import org.bitbucket.pshirshov.izumitk.{Suppresses, TargetPoint}
 
 /**
   */
@@ -13,7 +13,23 @@ protected[modularity] trait WithTargetSupport
   this: PluginsSupport =>
 
   abstract protected override def filterPluginClasses(classes: Seq[Class[_]]): Seq[Class[_]] = {
-    classes.filter(isValidTarget)
+    val activeAndValid = classes.filter(isValidTarget)
+
+    val overrides = activeAndValid
+      .filter(_.isAnnotationPresent(classOf[Suppresses])).flatMap {
+      _.getAnnotation(classOf[Suppresses]).value()
+    }
+
+    val (toSuppress, toUse) = activeAndValid.partition { p =>
+      overrides.contains(p.getCanonicalName)
+    }
+
+    toSuppress.foreach {
+      p =>
+        logger.debug(s"Plugin has been suppressed by another one: $p")
+    }
+
+    toUse
   }
 
   protected def isValidTarget(pclass: Class[_]): Boolean = {
