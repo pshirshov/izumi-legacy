@@ -37,7 +37,7 @@ class DefaultJsonAPIPolicy @Inject()
 
   import JsonAPI._
 
-  private val expPrefix = s"${productId.asString}-ncrt"
+  private val expPrefix = s"${productId.id}-ncrt"
 
   override def rejectionHandler(): RejectionHandler = {
     RejectionHandler.newBuilder()
