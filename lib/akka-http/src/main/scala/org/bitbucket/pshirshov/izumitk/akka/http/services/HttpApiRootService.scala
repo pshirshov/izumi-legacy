@@ -24,14 +24,18 @@ class HttpApiRootService @Inject()
 
   import Directives._
 
-  override val routes: Route = timerDirective {
-    debug.withDebug {
-      mapRequestContext(requestTransformer.requestMapper) {
-        childrenServices
-          .map(_.routes)
-          .foldLeft[Route](reject) {
-          case (acc, r) =>
-            acc ~ r
+  override val routes: Route = withoutEndpointName {
+    timerDirectiveWithSuffix("-io") {
+      debug.withDebug {
+        timerDirective {
+          mapRequestContext(requestTransformer.requestMapper) {
+            childrenServices
+              .map(_.routes)
+              .foldLeft[Route](reject) {
+              case (acc, r) =>
+                acc ~ r
+            }
+          }
         }
       }
     }
