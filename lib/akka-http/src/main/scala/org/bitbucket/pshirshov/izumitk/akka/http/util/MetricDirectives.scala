@@ -12,47 +12,50 @@ import org.bitbucket.pshirshov.izumitk.cluster.model.AppId
 import scala.concurrent.{ExecutionContext, Future}
 
 trait MetricDirectives extends BasicDirectives with StrictLogging {
-  def timerDirective: Directive0 = {
+  def timerDirective: Directive0 = timerDirectiveWithSuffix("")
+  
+  def timerDirectiveWithSuffix(suffix: String): Directive0 = {
     mapInnerRoute {
       route: Route => ctx: RequestContext =>
-        val before = System.nanoTime()
+          val before = System.nanoTime()
 
-        val response: Future[RouteResult] = route(ctx)
+          val response: Future[RouteResult] = route(ctx)
 
-        response.onSuccess {
-          case RouteResult.Rejected(rejection) =>
+          response.onSuccess {
+            case RouteResult.Rejected(rejection) =>
 
-          case RouteResult.Complete(r) =>
-            val operationDuration = System.nanoTime() - before
-            r.headers.find(_.is(MetricDirectives.ENDPOINT_NAME_HEADER)).foreach {
-              h =>
-                val metricName = s"${productId.id}-${h.value()}"
-                val timer = metrics.timer(metricName)
-                timer.update(operationDuration, TimeUnit.NANOSECONDS)
-                logger.trace(s"Metric recorded: $metricName=$operationDuration")
-            }
-        }
+            case RouteResult.Complete(r) =>
+              val operationDuration = System.nanoTime() - before
+              r.headers.find(_.is(MetricDirectives.ENDPOINT_NAME_HEADER)).foreach {
+                h =>
+                  val metricName = s"${productId.id}-${h.value()}$suffix"
+                  val timer = metrics.timer(metricName)
+                  timer.update(operationDuration, TimeUnit.NANOSECONDS)
+                  logger.trace(s"Metric recorded: $metricName=$operationDuration")
+              }
+          }
 
-        response.map {
-          case rr@RouteResult.Rejected(_) =>
-            rr
+          response
+    }
+  }
 
-          case rr@RouteResult.Complete(_) =>
-            rr.copy(response = rr.response.withHeaders(rr.response.headers.filterNot(_.is(MetricDirectives.ENDPOINT_NAME_HEADER))))
-        }
+  def withoutEndpointName: Directive0 = {
+    mapRouteResult {
+      case rr@RouteResult.Rejected(_) =>
+        rr
+
+      case rr@RouteResult.Complete(_) =>
+        rr.copy(response = rr.response.withHeaders(rr.response.headers.filterNot(_.is(MetricDirectives.ENDPOINT_NAME_HEADER))))
     }
   }
 
   def metered(endpointName: String): Directive0 = {
-    mapInnerRoute {
-      route: Route => ctx: RequestContext =>
-        route(ctx).map {
-          case rr@RouteResult.Rejected(_) =>
-            rr
+    mapRouteResult {
+      case rr@RouteResult.Rejected(_) =>
+        rr
 
-          case rr@RouteResult.Complete(_) =>
-            rr.copy(response = rr.response.withHeaders(rr.response.headers :+ RawHeader(MetricDirectives.ENDPOINT_NAME_HEADER, endpointName)))
-        }
+      case rr@RouteResult.Complete(_) =>
+        rr.copy(response = rr.response.withHeaders(rr.response.headers :+ RawHeader(MetricDirectives.ENDPOINT_NAME_HEADER, endpointName)))
     }
   }
 
