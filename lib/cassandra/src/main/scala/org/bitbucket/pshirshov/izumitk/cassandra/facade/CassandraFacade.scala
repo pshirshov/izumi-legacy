@@ -74,7 +74,7 @@ trait CassandraFacade
     val timerName = statement.meta.name
     logger.trace(s"C* Query: ${log(statement).mkString(";")} [$timerName]")
 
-    val timer = cassandra.metrics.timer(s"${cassandra.productId.id}-c*-$timerName")
+    val timer = cassandra.metrics.timer(s"${cassandra.productId.id}-cq-$timerName")
     val context = timer.time()
     try {
       statement match {
