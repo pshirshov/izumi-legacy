@@ -34,7 +34,7 @@ trait FailureRepository extends StrictLogging {
   protected def metrics: MetricRegistry
   protected def productId: AppId
 
-  private val critPrefix = s"$productId-crit"
+  private val critPrefix = s"${productId.id}-crit"
 
   def readFailure(failureId: String): Option[RestoredFailureRecord]
 
