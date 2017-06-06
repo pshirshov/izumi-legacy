@@ -5,6 +5,7 @@ import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.model.{HttpHeader, StatusCodes}
 import akka.http.scaladsl.server.{RequestContext, RouteResult}
 import akka.http.scaladsl.unmarshalling.FromEntityUnmarshaller
+import akka.http.scaladsl.server.Directives._
 import com.fasterxml.jackson.databind.JsonNode
 import com.typesafe.scalalogging.StrictLogging
 import org.bitbucket.pshirshov.izumitk.akka.http.util.MetricDirectives
@@ -19,6 +20,7 @@ import scala.util.control.NonFatal
 
 
 object JsonAPI {
+
   case class Result[R: Manifest](data: Maybe[R]
                                  , headers: R => Traversable[HttpHeader] = empty
                                  , resultTransformer: Option[R => AnyRef] = None
@@ -54,12 +56,25 @@ trait JsonAPI extends SerializationProtocol with StrictLogging {
 
   override implicit def entityMarshaler[T <: AnyRef]: ToEntityMarshaller[T] = apiPolicy.protocol.entityMarshaler[T]
 
-  protected def completeJson[R <: AnyRef: Manifest](fun: => JsonAPI.Result[R]): (RequestContext) => Future[RouteResult] = {
+  protected def completeJson[R <: AnyRef : Manifest](fun: => JsonAPI.Result[R]): (RequestContext) => Future[RouteResult] = {
     ctx: RequestContext =>
       val (body, headers) = completeJsonBody(fun)
       ctx.complete(Tuple3(StatusCodes.OK, headers, body))
   }
 
+  def completeJson[R <: AnyRef : Manifest](maybeF: Future[Maybe[R]])
+                                          (fun: => Maybe[R] => JsonAPI.Result[R]): (RequestContext) => Future[RouteResult] =
+    onComplete(maybeF) {
+      responseFT => {
+        complete(
+          responseFT.map(
+            response => {
+              val (body, headers) = completeJsonBody(fun(response))
+              Tuple3(StatusCodes.OK, headers, body)
+            }
+          ))
+      }
+    }
 
   protected def completeJsonBody[R <: AnyRef : Manifest](fun: => JsonAPI.Result[R]): (JsonNode, scala.collection.immutable.Seq[HttpHeader]) = {
     val output: JsonAPI.Result[R] = try {
