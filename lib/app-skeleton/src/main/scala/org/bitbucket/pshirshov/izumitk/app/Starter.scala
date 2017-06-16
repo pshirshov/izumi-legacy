@@ -115,7 +115,7 @@ abstract class Starter {
 
     args.writeReference match {
       case Some(true) =>
-        writeReference(config)
+        writeReference(config, args.toJson.get)
         System.exit(0)
       case _ =>
     }
@@ -153,12 +153,13 @@ abstract class Starter {
   }
 
 
-  protected def render(forDump: Config): String = {
-    forDump.root.render(ConfigRenderOptions.defaults.setComments(false).setOriginComments(false).setJson(false))
+  protected def render(forDump: Config, toJson : Boolean = false): String = {
+    forDump.root.render(ConfigRenderOptions.defaults.setComments(false).setOriginComments(false).setJson(toJson))
   }
 
-  protected def writeReference(c: LoadedConfig): Unit = {
-    writeReference(new File(referenceConfigName), render(c.reference))
+  protected def writeReference(c: LoadedConfig, jsonFormat : Boolean): Unit = {
+    val fileName = if (jsonFormat) referenceConfigName.replaceFirst(".conf", ".json") else referenceConfigName
+    writeReference(new File(fileName), render(c.reference, jsonFormat))
     writeReference(logbackFile, getLoggingReference)
   }
 
