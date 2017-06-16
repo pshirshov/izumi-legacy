@@ -42,6 +42,11 @@ abstract class CommonOptionsParser(programName: String) extends scopt.OptionPars
   opt[Unit]("write-reference") abbr "wr" action {
     (_, c) =>
       c.copy(writeReference = Some(true))
-  } text "write reference configuration files to default paths. Note: requires `-rs` option!"
+  } text "write reference configuration files to default paths. Note: requires `-rs` option!" children(
+    opt[Unit]("json-format") abbr "json" action {
+      (_, c) =>
+        c.copy(toJson = Some(true))
+    } text "write json format reference configuration files"
+    )
 
 }
