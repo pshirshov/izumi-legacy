@@ -12,6 +12,7 @@ case class AppArguments(
                          , showReference: Option[Boolean] = Option(false)
                          , writeReference: Option[Boolean] = Option(false)
                          , args: mutable.Map[String, AnyRef] = mutable.HashMap()
+                         , toJson : Option[Boolean] = Option(false)
                        ) {
   def value[T](name: String): T = args(name).asInstanceOf[T]
   def get[T](name: String): Option[T] = args.get(name).map(_.asInstanceOf[T])
