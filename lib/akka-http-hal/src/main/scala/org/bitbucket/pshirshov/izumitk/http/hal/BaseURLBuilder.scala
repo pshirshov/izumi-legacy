@@ -40,7 +40,7 @@ class ForwardedBuilder(req: HttpRequest) extends BaseUriBuilder {
   def build(): String = {
     val b = new StringBuilder()
 
-    val proto = extract("X-Forwarded-Proto").getOrElse("http")
+    val proto = extract("X-Forwarded-Proto").headOption.getOrElse("http")
     b.append(proto)
     b.append("://")
 
@@ -53,14 +53,14 @@ class ForwardedBuilder(req: HttpRequest) extends BaseUriBuilder {
 
         if (parts.length == 2) {
           b.append(parts.head)
-          appendPort(b, proto, port.getOrElse(parts.last))
+          appendPort(b, proto, port.headOption.getOrElse(parts.last))
         } else {
           b.append(v)
-          appendPort(b, proto, port.getOrElse("80"))
+          appendPort(b, proto, port.headOption.getOrElse("80"))
         }
     }
 
-    extract("X-Forwarded-Prefix") match {
+    extract("X-Forwarded-Prefix").headOption match {
       case None =>
       case Some(prefix) =>
         b.append('/')
@@ -77,11 +77,11 @@ class ForwardedBuilder(req: HttpRequest) extends BaseUriBuilder {
     }
   }
 
-  protected def extract(name: String): Option[String] = {
-    req.headers.collectFirst {
+  protected def extract(name: String): Seq[String] = {
+    req.headers.collect {
       case h: HttpHeader if h.lowercaseName() == name.toLowerCase =>
-        h.value.toLowerCase
-    }
+        h.value.toLowerCase.split(',')
+    }.flatten
   }
 
   protected def extractHost(): Option[String] = {
@@ -91,7 +91,7 @@ class ForwardedBuilder(req: HttpRequest) extends BaseUriBuilder {
       None
     }
     
-    extract("X-Forwarded-Host").orElse(hostHeader)
+    extract("X-Forwarded-Host").headOption.orElse(hostHeader)
   }
 }
 
