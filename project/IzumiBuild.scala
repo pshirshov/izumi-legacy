@@ -55,6 +55,10 @@ object IzumiBuild extends PerfectBuild {
       dependencies = dep()
     )
     , mkProject(
+      base = file("lib/geoip"),
+      dependencies = dep("failures-model", "akka-http")
+    )
+    , mkProject(
       base = file("lib/akka"),
       dependencies = dep()
     )
