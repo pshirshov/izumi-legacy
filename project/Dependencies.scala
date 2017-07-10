@@ -11,7 +11,7 @@ object Dependencies {
 
   val globalExclusions: Seq[SbtExclusionRule] = Seq[sbt.SbtExclusionRule]()
 
-  
+
   object C {
     val scala_macros: ModuleID = "org.scalamacros" % "paradise" % "2.1.0"
 
@@ -66,7 +66,16 @@ object Dependencies {
     private val commons_codec = "commons-codec" % "commons-codec" % "1.10"
     private val commons_lang3 = "org.apache.commons" % "commons-lang3" % "3.5"
     private val commons_math = "org.apache.commons" % "commons-math3" % "3.6.1"
-    val commons = Seq(commons_io, commons_lang3, commons_codec, commons_math)
+    private val commons_compress: ModuleID = "org.apache.commons" % "commons-compress" % "1.14"
+
+    val commons = Seq(commons_io, commons_lang3, commons_codec, commons_math, commons_compress)
+
+    private val geoip_db: ModuleID = "com.maxmind.geoip2" % "geoip2" % "2.9.0"
+    private val geoip_db_reader: ModuleID = "com.maxmind.db" % "maxmind-db" % "1.2.1"
+
+    val geoip = Seq(geoip_db, geoip_db_reader)
+
+    val apache_http: ModuleID = "org.apache.httpcomponents" % "httpclient" % "4.5.2"
 
     val scalactic_version = "3.0.1"
     private val scalactic = "org.scalactic" %% "scalactic" % scalactic_version
@@ -82,7 +91,7 @@ object Dependencies {
     private val jsr305 = "com.google.code.findbugs" % "jsr305" % "3.0.1"
     //private val guava = "com.google.guava" % "guava" % "21.0"
     private val guava = "com.google.guava" % "guava" % "19.0" // c* driver depends on 16.0
-    private val metrics_core =  "io.dropwizard.metrics" % "metrics-core" % "3.1.2"
+    private val metrics_core = "io.dropwizard.metrics" % "metrics-core" % "3.1.2"
 
     val string_template: ModuleID = "org.antlr" % "ST4" % "4.0.8"
 
