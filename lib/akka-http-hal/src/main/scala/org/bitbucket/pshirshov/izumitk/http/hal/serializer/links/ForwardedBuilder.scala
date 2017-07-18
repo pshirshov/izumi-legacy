@@ -1,40 +1,8 @@
-package org.bitbucket.pshirshov.izumitk.http.hal
+package org.bitbucket.pshirshov.izumitk.http.hal.serializer.links
 
-import com.google.inject.{Inject, Singleton}
 import akka.http.scaladsl.model.{HttpHeader, HttpRequest}
 
 // https://github.com/marcuslange/akka-http-hal/blob/master/src/main/scala/akka/http/rest/hal/Href.scala
-
-@Singleton
-class DefaultLinkExtractor @Inject()() extends LinkExtractor {
-  def extract(maybeRequest: Option[HttpRequest]): String = maybeRequest match {
-    case Some(req) => if (containsForwarded(req)) {
-      new ForwardedBuilder(req).build()
-    } else {
-      new UrlBuilder(req).build()
-    }
-    case None =>
-      ""
-  }
-
-  private def containsForwarded(req: HttpRequest) = {
-    req.headers.exists(xf => xf.lowercaseName().contains("X-Forwarded".toLowerCase))
-  }
-}
-
-trait BaseUriBuilder {
-  protected def defaultPort(scheme: String): Int = {
-    scheme match {
-      case "http" =>
-        80
-      case "https" =>
-        443
-      case _ =>
-        throw new IllegalArgumentException(s"Bad scheme: $scheme")
-    }
-  }
-
-}
 
 class ForwardedBuilder(req: HttpRequest) extends BaseUriBuilder {
   def build(): String = {
@@ -90,21 +58,7 @@ class ForwardedBuilder(req: HttpRequest) extends BaseUriBuilder {
     } else {
       None
     }
-    
+
     extract("X-Forwarded-Host").headOption.orElse(hostHeader)
-  }
-}
-
-class UrlBuilder(req: HttpRequest) extends BaseUriBuilder {
-  def build(): String = {
-    val proto = req.uri.scheme
-    val host = req.uri.authority.host.address
-    val port = req.uri.authority.port
-
-    if (defaultPort(proto) == port) {
-      s"$proto://$host"
-    } else {
-      s"$proto://$host:$port"
-    }
   }
 }

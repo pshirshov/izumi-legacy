@@ -1,4 +1,4 @@
-package org.bitbucket.pshirshov.izumitk.http.hal
+package org.bitbucket.pshirshov.izumitk.http.hal.decoder
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.{ArrayNode, ObjectNode}

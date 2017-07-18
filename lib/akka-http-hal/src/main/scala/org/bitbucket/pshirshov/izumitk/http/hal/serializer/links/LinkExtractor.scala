@@ -1,4 +1,4 @@
-package org.bitbucket.pshirshov.izumitk.http.hal
+package org.bitbucket.pshirshov.izumitk.http.hal.serializer.links
 
 import akka.http.scaladsl.model.HttpRequest
 
