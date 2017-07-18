@@ -1,6 +1,5 @@
 package org.bitbucket.pshirshov.izumitk.http.hal
 
-import akka.http.javadsl.server.CustomRejection
 import akka.http.scaladsl.model.MediaType.WithFixedCharset
 import akka.http.scaladsl.model.StatusCodes.ClientError
 import akka.http.scaladsl.model.{HttpEntity, _}
@@ -11,44 +10,29 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import com.theoryinpractise.halbuilder.api.{Representation, RepresentationFactory}
+import org.bitbucket.pshirshov.izumitk.akka.http.util.MetricDirectives
 import org.bitbucket.pshirshov.izumitk.akka.http.util.cors.CORS
 import org.bitbucket.pshirshov.izumitk.akka.http.util.serialization.SerializationProtocol
-import org.bitbucket.pshirshov.izumitk.akka.http.util.{APIPolicy, MetricDirectives}
 import org.bitbucket.pshirshov.izumitk.cluster.model.AppId
 import org.bitbucket.pshirshov.izumitk.failures.model.{CommonDomainExceptions, DomainException, ServiceException, ServiceFailure}
 import org.bitbucket.pshirshov.izumitk.failures.services.{FailureRecord, FailureRepository}
-import org.bitbucket.pshirshov.izumitk.hal.HalResource
+import org.bitbucket.pshirshov.izumitk.http.hal.model.{HalExceptionContext, HalFailure, JwtRejection, ToHal}
+import org.bitbucket.pshirshov.izumitk.http.hal.serializer.HalSerializer
 import org.bitbucket.pshirshov.izumitk.util.types.ExceptionUtils
 import org.scalactic.{Bad, Every, Good}
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.language.implicitConversions
-import scala.reflect._
 import scala.util.control.NonFatal
 
-
-trait HalApiPolicy extends APIPolicy {
-  def completeHal[R <: Hal : ClassTag : Manifest](endpointName: String)(fun: => R): (RequestContext) => Future[RouteResult]
-}
-
-@HalResource
-case class HalFailure(
-                       failureId: String
-                       , failureType: String
-                       , failureMessage: String
-                       , stacktrace: Option[String]
-                     )
-
-case class JwtRejection(token: String) extends CustomRejection
 
 @Singleton
 class DefaultHalApiPolicy @Inject()
 (
   representationFactory: RepresentationFactory
-  , serializer: HalSerializerImpl
+  , serializer: HalSerializer
   , failureRepository: FailureRepository
   , cors: CORS
-  , linkExtractor: LinkExtractor
+
   , @Named("app.id") override protected val productId: AppId
   , override val protocol: SerializationProtocol
   , @Named("@http.debug") protected val isDebugMode: Boolean
@@ -61,10 +45,10 @@ class DefaultHalApiPolicy @Inject()
 
   val halContentType = ContentType(`application/hal+json`)
 
-  override def completeHal[R <: Hal : ClassTag : Manifest](endpointName: String)(fun: => R): (RequestContext) => Future[RouteResult] = metered(endpointName) {
+  override def completeHal[R <: ToHal](endpointName: String)(fun: => R): (RequestContext) => Future[RouteResult] = metered(endpointName) {
     ctx: RequestContext =>
       try {
-        val body = serializeEntity(fun, ctx).toString(RepresentationFactory.HAL_JSON)
+        val body = serializeEntity(fun, ctx.request).toString(RepresentationFactory.HAL_JSON)
 
         ctx.complete(HttpResponse(StatusCodes.OK
           , entity = HttpEntity(body).withContentType(halContentType)
@@ -97,7 +81,7 @@ class DefaultHalApiPolicy @Inject()
           val resp = protocol.protocolMapper.getNodeFactory.objectNode()
           resp.put("error", "request_rejected")
           resp.put("error_description", r.toString)
-          
+
           respond(StatusCodes.NotFound, resp)
       }
       .result()
@@ -116,21 +100,17 @@ class DefaultHalApiPolicy @Inject()
     }
   }
 
-  protected def serializeEntity[R <: Hal : ClassTag : Manifest](value: R, ctx: RequestContext): Representation = {
-    import Hal._
-    val baseUri = linkExtractor.extract(Option(ctx.request))
+  protected def serializeEntity[R <: ToHal](value: R, ctx: HttpRequest): Representation = {
+    import ToHal._
 
     value match {
       case Repr(r) =>
         r
-      case WithConverter(entity, converter) =>
-        converter(entity, baseUri)
-      case Entity(entity) =>
-        entity.hal(representationFactory, baseUri)
-      case Auto(entity, handler) =>
+
+      case Auto(entity, hc) =>
         val repr = entity match {
           case Good(dto: AnyRef) =>
-            serializer.makeRepr(baseUri, dto, handler)
+            serializer.makeRepr(dto, hc, ctx)
 
           case Bad(r: Every[ServiceFailure]) =>
             val (controlExceptions, exceptions) = r.toList.map(_.toException)
@@ -161,7 +141,8 @@ class DefaultHalApiPolicy @Inject()
             throw new ServiceException(s"Deadly unexpected result: $other")
 
           case dto: AnyRef =>
-            serializer.makeRepr(baseUri, dto, handler)
+            serializer.makeRepr(dto, hc, ctx)
+
           case other =>
             throw new UnsupportedOperationException(s"Automatic HAL serialization unsupported: $other")
         }
@@ -186,9 +167,7 @@ class DefaultHalApiPolicy @Inject()
       , stacktrace
     )
 
-    val baseUri = linkExtractor.extract(Option(ctx.request))
-    val body = serializer
-      .makeRepr(baseUri, fdata, _ => {})
+    val body = serializer.makeRepr(fdata, HalExceptionContext(e), ctx.request)
       .toString(RepresentationFactory.HAL_JSON)
 
     ctx.complete(HttpResponse(StatusCodes.InternalServerError
