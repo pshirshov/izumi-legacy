@@ -2,6 +2,7 @@ package org.bitbucket.pshirshov.izumitk.http
 
 import java.util.UUID
 
+import akka.http.scaladsl.model.{HttpRequest, Uri}
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type
 import com.fasterxml.jackson.annotation.{JsonIgnore, JsonSubTypes, JsonTypeInfo, JsonTypeName}
 import com.fasterxml.jackson.databind.JsonNode
@@ -14,8 +15,10 @@ import org.bitbucket.pshirshov.izumitk.TestConfigExtensions._
 import org.bitbucket.pshirshov.izumitk.app.modules.ConfigExposingModule
 import org.bitbucket.pshirshov.izumitk.hal.HalResource
 import org.bitbucket.pshirshov.izumitk.http.HalTestPolymorphics.SimpleTextPayload
+import org.bitbucket.pshirshov.izumitk.http.hal.decoder.UnreliableHalDecoder
+import org.bitbucket.pshirshov.izumitk.http.hal.model.HalContext
 import org.bitbucket.pshirshov.izumitk.http.hal.modules.HalModule
-import org.bitbucket.pshirshov.izumitk.http.hal.{HalSerializerImpl, UnreliableHalDecoder}
+import org.bitbucket.pshirshov.izumitk.http.hal.serializer.HalSerializerImpl
 import org.bitbucket.pshirshov.izumitk.json.JacksonMapper
 import org.bitbucket.pshirshov.izumitk.json.modules.JacksonModule
 import org.bitbucket.pshirshov.izumitk.test.InjectorTestBase
@@ -81,10 +84,8 @@ class HalSerializerImplTest extends InjectorTestBase {
         val mapper = injector.instance[HalSerializerImpl]
         val message = HalTestMessage(UUID.randomUUID(), HalTestPolymorphics.SimpleTextPayload("xxx"))
         val sample = HalTestEntry(message, Seq(message, message))
-        val repr = mapper.makeRepr("http://localhost:8080", sample, {
-          ctx =>
-            ctx.repr.withLink("xxx", "yyy")
-        })
+        val repr = mapper
+          .makeRepr(sample, new HalContext {}, HttpRequest(uri = Uri("http://localhost:8080")))
           .toString(RepresentationFactory.HAL_JSON)
 
         val decoder = injector.instance[UnreliableHalDecoder]

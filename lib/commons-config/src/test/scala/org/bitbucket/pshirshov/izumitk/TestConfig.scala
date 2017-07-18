@@ -1,12 +1,13 @@
 package org.bitbucket.pshirshov.izumitk
 
 import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.scalalogging.StrictLogging
 import org.bitbucket.pshirshov.izumitk.test.ExposedTestScope
 
 import scala.language.implicitConversions
 
 @ExposedTestScope
-object TestConfig {
+object TestConfig extends StrictLogging {
   import scala.collection.JavaConverters._
 
   case class TestConfigSection(resourceName: String, alias: String)
@@ -23,10 +24,13 @@ object TestConfig {
         throw new IllegalStateException()
     }
 
-    ConfigFactory.systemProperties()
+
+    val config = ConfigFactory.systemProperties()
       .withFallback(out)
       .withFallback(ConfigFactory.defaultReference())
       .resolve()
+    logger.trace(s"Test config loaded: $sections ==> $config")
+    config
   }
 
   private def reference(section: TestConfigSection): Config = {
