@@ -21,7 +21,9 @@ final class CassandraFacadeConfigModule() extends ScalaModule {
 
     values.map {
       case (name, cfg) =>
-        name -> CQueryConfig(Option(cfg.getString("consistency")).map(ConsistencyLevel.valueOf))
+        val consistencyLevel = Option(cfg.getString("consistency")).map(ConsistencyLevel.valueOf)
+        val serialConsistencyLevel = Option(cfg.getString("serialConsistency")).map(ConsistencyLevel.valueOf)
+        name -> CQueryConfig(consistencyLevel, serialConsistencyLevel)
     }
   }
 
