@@ -107,15 +107,25 @@ trait CassandraFacade
 
   private def configure(meta: CMeta, s: Statement): Statement = {
     val queryConfig = cassandra.querySettings.getOrElse(meta.name, {
-      cassandra.querySettings.getOrElse(meta.tag, cassandra.defaultQueryConfig)
+      cassandra.querySettings.getOrElse(s"default-${meta.tag}", cassandra.defaultQueryConfig)
     })
+
 
     queryConfig.consistencyLevel match {
       case Some(cl) =>
         s.setConsistencyLevel(cl)
+
       case _ =>
         s
     }
+
+    queryConfig.serialConsistencyLevel match {
+      case Some(cl) =>
+        s.setSerialConsistencyLevel(cl)
+      case _ =>
+        s
+    }
+
   }
 
   private def convertFuture(timer: Timer, context: Context, timerName: String)(lf: => ResultSetFuture): Future[ResultSet] = {

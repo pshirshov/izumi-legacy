@@ -10,7 +10,10 @@ case class CassandraConfig(values: Map[String, String]) {
 }
 
 
-case class CQueryConfig(consistencyLevel: Option[ConsistencyLevel] = None)
+case class CQueryConfig(
+                         consistencyLevel: Option[ConsistencyLevel] = None
+                         , serialConsistencyLevel: Option[ConsistencyLevel] = None
+                       )
 
 case class CTable(keyspaceName: CKeyspace, name: String) {
   def fqName: String = s"${QueryBuilder.quote(keyspaceName.name)}.${QueryBuilder.quote(name)}"
