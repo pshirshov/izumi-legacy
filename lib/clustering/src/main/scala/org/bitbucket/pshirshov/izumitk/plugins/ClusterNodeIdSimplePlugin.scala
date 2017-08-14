@@ -7,7 +7,7 @@ import com.google.inject.{Provides, Singleton}
 import org.apache.commons.lang3.RandomStringUtils
 import org.bitbucket.pshirshov.izumitk.cdi.GuicePlugin
 import org.bitbucket.pshirshov.izumitk.cluster.ClusterUtils
-import org.bitbucket.pshirshov.izumitk.cluster.model.HostId
+import org.bitbucket.pshirshov.izumitk.cluster.model.{HostId, NodeAddress}
 
 class ClusterNodeIdSimplePlugin extends GuicePlugin {
   override def configure(): Unit = {
@@ -39,9 +39,13 @@ class ClusterNodeIdSimplePlugin extends GuicePlugin {
 
   }
 
-  @Named("clustering.node.id")
+  @Named("clustering.node.address")
   @Provides
   @Singleton
-  def hostId: HostId = ClusterUtils.hostId
-
+  def localNodeAddress(
+                        @Named("clustering.node.id") hostId: HostId
+                        , @Named("@clustering.dc.local.id") dcId: String
+                      ): NodeAddress = {
+    NodeAddress(hostId, dcId)
+  }
 }
