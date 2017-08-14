@@ -13,9 +13,5 @@ object NodeAddress {
     val identifier = parts.tail.mkString(":")
     NodeAddress(HostId(identifier), parts.head)
   }
-
-  def asString(addr: NodeAddress): String = {
-    s"${addr.dc}:${addr.id.id}"
-  }
 }
 
