@@ -6,10 +6,11 @@ import com.typesafe.config.{Config, ConfigList, ConfigObject, ConfigValueType}
 import com.typesafe.scalalogging.StrictLogging
 import net.codingwell.scalaguice.ScalaModule
 
-import scala.util.{Success, Try}
 import scala.language.existentials
+import scala.util.{Success, Try}
 
 case class ConfigBinding(value: Any, clazz: Class[_])
+
 
 final class ConfigExposingModule(val config: Config) extends ScalaModule with StrictLogging {
   override def configure(): Unit = {

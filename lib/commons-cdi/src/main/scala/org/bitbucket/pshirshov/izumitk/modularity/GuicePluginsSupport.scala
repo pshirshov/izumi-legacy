@@ -43,7 +43,7 @@ trait GuicePluginsSupport
       new PluginsIntrospectionModule(allPlugins)
       , new InjectorCloseablesRecorderListenerModule()
       , new InjectorInitializationListenerModule()
-      , new ConfigExposingModule(config.effectiveApp)
+      , new ConfigExposingModule(pluginsConfigService.appConfig.effectiveApp)
     ))
 
     PluginsInitiated(allPlugins, Seq(modules, internalModules))

@@ -5,7 +5,7 @@ import com.typesafe.config.Config
 import com.typesafe.scalalogging.StrictLogging
 import org.bitbucket.pshirshov.izumitk.RequiredConfig
 import org.bitbucket.pshirshov.izumitk.cdi.Plugin
-import org.bitbucket.pshirshov.izumitk.modularity.tools.WithPluginsConfig
+import org.bitbucket.pshirshov.izumitk.modularity.tools.PluginsConfigService
 import org.scalactic._
 
 import scala.collection.JavaConverters._
@@ -13,14 +13,14 @@ import scala.collection.JavaConverters._
 
 trait PluginsSupport
   extends WithPluginsPackages
-    with WithPluginsConfig
     with StrictLogging {
 
   protected def filterPluginClasses(classes: Seq[Class[_]]): Seq[Class[_]] = classes
 
+  protected def pluginsConfigService: PluginsConfigService
 
   def loadPlugins(): Seq[Plugin] = {
-    if (!pluginsConfig.enabled) {
+    if (!pluginsConfigService.pluginsConfig.enabled) {
       logger.warn("Plugins support is disabled")
       return Seq()
     }
@@ -54,7 +54,7 @@ trait PluginsSupport
         loadSimplePlugin(clz).badMap(bad1 => bad ++ bad1)
     } match {
       case Good(p) =>
-        logger.trace(s"Plugin `${clz.getCanonicalName}` instantiated: $p")
+        logger.debug(s"Plugin `${clz.getCanonicalName}` instantiated: $p")
         Some(p)
 
       case Bad(f) =>
@@ -87,7 +87,7 @@ trait PluginsSupport
 
       val declaredConfigSection = configAnnotation.value()
 
-      val pluginConfig = pluginConfigSection(clz, declaredConfigSection)
+      val pluginConfig = pluginsConfigService.createPluginConfigSection(clz, declaredConfigSection)
 
       Good(constructor.newInstance(pluginConfig).asInstanceOf[Plugin])
     } catch {
