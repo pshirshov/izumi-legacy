@@ -2,9 +2,10 @@ package org.bitbucket.pshirshov.izumitk.cdi.config
 
 import java.lang.reflect.Field
 
-import com.google.inject.{MembersInjector, TypeLiteral}
+import com.google.inject.TypeLiteral
 import com.google.inject.spi.{TypeEncounter, TypeListener}
 import com.typesafe.config.Config
+import org.bitbucket.pshirshov.izumitk.Conf
 
 class ConfigProviderTypeListener(config: Config) extends TypeListener {
 
