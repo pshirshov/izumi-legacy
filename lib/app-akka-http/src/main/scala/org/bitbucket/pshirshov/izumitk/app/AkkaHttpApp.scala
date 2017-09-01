@@ -11,6 +11,7 @@ import com.google.inject.{Inject, Singleton}
 import com.typesafe.scalalogging.StrictLogging
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Success
 
 
 @Singleton
@@ -29,9 +30,12 @@ final class AkkaHttpApp @Inject()
 
   override def run(): Future[ServerBinding] = {
     val future = Http().bindAndHandle(flow, host, port)
-    future.onSuccess {
-      case _ =>
+    future.onComplete {
+      case Success(_) =>
         logger.info(s"Akka HTTP is available on $host:$port")
+
+      case _ =>
+
     }
     future
   }

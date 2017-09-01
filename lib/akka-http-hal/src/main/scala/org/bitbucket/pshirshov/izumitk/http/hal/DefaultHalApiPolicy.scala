@@ -5,15 +5,14 @@ import akka.http.scaladsl.model.StatusCodes.ClientError
 import akka.http.scaladsl.model.{HttpEntity, _}
 import akka.http.scaladsl.server.Directives.complete
 import akka.http.scaladsl.server._
-import com.codahale.metrics.MetricRegistry
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import com.theoryinpractise.halbuilder.api.{Representation, RepresentationFactory}
+import org.bitbucket.pshirshov.izumitk.akka.http.services.HttpServiceConfiguration
 import org.bitbucket.pshirshov.izumitk.akka.http.util.MetricDirectives
 import org.bitbucket.pshirshov.izumitk.akka.http.util.cors.CORS
 import org.bitbucket.pshirshov.izumitk.akka.http.util.serialization.SerializationProtocol
-import org.bitbucket.pshirshov.izumitk.cluster.model.AppId
 import org.bitbucket.pshirshov.izumitk.failures.model.{CommonDomainExceptions, DomainException, ServiceException, ServiceFailure}
 import org.bitbucket.pshirshov.izumitk.failures.services.{FailureRecord, FailureRepository}
 import org.bitbucket.pshirshov.izumitk.http.hal.model.{HalExceptionContext, HalFailure, JwtRejection, ToHal}
@@ -21,7 +20,7 @@ import org.bitbucket.pshirshov.izumitk.http.hal.serializer.HalSerializer
 import org.bitbucket.pshirshov.izumitk.util.types.ExceptionUtils
 import org.scalactic.{Bad, Every, Good}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 import scala.util.control.NonFatal
 
 
@@ -32,12 +31,9 @@ class DefaultHalApiPolicy @Inject()
   , serializer: HalSerializer
   , failureRepository: FailureRepository
   , cors: CORS
-
-  , @Named("app.id") override protected val productId: AppId
+  , override protected val httpServiceConfiguration: HttpServiceConfiguration
   , override val protocol: SerializationProtocol
-  , @Named("@http.debug") protected val isDebugMode: Boolean
-  , override protected val metrics: MetricRegistry
-  , override protected implicit val executionContext: ExecutionContext
+  , @Named("@http.debug.exceptions") protected val debugStacktraces: Boolean
 ) extends HalApiPolicy
   with MetricDirectives {
 
@@ -154,7 +150,7 @@ class DefaultHalApiPolicy @Inject()
     logger.error(s"Critical failure while handling request:\n${ctx.request}")
 
     val failureId = failureRepository.recordFailure(FailureRecord(e))
-    val stacktrace = if (isDebugMode) {
+    val stacktrace = if (debugStacktraces) {
       Some(ExceptionUtils.format(e))
     } else {
       None

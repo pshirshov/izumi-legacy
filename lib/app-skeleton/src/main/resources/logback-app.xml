@@ -1,18 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <included>
-    <jmxConfigurator />
+    <jmxConfigurator/>
 
-    <property name="pattern" value="%d{HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n"/>
+    <property name="izumitk.logs.pattern" value="%d{HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n"/>
 
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>${pattern}</pattern>
-        </encoder>
-    </appender>
+    <property name="izumitk.logs.stdout" value="${izumitk.logs.stdout:-true}"/>
 
-    <root level="WARN">
-        <appender-ref ref="STDOUT"/>
-    </root>
+    <if condition='p("izumitk.logs.stdout").equals("true")'>
+        <then>
+            <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+                <encoder>
+                    <pattern>${izumitk.logs.pattern}</pattern>
+                </encoder>
+            </appender>
+
+            <root>
+                <appender-ref ref="STDOUT"/>
+            </root>
+        </then>
+    </if>
 
     <logger name="org.bitbucket.pshirshov.izumitk" level="INFO"/>
 </included>

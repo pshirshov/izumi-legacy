@@ -1,31 +1,44 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <included>
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
-        </encoder>
-    </appender>
+    <property name="izumitk.logs.stdout" value="${izumitk.logs.stdout:-true}"/>
 
-    <appender name="HTTP-SIFT" class="ch.qos.logback.classic.sift.SiftingAppender">
-        <discriminator class="org.bitbucket.pshirshov.izumitk.test.GlobalDiscriminator"/>
-        <sift>
-            <appender name="FILE-${test-name}" class="ch.qos.logback.core.FileAppender">
-                <file>target/http/${test-name}.txt</file>
+    <if condition='p("izumitk.logs.stdout").equals("true")'>
+        <then>
 
+            <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
                 <encoder>
-                    <pattern>%d{HH:mm:ss:SSS} | %-5level | %thread | %logger{20} | %msg%n%rEx</pattern>
+                    <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
                 </encoder>
             </appender>
-        </sift>
-    </appender>
+            <root>
+                <appender-ref ref="STDOUT"/>
+            </root>
+        </then>
+    </if>
 
-    <root level="WARN">
-        <appender-ref ref="STDOUT"/>
-    </root>
+    <property name="izumitk.logs.stdout" value="${izumitk.logs.http:-true}"/>
 
-    <logger name="org.bitbucket.pshirshov.izumitk" level="INFO" />
+    <if condition='p("izumitk.logs.tests").equals("true")'>
+        <then>
+            <appender name="HTTP-SIFT" class="ch.qos.logback.classic.sift.SiftingAppender">
+                <discriminator class="org.bitbucket.pshirshov.izumitk.test.GlobalDiscriminator"/>
+                <sift>
+                    <appender name="FILE-${test-name}" class="ch.qos.logback.core.FileAppender">
+                        <file>target/http/${test-name}.txt</file>
 
-    <logger name="org.bitbucket.pshirshov.izumitk.akka.http.util.logging.LoggingHttpDebugLogHandler" level="INFO">
-        <appender-ref ref="HTTP-SIFT" />
-    </logger>
+                        <encoder>
+                            <pattern>%d{HH:mm:ss:SSS} | %-5level | %thread | %logger{20} | %msg%n%rEx</pattern>
+                        </encoder>
+                    </appender>
+                </sift>
+            </appender>
+
+            <logger name="org.bitbucket.pshirshov.izumitk.akka.http.util.logging.LoggingHttpDebugLogHandler"
+                    level="INFO">
+                <appender-ref ref="HTTP-SIFT"/>
+            </logger>
+        </then>
+    </if>
+
+    <logger name="org.bitbucket.pshirshov.izumitk" level="INFO"/>
 </included>

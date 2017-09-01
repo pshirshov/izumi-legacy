@@ -2,14 +2,19 @@
 <included>
     <include resource="logback-app.xml"/>
 
-    <appender name="WSOUT" class="org.bitbucket.pshirshov.izumitk.akka.http.util.logging.WSAppender">
-        <pattern>${pattern}</pattern>
-    </appender>
+    <property name="izumitk.logs.websocket" value="${izumitk.logs.stdout:-true}"/>
 
-    <root level="WARN">
-        <appender-ref ref="STDOUT"/>
-        <appender-ref ref="WSOUT"/>
-    </root>
+    <if condition='p("izumitk.logs.websocket").equals("true")'>
+        <then>
+            <appender name="WSOUT" class="org.bitbucket.pshirshov.izumitk.akka.http.util.logging.WSAppender">
+                <pattern>${izumitk.logs.pattern}</pattern>
+            </appender>
+
+            <root>
+                <appender-ref ref="WSOUT"/>
+            </root>
+        </then>
+    </if>
 
     <logger name="akka.actor.ActorSystemImpl" level="INFO"/>
 </included>
