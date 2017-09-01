@@ -28,7 +28,7 @@ class DefaultJsonAPIPolicy @Inject()
   failureRepository: FailureRepository
   , override val protocol: SerializationProtocol
   , protected val metrics: MetricRegistry
-  , @Named("@http.debug") protected val isDebugMode: Boolean
+  , @Named("@http.debug.exceptions") protected val isDebugMode: Boolean
   , @Named("standardMapper") protected val exceptionMapper: JacksonMapper
   , @Named("app.id") protected val productId: AppId
   , cors: CORS
