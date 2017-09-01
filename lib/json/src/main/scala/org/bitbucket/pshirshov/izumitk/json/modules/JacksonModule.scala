@@ -120,12 +120,16 @@ abstract class AbstractDomainExtensionsModule
     }
 
     def addPolymorphicClass(polymorphicClass: Class[_], pkg: Package): SimpleModule = {
+      addPolymorphicClass(polymorphicClass, pkg.getName)
+    }
+
+    def addPolymorphicClass(polymorphicClass: Class[_], pkgName: String): SimpleModule = {
       import scala.collection.JavaConverters._
       val classpath = ClassPath.from(polymorphicClass.getClassLoader)
       val implementations = classpath
         .getAllClasses
         .asScala
-        .filter(_.getPackageName.startsWith(pkg.getName))
+        .filter(_.getPackageName.startsWith(pkgName))
         .map(_.load())
         .filter(polymorphicClass.isAssignableFrom)
         .toSeq

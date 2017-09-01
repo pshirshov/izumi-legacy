@@ -24,7 +24,7 @@
                 <discriminator class="org.bitbucket.pshirshov.izumitk.test.GlobalDiscriminator"/>
                 <sift>
                     <appender name="FILE-${test-name}" class="ch.qos.logback.core.FileAppender">
-                        <file>target/http/${test-name}.txt</file>
+                        <file>target/records/tests/${test-name}.txt</file>
 
                         <encoder>
                             <pattern>%d{HH:mm:ss:SSS} | %-5level | %thread | %logger{20} | %msg%n%rEx</pattern>
