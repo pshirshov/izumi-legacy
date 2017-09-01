@@ -5,22 +5,22 @@ import com.typesafe.config.Config
 import com.typesafe.scalalogging.StrictLogging
 import org.bitbucket.pshirshov.izumitk.RequiredConfig
 import org.bitbucket.pshirshov.izumitk.cdi.Plugin
-import org.bitbucket.pshirshov.izumitk.modularity.tools.WithPluginsConfig
+import org.bitbucket.pshirshov.izumitk.modularity.tools.PluginsConfigService
 import org.scalactic._
 
 import scala.collection.JavaConverters._
 
 
-
-
-
 trait PluginsSupport
   extends WithPluginsPackages
-    with WithPluginsConfig
     with StrictLogging {
 
+  protected def filterPluginClasses(classes: Seq[Class[_]]): Seq[Class[_]] = classes
+
+  protected def pluginsConfigService: PluginsConfigService
+
   def loadPlugins(): Seq[Plugin] = {
-    if (!pluginsConfig.enabled) {
+    if (!pluginsConfigService.pluginsConfig.enabled) {
       logger.warn("Plugins support is disabled")
       return Seq()
     }
@@ -34,7 +34,7 @@ trait PluginsSupport
     plugins.sorted
   }
 
-  def loadPlugins(pluginsPackage: Seq[String], classpath: ClassPath): Seq[Plugin] = {
+  protected def loadPlugins(pluginsPackage: Seq[String], classpath: ClassPath): Seq[Plugin] = {
     val allLoadabalePluginClasses =
       pluginsPackage.flatMap {
         pkg =>
@@ -45,32 +45,28 @@ trait PluginsSupport
 
     val activeAndValidPluginClasses = filterPluginClasses(allLoadabalePluginClasses)
 
-    val loadedPlugins = activeAndValidPluginClasses.flatMap {
-      clz =>
-        logger.trace(s"Processing plugin `${clz.getCanonicalName}`...")
-
-        val instance = loadConfigurablePlugin(clz).recoverWith {
-          bad =>
-            loadSimplePlugin(clz).badMap(bad1 => bad ++ bad1)
-        }
-
-        instance match {
-          case Good(p) =>
-            logger.info(s"Plugin `${clz.getCanonicalName}` instantiated: $p")
-            Some(p)
-
-          case Bad(f) =>
-            logger.error(s"Loading of plugin `${clz.getCanonicalName}` failed: $f")
-            None
-        }
-    }
-
-    loadedPlugins
+    activeAndValidPluginClasses.flatMap(loadPlugin)
   }
 
-  protected def filterPluginClasses(classes: Seq[Class[_]]): Seq[Class[_]] = classes
+  protected def loadPlugin(clz: Class[_]): Option[Plugin] = {
+    loadConfigurablePlugin(clz).recoverWith {
+      bad =>
+        loadSimplePlugin(clz).badMap(bad1 => bad ++ bad1)
+    } match {
+      case Good(p) =>
+        logger.debug(s"Plugin `${clz.getCanonicalName}` instantiated: $p")
+        Some(p)
+
+      case Bad(f) =>
+        logger.error(s"Loading of plugin `${clz.getCanonicalName}` failed: $f")
+        None
+    }
+  }
+
 
   private def loadSimplePlugin(clz: Class[_]): Or[Plugin, Every[Throwable]] = {
+    logger.trace(s"Processing plugin `${clz.getCanonicalName}` as simple plugin...")
+
     try {
       Good(clz.getConstructor().newInstance().asInstanceOf[Plugin])
     } catch {
@@ -80,6 +76,8 @@ trait PluginsSupport
   }
 
   protected def loadConfigurablePlugin(clz: Class[_]): Or[Plugin, Every[Throwable]] = {
+    logger.trace(s"Processing plugin `${clz.getCanonicalName}` as configurable plugin...")
+
     try {
       val constructor = clz.getConstructor(classOf[Config])
       val configAnnotation = constructor.getAnnotation(classOf[RequiredConfig])
@@ -89,7 +87,7 @@ trait PluginsSupport
 
       val declaredConfigSection = configAnnotation.value()
 
-      val pluginConfig = pluginConfigSection(clz, declaredConfigSection)
+      val pluginConfig = pluginsConfigService.createPluginConfigSection(clz, declaredConfigSection)
 
       Good(constructor.newInstance(pluginConfig).asInstanceOf[Plugin])
     } catch {

@@ -34,7 +34,7 @@ protected[modularity] trait WithTargetSupport
 
   protected def isValidTarget(pclass: Class[_]): Boolean = {
     classOf[Plugin].isAssignableFrom(pclass) &&
-      !pluginDeactivated(pclass) &&
+      !pluginsConfigService.isPluginDeactivated(pclass) &&
       pluginIsValidTarget(pclass)
   }
 
@@ -45,7 +45,8 @@ protected[modularity] trait WithTargetSupport
         true
 
       case head :: Nil =>
-        if (!pluginsConfig.targets.hasPath(head.getCanonicalName) && !pluginsConfig.targets.hasPath(head.getSimpleName)) {
+        val targets = pluginsConfigService.pluginsConfig.targets
+        if (!targets.hasPath(head.getCanonicalName) && !targets.hasPath(head.getSimpleName)) {
           throw new IllegalStateException(s"No target defined in config for: ${head.getCanonicalName}")
         }
 
@@ -63,9 +64,11 @@ protected[modularity] trait WithTargetSupport
   }
 
   private def validTarget(pclass: Class[_], target: String): Boolean = {
-    pluginsConfig.targets.hasPath(target) && (
-      pluginsConfig.targets.getString(target) == pclass.getCanonicalName ||
-        pluginsConfig.targets.getString(target) == pclass.getSimpleName
+    val targets = pluginsConfigService.pluginsConfig.targets
+
+    targets.hasPath(target) && (
+      targets.getString(target) == pclass.getCanonicalName ||
+        targets.getString(target) == pclass.getSimpleName
       )
   }
 
