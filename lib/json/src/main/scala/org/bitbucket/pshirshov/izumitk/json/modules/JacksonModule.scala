@@ -78,7 +78,7 @@ abstract class AbstractDomainExtensionsModule
   with StrictLogging {
 
   protected implicit class SimpleModuleExtensions(module: SimpleModule) {
-    protected def addStringValConstructorDeserializer[T: ClassTag](): SimpleModule = {
+    def addStringValConstructorDeserializer[T: ClassTag](): SimpleModule = {
       val runtimeClass: Class[T] = scala.reflect.classTag[T].runtimeClass.asInstanceOf[Class[T]]
 
       module.addDeserializer(runtimeClass, new JsonDeserializer[T] {
@@ -96,7 +96,7 @@ abstract class AbstractDomainExtensionsModule
       })
     }
 
-    protected def addStringValParsingDeserializer[T <: AnyRef : Manifest](parser: String => T): SimpleModule = {
+    def addStringValParsingDeserializer[T <: AnyRef : Manifest](parser: String => T): SimpleModule = {
       val clazz = manifest[T].runtimeClass.asInstanceOf[Class[T]]
 
       module.addKeyDeserializer(clazz, new KeyDeserializer {
@@ -119,7 +119,7 @@ abstract class AbstractDomainExtensionsModule
       })
     }
 
-    protected def addPolymorphicClass(polymorphicClass: Class[_], pkg: Package): SimpleModule = {
+    def addPolymorphicClass(polymorphicClass: Class[_], pkg: Package): SimpleModule = {
       import scala.collection.JavaConverters._
       val classpath = ClassPath.from(polymorphicClass.getClassLoader)
       val implementations = classpath

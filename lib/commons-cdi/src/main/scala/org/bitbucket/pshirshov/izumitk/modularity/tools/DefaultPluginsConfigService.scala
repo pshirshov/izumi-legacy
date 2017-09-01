@@ -8,17 +8,13 @@ import org.bitbucket.pshirshov.izumitk.Disabled
 import org.bitbucket.pshirshov.izumitk.config.LoadedConfig
 import org.bitbucket.pshirshov.izumitk.modularity.model.PluginsConfig
 import org.bitbucket.pshirshov.izumitk.util.types.StringUtils
-import org.scalactic.ErrorMessage
 
 import scala.collection.JavaConverters._
 
-/**
-  */
-protected[modularity] trait WithPluginsConfig extends StrictLogging {
-  protected val config: LoadedConfig
 
-  protected lazy val pluginsConfig: PluginsConfig = {
-    val pluginsSection = config.effective.getConfig("plugins")
+class DefaultPluginsConfigService(override val appConfig: LoadedConfig) extends PluginsConfigService with StrictLogging {
+  override val pluginsConfig: PluginsConfig = {
+    val pluginsSection = appConfig.effective.getConfig("plugins")
     val deactivated = pluginsSection.getStringList("deactivated").asScala.toSet
     val activated = pluginsSection.getStringList("activated").asScala.toSet
     val enabled = StringUtils.toBoolean(System.getProperty("plugins.enabled"))
@@ -27,18 +23,18 @@ protected[modularity] trait WithPluginsConfig extends StrictLogging {
     PluginsConfig(enabled, deactivated, activated, targets)
   }
 
-  protected def pluginDeactivated(pclass: Class[_]): Boolean = {
+  override def isPluginDeactivated(pclass: Class[_]): Boolean = {
     val deactivated = pluginsConfig.deactivated
     val activated = pluginsConfig.activated
 
-    val explicitlyActivated = pluginIsListedIn(pclass, activated)
-    val explicitlyDeactivated = pluginIsListedIn(pclass, deactivated)
+    val explicitlyActivated = isPluginIsListed(pclass, activated)
+    val explicitlyDeactivated = isPluginIsListed(pclass, deactivated)
     val deactivatedByAnnotation = pclass.isAnnotationPresent(classOf[Disabled])
 
     val result = pclass match {
       case _ if deactivatedByAnnotation && !explicitlyActivated =>
         true
-        
+
       case _ if deactivatedByAnnotation && explicitlyActivated =>
         false
 
@@ -56,7 +52,7 @@ protected[modularity] trait WithPluginsConfig extends StrictLogging {
     result
   }
 
-  protected def pluginIsListedIn(pclass: Class[_], list: Set[String]): Boolean = {
+  override def isPluginIsListed(pclass: Class[_], list: Set[String]): Boolean = {
     list.contains(pclass.getCanonicalName) ||
       list.contains(pclass.getSimpleName) ||
       list.exists { expr =>
@@ -64,22 +60,24 @@ protected[modularity] trait WithPluginsConfig extends StrictLogging {
       }
   }
 
-  protected def pluginConfigSection(clz: Class[_], declaredConfigSection: ErrorMessage): Config = {
+  override def createPluginConfigSection(clz: Class[_], declaredConfigSection: String): Config = {
+    val effective = appConfig.effective
+
     val pluginConfig: Config = if (declaredConfigSection == "*") {
       logger.debug(s"Plugin `${clz.getCanonicalName}` will use full app config")
-      config.effective
+      effective
     } else if (declaredConfigSection.nonEmpty) {
       logger.debug(s"Plugin `${clz.getCanonicalName}` will use config section `$declaredConfigSection`")
-      config.effective.getConfig(declaredConfigSection)
+      effective.getConfig(declaredConfigSection)
     } else {
       val fullName = s"plugins.config.${clz.getCanonicalName}"
       val shortName = s"plugins.config.${clz.getSimpleName}"
-      if (config.effective.hasPath(fullName)) {
+      if (effective.hasPath(fullName)) {
         logger.debug(s"Plugin `${clz.getCanonicalName}` will use config section `$fullName`")
-        config.effective.getConfig(fullName)
+        effective.getConfig(fullName)
       } else {
         logger.debug(s"Plugin `${clz.getCanonicalName}` will use config section `$shortName`")
-        config.effective.getConfig(shortName)
+        effective.getConfig(shortName)
       }
     }
 

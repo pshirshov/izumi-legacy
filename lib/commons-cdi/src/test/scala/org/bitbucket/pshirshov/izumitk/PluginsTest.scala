@@ -2,22 +2,25 @@ package org.bitbucket.pshirshov.izumitk
 
 import com.google.inject.Guice
 import com.google.inject.name.Names
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{Config, ConfigFactory}
 import net.codingwell.scalaguice.InjectorExtensions._
 import org.bitbucket.pshirshov.izumitk.cdi.{BunchOfModules, Plugin}
 import org.bitbucket.pshirshov.izumitk.config.{LoadedConfig, LoadedResource}
 import org.bitbucket.pshirshov.izumitk.modularity.GuicePluginsSupport
+import org.bitbucket.pshirshov.izumitk.modularity.tools.DefaultPluginsConfigService
 import org.bitbucket.pshirshov.izumitk.test.IzumiTestBase
 import org.bitbucket.pshirshov.izumitk.testplugins._
 
 import scala.language.postfixOps
 
 class TestLoader extends GuicePluginsSupport {
-  private val testConfig = ConfigFactory.load("plugins-test.conf")
+  val testConfig: Config = ConfigFactory.load("plugins-test.conf")
 
-  override protected val config: LoadedConfig = LoadedResource(testConfig, testConfig, testConfig)
+  val config: LoadedConfig = LoadedResource(testConfig, testConfig, testConfig)
 
   def loadModulesTest(): Seq[BunchOfModules] = loadPluginModules().modules
+
+  override protected val pluginsConfigService = new DefaultPluginsConfigService(config)
 
   override protected def namespace: String = "testplugins"
 }
