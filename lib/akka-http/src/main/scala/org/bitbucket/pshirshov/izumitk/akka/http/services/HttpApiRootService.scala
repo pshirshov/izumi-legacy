@@ -13,8 +13,7 @@ import scala.concurrent.ExecutionContext
 @Singleton
 class HttpServiceConfiguration @Inject()
 (
-  val childrenServices: scala.collection.immutable.Set[HttpService]
-  , val requestTransformer: RequestTransformer
+  val requestTransformer: RequestTransformer
   , val metrics: MetricRegistry
   , val httpDebugDirectives: HttpDebugDirectives
   , @Named("app.id") val productId: AppId
@@ -28,6 +27,7 @@ trait HttpApiRootService
     with MetricDirectives {
 
   protected def httpServiceConfiguration: HttpServiceConfiguration
+  protected def childrenServices: scala.collection.immutable.Set[HttpService]
 
   import Directives._
 
