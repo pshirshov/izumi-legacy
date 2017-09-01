@@ -4,6 +4,7 @@ import java.lang.reflect.Field
 
 import com.google.inject.MembersInjector
 import com.typesafe.config.Config
+import org.bitbucket.pshirshov.izumitk.Conf
 
 class HoconMembersInjector[T](field: Field, ann: Conf, config: Config) extends MembersInjector[T] {
   override def injectMembers(t: T): Unit = {

@@ -2,7 +2,9 @@ package org.bitbucket.pshirshov.izumitk.akka.http.services
 
 import akka.http.scaladsl.server.{Directives, Route}
 import com.codahale.metrics.MetricRegistry
+import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
+import org.bitbucket.pshirshov.izumitk.akka.http.util.logging.HttpDebugDirectives
 import org.bitbucket.pshirshov.izumitk.akka.http.util.{MetricDirectives, RequestTransformer}
 import org.bitbucket.pshirshov.izumitk.cluster.model.AppId
 
@@ -14,7 +16,8 @@ class HttpServiceConfiguration @Inject()
   val childrenServices: scala.collection.immutable.Set[HttpService]
   , val requestTransformer: RequestTransformer
   , val metrics: MetricRegistry
-  , val productId: AppId
+  , val httpDebugDirectives: HttpDebugDirectives
+  , @Named("app.id") val productId: AppId
   , implicit val executionContext: ExecutionContext
 ) {
 
@@ -28,19 +31,21 @@ trait HttpApiRootService
 
   import Directives._
 
-  override val routes: Route = {
+  override def routes: Route = {
     val config = httpServiceConfiguration
     import config._
-    
+
     withoutEndpointName {
       timerDirectiveWithSuffix("-io") {
-        timerDirective {
-          mapRequestContext(requestTransformer.requestMapper) {
-            childrenServices
-              .map(_.routes)
-              .foldLeft[Route](reject) {
-              case (acc, r) =>
-                acc ~ r
+        httpDebugDirectives.withDebug {
+          timerDirective {
+            mapRequestContext(requestTransformer.requestMapper) {
+              childrenServices
+                .map(_.routes)
+                .foldLeft[Route](reject) {
+                case (acc, r) =>
+                  acc ~ r
+              }
             }
           }
         }

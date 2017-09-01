@@ -8,7 +8,7 @@ import akka.http.scaladsl.server.{Route, RouteResult}
 import com.google.inject.ImplementedBy
 
 
-@ImplementedBy(classOf[HttpHttpDebugDirectivesImpl])
+@ImplementedBy(classOf[HttpDebugDirectivesImpl])
 trait HttpDebugDirectives {
   protected def contextToString(context: HttpRequestContext): String
 
