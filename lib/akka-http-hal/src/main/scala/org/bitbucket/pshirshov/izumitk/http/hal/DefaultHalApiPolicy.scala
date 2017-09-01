@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import com.theoryinpractise.halbuilder.api.{Representation, RepresentationFactory}
+import com.typesafe.scalalogging.StrictLogging
 import org.bitbucket.pshirshov.izumitk.akka.http.services.HttpServiceConfiguration
 import org.bitbucket.pshirshov.izumitk.akka.http.util.MetricDirectives
 import org.bitbucket.pshirshov.izumitk.akka.http.util.cors.CORS
@@ -31,11 +32,12 @@ class DefaultHalApiPolicy @Inject()
   , serializer: HalSerializer
   , failureRepository: FailureRepository
   , cors: CORS
-  , override protected val httpServiceConfiguration: HttpServiceConfiguration
   , override val protocol: SerializationProtocol
+  , override protected val httpServiceConfiguration: HttpServiceConfiguration
   , @Named("@http.debug.exceptions") protected val debugStacktraces: Boolean
 ) extends HalApiPolicy
-  with MetricDirectives {
+  with MetricDirectives
+  with StrictLogging {
 
   val `application/hal+json`: WithFixedCharset = MediaType.applicationWithFixedCharset(RepresentationFactory.HAL_JSON.split("/").last, HttpCharsets.`UTF-8`)
 
