@@ -11,7 +11,7 @@ import org.bitbucket.pshirshov.izumitk.json.JacksonMapper
 
 
 @Singleton
-class HttpHttpDebugDirectivesImpl @Inject()
+class HttpDebugDirectivesImpl @Inject()
 (
   @Named("@http.debug.requests") override val isRequestsDebugEnabled: Boolean
   , @Named("@http.debug.rejections") debugRejections: Boolean
