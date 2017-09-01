@@ -33,6 +33,7 @@ object Dependencies {
     private val jackson_scala = "com.fasterxml.jackson.module" %% "jackson-module-scala" % jackson_version
     private val jackson_jsr310 = "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % jackson_version
     val jackson: Seq[ModuleID] = Seq(jackson_databind, jackson_scala, jackson_jsr310).map(_.exclude("com.google.guava", "guava"))
+    val jsonpath: ModuleID = "com.jayway.jsonpath" % "json-path" % "2.2.0"
 
     private val scopt = "com.github.scopt" %% "scopt" % "3.5.0"
     private val jolokia = "org.jolokia" % "jolokia-core" % "1.3.7"

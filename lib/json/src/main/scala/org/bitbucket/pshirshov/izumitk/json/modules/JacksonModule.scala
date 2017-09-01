@@ -7,8 +7,10 @@ import com.fasterxml.jackson.databind._
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import com.google.common.reflect.ClassPath
 import com.google.inject.name.{Named, Names}
 import com.google.inject.{Provides, Singleton}
+import com.typesafe.scalalogging.StrictLogging
 import net.codingwell.scalaguice.{ScalaModule, ScalaMultibinder}
 import org.bitbucket.pshirshov.izumitk.json.JacksonMapper
 
@@ -71,46 +73,69 @@ final class JacksonModule() extends ScalaModule {
   }
 }
 
-abstract class AbstractDomainExtensionsModule extends ScalaModule {
-  protected def addStringValConstructorDeserializer[T: ClassTag](module: SimpleModule): SimpleModule = {
-    val runtimeClass: Class[T] = scala.reflect.classTag[T].runtimeClass.asInstanceOf[Class[T]]
+abstract class AbstractDomainExtensionsModule
+  extends ScalaModule
+  with StrictLogging {
 
-    module.addDeserializer(runtimeClass, new JsonDeserializer[T] {
-      override def deserialize(p: JsonParser, ctxt: DeserializationContext): T = {
-        val currentToken = p.getCurrentToken
+  protected implicit class SimpleModuleExtensions(module: SimpleModule) {
+    protected def addStringValConstructorDeserializer[T: ClassTag](): SimpleModule = {
+      val runtimeClass: Class[T] = scala.reflect.classTag[T].runtimeClass.asInstanceOf[Class[T]]
 
-        if (currentToken.equals(JsonToken.VALUE_STRING)) {
-          val text = p.getText.trim()
-          runtimeClass.getConstructors.find(_.getParameterTypes.toSeq == Seq(classOf[String])).get.newInstance(text).asInstanceOf[T]
-        } else {
-          ctxt.handleUnexpectedToken(runtimeClass, p).asInstanceOf[T]
-          //throw ctxt.mappingException(runtimeClass)
+      module.addDeserializer(runtimeClass, new JsonDeserializer[T] {
+        override def deserialize(p: JsonParser, ctxt: DeserializationContext): T = {
+          val currentToken = p.getCurrentToken
+
+          if (currentToken.equals(JsonToken.VALUE_STRING)) {
+            val text = p.getText.trim()
+            runtimeClass.getConstructors.find(_.getParameterTypes.toSeq == Seq(classOf[String])).get.newInstance(text).asInstanceOf[T]
+          } else {
+            ctxt.handleUnexpectedToken(runtimeClass, p).asInstanceOf[T]
+            //throw ctxt.mappingException(runtimeClass)
+          }
         }
-      }
-    })
+      })
+    }
+
+    protected def addStringValParsingDeserializer[T <: AnyRef : Manifest](parser: String => T): SimpleModule = {
+      val clazz = manifest[T].runtimeClass.asInstanceOf[Class[T]]
+
+      module.addKeyDeserializer(clazz, new KeyDeserializer {
+        override def deserializeKey(key: String, ctxt: DeserializationContext): AnyRef = {
+          parser(key)
+        }
+      })
+
+      module.addDeserializer(clazz, new JsonDeserializer[T] {
+        override def deserialize(p: JsonParser, ctxt: DeserializationContext): T = {
+          val currentToken = p.getCurrentToken
+
+          if (currentToken.equals(JsonToken.VALUE_STRING)) {
+            val text = p.getText.trim()
+            parser(text)
+          } else {
+            ctxt.handleUnexpectedToken(clazz, p).asInstanceOf[T]
+          }
+        }
+      })
+    }
+
+    protected def addPolymorphicClass(polymorphicClass: Class[_], pkg: Package): SimpleModule = {
+      import scala.collection.JavaConverters._
+      val classpath = ClassPath.from(polymorphicClass.getClassLoader)
+      val implementations = classpath
+        .getAllClasses
+        .asScala
+        .filter(_.getPackageName.startsWith(pkg.getName))
+        .map(_.load())
+        .filter(polymorphicClass.isAssignableFrom)
+        .toSeq
+
+      logger.debug(s"Registering subtypes for $polymorphicClass: $implementations")
+
+      module.registerSubtypes(implementations: _*)
+    }
+
   }
 
-  protected def addStringValParsingDeserializer[T <: AnyRef : Manifest](simpleModule: SimpleModule, parser: String => T): SimpleModule = {
-    val clazz = manifest[T].runtimeClass.asInstanceOf[Class[T]]
-
-    simpleModule.addKeyDeserializer(clazz, new KeyDeserializer {
-      override def deserializeKey(key: String, ctxt: DeserializationContext): AnyRef = {
-        parser(key)
-      }
-    })
-
-    simpleModule.addDeserializer(clazz, new JsonDeserializer[T] {
-      override def deserialize(p: JsonParser, ctxt: DeserializationContext): T = {
-        val currentToken = p.getCurrentToken
-
-        if (currentToken.equals(JsonToken.VALUE_STRING)) {
-          val text = p.getText.trim()
-          parser(text)
-        } else {
-          ctxt.handleUnexpectedToken(clazz, p).asInstanceOf[T]
-        }
-      }
-    })
-  }
 
 }

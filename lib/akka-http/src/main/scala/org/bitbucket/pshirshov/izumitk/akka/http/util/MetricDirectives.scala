@@ -5,26 +5,30 @@ import java.util.concurrent.TimeUnit
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.directives.BasicDirectives
 import akka.http.scaladsl.server.{Directive0, RequestContext, Route, RouteResult}
-import com.codahale.metrics._
 import com.typesafe.scalalogging.StrictLogging
-import org.bitbucket.pshirshov.izumitk.cluster.model.AppId
+import org.bitbucket.pshirshov.izumitk.akka.http.services.HttpServiceConfiguration
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
+import scala.util.Success
 
 trait MetricDirectives extends BasicDirectives with StrictLogging {
+  protected def httpServiceConfiguration: HttpServiceConfiguration
+
   def timerDirective: Directive0 = timerDirectiveWithSuffix("")
-  
+
   def timerDirectiveWithSuffix(suffix: String): Directive0 = {
+    val config = httpServiceConfiguration
+    import config._
+    
     mapInnerRoute {
-      route: Route => ctx: RequestContext =>
+      route: Route =>
+        ctx: RequestContext =>
           val before = System.nanoTime()
 
           val response: Future[RouteResult] = route(ctx)
 
-          response.onSuccess {
-            case RouteResult.Rejected(rejection) =>
-
-            case RouteResult.Complete(r) =>
+          response.onComplete {
+            case Success(RouteResult.Complete(r)) =>
               val operationDuration = System.nanoTime() - before
               r.headers.find(_.is(MetricDirectives.ENDPOINT_NAME_HEADER)).foreach {
                 h =>
@@ -33,6 +37,11 @@ trait MetricDirectives extends BasicDirectives with StrictLogging {
                   timer.update(operationDuration, TimeUnit.NANOSECONDS)
                   logger.trace(s"Metric recorded: $metricName=$operationDuration")
               }
+
+            case Success(RouteResult.Rejected(rejection)) =>
+
+            case _ =>
+
           }
 
           response
@@ -58,10 +67,6 @@ trait MetricDirectives extends BasicDirectives with StrictLogging {
         rr.copy(response = rr.response.withHeaders(rr.response.headers :+ RawHeader(MetricDirectives.ENDPOINT_NAME_HEADER, endpointName)))
     }
   }
-
-  protected implicit def executionContext: ExecutionContext
-  protected def metrics: MetricRegistry
-  protected def productId: AppId
 }
 
 object MetricDirectives {
