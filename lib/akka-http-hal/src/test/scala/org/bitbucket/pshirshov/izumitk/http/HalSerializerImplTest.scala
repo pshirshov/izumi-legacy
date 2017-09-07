@@ -7,18 +7,20 @@ import com.fasterxml.jackson.annotation.JsonSubTypes.Type
 import com.fasterxml.jackson.annotation.{JsonIgnore, JsonSubTypes, JsonTypeInfo, JsonTypeName}
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.google.inject.Module
+import com.google.inject.{Module, Singleton}
 import com.google.inject.name.Names
 import com.google.inject.util.Modules
 import com.theoryinpractise.halbuilder.api.RepresentationFactory
+import com.typesafe.scalalogging.StrictLogging
+import net.codingwell.scalaguice.{ScalaModule, ScalaMultibinder}
 import org.bitbucket.pshirshov.izumitk.TestConfigExtensions._
 import org.bitbucket.pshirshov.izumitk.app.modules.ConfigExposingModule
 import org.bitbucket.pshirshov.izumitk.hal.HalResource
 import org.bitbucket.pshirshov.izumitk.http.HalTestPolymorphics.SimpleTextPayload
 import org.bitbucket.pshirshov.izumitk.http.hal.decoder.UnreliableHalDecoder
-import org.bitbucket.pshirshov.izumitk.http.hal.model.HalContext
+import org.bitbucket.pshirshov.izumitk.http.hal.model.{HalContext, HalEntityContext}
 import org.bitbucket.pshirshov.izumitk.http.hal.modules.HalModule
-import org.bitbucket.pshirshov.izumitk.http.hal.serializer.HalSerializerImpl
+import org.bitbucket.pshirshov.izumitk.http.hal.serializer.{HalHook, HalSerializerImpl}
 import org.bitbucket.pshirshov.izumitk.json.JacksonMapper
 import org.bitbucket.pshirshov.izumitk.json.modules.JacksonModule
 import org.bitbucket.pshirshov.izumitk.test.InjectorTestBase
@@ -45,6 +47,13 @@ object HalTestPolymorphics {
 
 }
 
+class EmptyHalHook extends HalHook with StrictLogging {
+  override def handleEntity: PartialFunction[HalEntityContext, Unit] = {
+    case _: HalEntityContext =>
+
+  }
+}
+
 //@HalProperty
 case class HalTestComplexProperty(field: Int = 678)
 
@@ -54,6 +63,7 @@ case class HalTestMessage(id: UUID, payload: HalTestPolymorphic)
 @HalResource
 case class HalTestEntry(message: HalTestMessage
                         , messages: Seq[HalTestMessage]
+                        , nulledSeq: Seq[HalTestMessage]
                         , test01: Int = 123
                         , test02: String = "xxx"
                         , complexProperty: HalTestComplexProperty = HalTestComplexProperty()
@@ -83,14 +93,15 @@ class HalSerializerImplTest extends InjectorTestBase {
       injector =>
         val mapper = injector.instance[HalSerializerImpl]
         val message = HalTestMessage(UUID.randomUUID(), HalTestPolymorphics.SimpleTextPayload("xxx"))
-        val sample = HalTestEntry(message, Seq(message, message))
+
+        val sample = HalTestEntry(message, Seq(message, message), null)
         val repr = mapper
           .makeRepr(sample, new HalContext {}, HttpRequest(uri = Uri("http://localhost:8080")))
           .toString(RepresentationFactory.HAL_JSON)
 
         val decoder = injector.instance[UnreliableHalDecoder]
         val decoded = decoder.readHal[HalTestEntry](repr)
-        assert(decoded == sample)
+        assert(decoded == sample.copy(nulledSeq = Seq.empty))
 
         val jMapper = injector.instance[JacksonMapper](Names.named("standardMapper"))
 
@@ -106,5 +117,11 @@ class HalSerializerImplTest extends InjectorTestBase {
     new JacksonModule()
     , new HalModule()
     , new ConfigExposingModule(TestConfig.references("json"))
+    , new ScalaModule {
+      override def configure(): Unit = {
+        val halMappers = ScalaMultibinder.newSetBinder[HalHook](binder)
+        halMappers.addBinding.to[EmptyHalHook].in[Singleton]
+      }
+    }
   )
 }
