@@ -29,17 +29,31 @@ object InjectorUtils extends StrictLogging {
 
     instancesToClose.reverse.map {
       closeable =>
-        if (!instancesToSkip.exists(clz => clz.isAssignableFrom(closeable.getClass))) {
-          logger.info(s"Closing $closeable...")
-          (closeable, Try(closeable.close()))
-        } else {
-          logger.info(s"Skipping $closeable...")
-          (closeable, Success(Unit))
+        val asString = closeableToString(closeable)
+
+        val tried = Try {
+          if (!instancesToSkip.exists(clz => clz.isAssignableFrom(closeable.getClass))) {
+            logger.info(s"Closing $asString...")
+            closeable.close()
+          } else {
+            logger.info(s"Skipping $asString...")
+          }
         }
+        (asString, tried)
     }.foreach {
-      case (closeable, Failure(f)) =>
-        logger.warn(s"Failed to close $closeable: $f")
+      case (closeableAsString, Failure(f)) =>
+        logger.warn(s"Failed to close $closeableAsString: $f")
       case _ =>
+    }
+  }
+
+  private def closeableToString(closeable: AutoCloseable) = {
+    Try(closeable.toString) match {
+      case Success(s) =>
+        s
+      case Failure(f) =>
+        logger.warn(s"closeable.toString failed", f)
+        closeable.getClass.getCanonicalName
     }
   }
 }

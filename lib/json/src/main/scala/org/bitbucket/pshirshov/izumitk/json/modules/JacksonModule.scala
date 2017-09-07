@@ -81,17 +81,15 @@ abstract class AbstractDomainExtensionsModule
     def addStringValConstructorDeserializer[T: ClassTag](): SimpleModule = {
       val runtimeClass: Class[T] = scala.reflect.classTag[T].runtimeClass.asInstanceOf[Class[T]]
 
-      module.addDeserializer(runtimeClass, new JsonDeserializer[T] {
-        override def deserialize(p: JsonParser, ctxt: DeserializationContext): T = {
-          val currentToken = p.getCurrentToken
+      module.addDeserializer(runtimeClass, (p: JsonParser, ctxt: DeserializationContext) => {
+        val currentToken = p.getCurrentToken
 
-          if (currentToken.equals(JsonToken.VALUE_STRING)) {
-            val text = p.getText.trim()
-            runtimeClass.getConstructors.find(_.getParameterTypes.toSeq == Seq(classOf[String])).get.newInstance(text).asInstanceOf[T]
-          } else {
-            ctxt.handleUnexpectedToken(runtimeClass, p).asInstanceOf[T]
-            //throw ctxt.mappingException(runtimeClass)
-          }
+        if (currentToken.equals(JsonToken.VALUE_STRING)) {
+          val text = p.getText.trim()
+          runtimeClass.getConstructors.find(_.getParameterTypes.toSeq == Seq(classOf[String])).get.newInstance(text).asInstanceOf[T]
+        } else {
+          ctxt.handleUnexpectedToken(runtimeClass, p).asInstanceOf[T]
+          //throw ctxt.mappingException(runtimeClass)
         }
       })
     }
@@ -99,22 +97,18 @@ abstract class AbstractDomainExtensionsModule
     def addStringValParsingDeserializer[T <: AnyRef : Manifest](parser: String => T): SimpleModule = {
       val clazz = manifest[T].runtimeClass.asInstanceOf[Class[T]]
 
-      module.addKeyDeserializer(clazz, new KeyDeserializer {
-        override def deserializeKey(key: String, ctxt: DeserializationContext): AnyRef = {
-          parser(key)
-        }
+      module.addKeyDeserializer(clazz, (key: String, ctxt: DeserializationContext) => {
+        parser(key)
       })
 
-      module.addDeserializer(clazz, new JsonDeserializer[T] {
-        override def deserialize(p: JsonParser, ctxt: DeserializationContext): T = {
-          val currentToken = p.getCurrentToken
+      module.addDeserializer(clazz, (p: JsonParser, ctxt: DeserializationContext) => {
+        val currentToken = p.getCurrentToken
 
-          if (currentToken.equals(JsonToken.VALUE_STRING)) {
-            val text = p.getText.trim()
-            parser(text)
-          } else {
-            ctxt.handleUnexpectedToken(clazz, p).asInstanceOf[T]
-          }
+        if (currentToken.equals(JsonToken.VALUE_STRING)) {
+          val text = p.getText.trim()
+          parser(text)
+        } else {
+          ctxt.handleUnexpectedToken(clazz, p).asInstanceOf[T]
         }
       })
     }

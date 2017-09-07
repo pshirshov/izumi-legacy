@@ -1,7 +1,7 @@
 package org.bitbucket.pshirshov.izumitk.http.hal.decoder
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.{ArrayNode, ObjectNode}
+import com.fasterxml.jackson.databind.node.{ArrayNode, JsonNodeFactory, ObjectNode}
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import org.bitbucket.pshirshov.izumitk.json.JacksonMapper
@@ -65,7 +65,7 @@ class UnreliableHalDecoder @Inject()
                         enclosingTree.set(attributeName, decodeHal(e.asInstanceOf[ObjectNode])(fieldtt))
                     }
 
-                  case arg :: Nil =>
+                  case arg :: Nil if fieldType <:< typeOf[Traversable[_]] =>
                     val asArray = toArray(attributeValue)
                     val argTt = TypeUtils.typeToTypeTag(arg, tt.mirror)
                     val newNode = mapper.getNodeFactory.arrayNode()
@@ -86,6 +86,25 @@ class UnreliableHalDecoder @Inject()
             }
 
         }
+
+        tt.tpe.decls
+          .filterNot(_.isSynthetic)
+          .filter(_.isMethod).foreach {
+          decl =>
+            val fieldType = decl.asMethod.returnType
+            val fieldtt = TypeUtils.typeToTypeTag(fieldType, tt.mirror)
+
+            fieldtt.tpe.asInstanceOf[TypeRefApi].args match {
+              case arg :: Nil if fieldType <:< typeOf[Traversable[_]] =>
+                val fname = decl.name.decodedName.toString
+                if (!enclosingTree.has(fname) || enclosingTree.get(fname).isNull) {
+                  enclosingTree.set(fname, JsonNodeFactory.instance.arrayNode())
+                }
+
+              case _ =>
+            }
+        }
+
 
       case _ =>
     }
