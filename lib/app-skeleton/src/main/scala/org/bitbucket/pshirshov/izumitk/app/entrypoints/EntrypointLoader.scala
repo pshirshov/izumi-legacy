@@ -1,5 +1,7 @@
 package org.bitbucket.pshirshov.izumitk.app.entrypoints
 
+import java.util.concurrent.atomic.AtomicReference
+
 import com.typesafe.config.{Config, ConfigFactory}
 import com.typesafe.scalalogging.StrictLogging
 import org.bitbucket.pshirshov.izumitk.app.Starter
@@ -24,6 +26,8 @@ abstract class EntrypointLoader
 
   protected def bootstrapLoader: BootstrapPluginsLoader = new BootstrapPluginsLoader(getClass.getPackage, bootstrapConfig)
 
+  protected val entrypoint = new AtomicReference[EntryPoint](null)
+
   def main(args: Array[String]): Unit = {
     safeMain {
       val epMap = loadEntrypoints()
@@ -33,6 +37,7 @@ abstract class EntrypointLoader
           val epName = arguments.value[String](EntrypointLoader.EP_KEY)
           epMap.get(epName) match {
             case Some(e) =>
+              entrypoint.compareAndSet(null, e)
               e.run(arguments, config)
             case None =>
               throw new IllegalArgumentException(s"Unknown entry point: $epName")
