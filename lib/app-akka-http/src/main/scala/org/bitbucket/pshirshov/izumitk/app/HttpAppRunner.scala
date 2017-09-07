@@ -42,8 +42,4 @@ class HttpAppRunner[T] @Inject()
     jmxmp.jMXConnectorServer.stop()
     metricsReporter.stop()
   }
-
-  def join(): Unit = {
-    jettyServer.join()
-  }
 }

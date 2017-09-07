@@ -15,6 +15,7 @@ case class ConfigBinding(value: Any, clazz: Class[_])
 final class ConfigExposingModule(val config: Config) extends ScalaModule with StrictLogging {
   override def configure(): Unit = {
     flatten(config.root())
+      .filterNot(v => v._1.startsWith("java.") || v._1.startsWith("sun."))
       .foreach {
         case (k, v) =>
           val name = s"@$k"
