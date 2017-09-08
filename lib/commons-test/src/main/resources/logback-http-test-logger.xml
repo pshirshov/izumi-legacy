@@ -16,9 +16,9 @@
         </then>
     </if>
 
-    <property name="izumitk.logs.stdout" value="${izumitk.logs.http:-true}"/>
+    <property name="izumitk.logs.http" value="${izumitk.logs.http:-true}"/>
 
-    <if condition='p("izumitk.logs.tests").equals("true")'>
+    <if condition='p("izumitk.logs.http").equals("true")'>
         <then>
             <appender name="HTTP-SIFT" class="ch.qos.logback.classic.sift.SiftingAppender">
                 <discriminator class="org.bitbucket.pshirshov.izumitk.test.GlobalDiscriminator"/>

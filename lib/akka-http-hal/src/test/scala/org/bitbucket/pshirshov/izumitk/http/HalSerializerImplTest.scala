@@ -7,9 +7,9 @@ import com.fasterxml.jackson.annotation.JsonSubTypes.Type
 import com.fasterxml.jackson.annotation.{JsonIgnore, JsonSubTypes, JsonTypeInfo, JsonTypeName}
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.google.inject.{Module, Singleton}
 import com.google.inject.name.Names
 import com.google.inject.util.Modules
+import com.google.inject.{Module, Singleton}
 import com.theoryinpractise.halbuilder.api.RepresentationFactory
 import com.typesafe.scalalogging.StrictLogging
 import net.codingwell.scalaguice.{ScalaModule, ScalaMultibinder}
@@ -73,7 +73,7 @@ case class HalTestEntry(message: HalTestMessage
                        ) {
 
   def getStatus: HealthStatus = {
-      HealthStatus.UNKNOWN
+    HealthStatus.UNKNOWN
   }
 
   //noinspection AccessorLikeMethodIsEmptyParen
@@ -86,6 +86,11 @@ case class HalTestEntry(message: HalTestMessage
     HealthStatus.UNKNOWN
   }
 }
+
+case class Draft(value: Int)
+
+@HalResource
+case class DraftListResponse(drafts: Seq[Draft])
 
 class HalSerializerImplTest extends InjectorTestBase {
   "HAL Serializer" must {
@@ -110,6 +115,14 @@ class HalSerializerImplTest extends InjectorTestBase {
         assert(tree.has("emptyParenStatus"))
         assert(!tree.has("ignoredStatus"))
         assert(!tree.has("class"))
+
+        assert(decoder.readHal[DraftListResponse]("{}").drafts.isEmpty)
+    }
+
+    "restore nulled collections" in withInjector {
+      injector =>
+        val decoder = injector.instance[UnreliableHalDecoder]
+        assert(decoder.readHal[DraftListResponse]("{}").drafts.isEmpty)
     }
   }
 
