@@ -2,7 +2,7 @@
 <included>
     <include resource="logback-app.xml"/>
 
-    <property name="izumitk.logs.websocket" value="${izumitk.logs.stdout:-true}"/>
+    <property name="izumitk.logs.websocket" value="${izumitk.logs.websocket:-true}"/>
 
     <if condition='p("izumitk.logs.websocket").equals("true")'>
         <then>
