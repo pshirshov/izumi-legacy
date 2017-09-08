@@ -29,9 +29,10 @@ class UnreliableHalDecoder @Inject()
 
   private def decodeHal[T: TypeTag](source: ObjectNode): ObjectNode = {
     val enclosingTree = source.deepCopy()
+    val tt = typeTag[T]
+
     Option(source.get("_embedded")) match {
       case Some(embedded: ObjectNode) =>
-        val tt = typeTag[T]
 
         embedded.fields().asScala.foreach {
           entry =>
@@ -87,26 +88,25 @@ class UnreliableHalDecoder @Inject()
 
         }
 
-        tt.tpe.decls
-          .filterNot(_.isSynthetic)
-          .filter(_.isMethod).foreach {
-          decl =>
-            val fieldType = decl.asMethod.returnType
-            val fieldtt = TypeUtils.typeToTypeTag(fieldType, tt.mirror)
-
-            fieldtt.tpe.asInstanceOf[TypeRefApi].args match {
-              case arg :: Nil if fieldType <:< typeOf[Traversable[_]] =>
-                val fname = decl.name.decodedName.toString
-                if (!enclosingTree.has(fname) || enclosingTree.get(fname).isNull) {
-                  enclosingTree.set(fname, JsonNodeFactory.instance.arrayNode())
-                }
-
-              case _ =>
-            }
-        }
-
-
       case _ =>
+    }
+
+    tt.tpe.decls
+      .filterNot(_.isSynthetic)
+      .filter(_.isMethod).foreach {
+      decl =>
+        val fieldType = decl.asMethod.returnType
+        val fieldtt = TypeUtils.typeToTypeTag(fieldType, tt.mirror)
+
+        fieldtt.tpe.asInstanceOf[TypeRefApi].args match {
+          case arg :: Nil if fieldType <:< typeOf[Traversable[_]] =>
+            val fname = decl.name.decodedName.toString
+            if (!enclosingTree.has(fname) || enclosingTree.get(fname).isNull) {
+              enclosingTree.set(fname, JsonNodeFactory.instance.arrayNode())
+            }
+
+          case _ =>
+        }
     }
 
     enclosingTree
