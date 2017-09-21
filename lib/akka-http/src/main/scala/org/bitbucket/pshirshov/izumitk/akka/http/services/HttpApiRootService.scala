@@ -1,6 +1,7 @@
 package org.bitbucket.pshirshov.izumitk.akka.http.services
 
 import akka.http.scaladsl.server.{Directives, Route}
+import akka.stream.Materializer
 import com.codahale.metrics.MetricRegistry
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
@@ -18,6 +19,7 @@ class HttpServiceConfiguration @Inject()
   , val httpDebugDirectives: HttpDebugDirectives
   , @Named("app.id") val productId: AppId
   , implicit val executionContext: ExecutionContext
+  , implicit val materializer: Materializer
 ) {
 
 }
@@ -37,7 +39,7 @@ trait HttpApiRootService
     val config = httpServiceConfiguration
     import config._
 
-    toStrict() {
+    identity(toStrict) {
       withoutEndpointName {
         timerDirectiveWithSuffix("-io") {
           httpDebugDirectives.withDebug {

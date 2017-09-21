@@ -13,7 +13,7 @@ trait WithToStrict {
 
   // fix for akka bug: https://github.com/akka/akka/issues/19981
   // repeats on small-sized requests
-  protected def toStrict()(implicit ec: ExecutionContext, m: Materializer): Directive0 = {
+  protected def toStrict(implicit ec: ExecutionContext, m: Materializer): Directive0 = {
     import akka.http.scaladsl.server.Directives._
 
     mapInnerRoute { innerRoute =>
