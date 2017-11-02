@@ -123,25 +123,31 @@ class HalSerializerImpl @Inject()
 
   private def fillMap(ec: HalEntityContext, name: String, v: Map[_, _]): Any = {
     v.partition(pair => isHalResource(pair._2)) match {
-      case (resources, values) =>
+      case (resources: Map[_, _], values: Map[_, _]) =>
         val node = mapper.getNodeFactory.objectNode()
 
         resources.foreach {
           resource =>
             val rrepr = makeRepr(resource._2, ec.hc, ec.rc.rc)
             val asJson = rrepr.toString(RepresentationFactory.HAL_JSON)
-            node.set(resource._1.asInstanceOf[String], mapper.readValue[ObjectNode](asJson))
+            node.set(getLabel(resource._1), mapper.readValue[ObjectNode](asJson))
         }
 
         values.foreach {
           value =>
-            node.set(value._1.asInstanceOf[String], mapper.valueToTree(value._2))
+            node.set(getLabel(value._1), mapper.valueToTree(value._2))
         }
 
         ec.repr.withProperty(name, mapper.valueToTree(node))
     }
   }
 
+
+  private def getLabel(value: Any): String =
+    value match {
+      case s: String => s
+      case e: Enum[_] => e.name()
+    }
 
   private def fillSequence(ec: HalEntityContext, name: String, v: Traversable[_]): Unit = {
     serializeSequence(ec, v) match {
