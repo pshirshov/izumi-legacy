@@ -5,7 +5,7 @@ import sbt._
 
 object Dependencies {
   val Versions = Seq(
-    crossScalaVersions := Seq("2.12.1", "2.11.8"),
+    crossScalaVersions := Seq("2.12.4", "2.11.11"),
     scalaVersion := crossScalaVersions.value.head
   )
 
@@ -17,8 +17,8 @@ object Dependencies {
 
     val jwt: ModuleID = "org.bitbucket.b_c" % "jose4j" % "0.4.4"
 
-    val akka_version = "2.4.17"
-    val akka_http_version = "10.0.4"
+    val akka_version = "2.5.6"
+    val akka_http_version = "10.0.10"
     private val akka_actor = "com.typesafe.akka" %% "akka-actor" % akka_version
     private val akka_slf4j = "com.typesafe.akka" %% "akka-slf4j" % akka_version
     private val akka_stream = "com.typesafe.akka" %% "akka-stream" % akka_version
