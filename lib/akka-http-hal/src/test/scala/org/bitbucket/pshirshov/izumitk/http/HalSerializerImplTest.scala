@@ -92,7 +92,11 @@ case class Draft(value: Int)
 @HalResource
 case class DraftListResponse(drafts: Seq[Draft])
 
+@HalResource
+case class HalTestEnumMapEntry(enumMap: Map[TestEnum, Int])
+
 class HalSerializerImplTest extends InjectorTestBase {
+
   "HAL Serializer" must {
     "serialize case classes hierarchy" in withInjector {
       injector =>
@@ -123,6 +127,31 @@ class HalSerializerImplTest extends InjectorTestBase {
       injector =>
         val decoder = injector.instance[UnreliableHalDecoder]
         assert(decoder.readHal[DraftListResponse]("{}").drafts.isEmpty)
+    }
+
+    "serialize enum maps" in withInjector {
+      injector =>
+        val mapper = injector.instance[HalSerializerImpl]
+        val decoder = injector.instance[UnreliableHalDecoder]
+
+        val jMapper = injector.instance[JacksonMapper](Names.named("standardMapper"))
+
+        val sample = HalTestEnumMapEntry((TestEnum.values() zip (1 to 3)).toMap)
+
+        val repr = mapper
+          .makeRepr(sample, new HalContext {}, HttpRequest(uri = Uri("http://localhost:8080")))
+          .toString(RepresentationFactory.HAL_JSON)
+
+        logger.error(repr)
+
+        val decoded = decoder.readHal[HalTestEnumMapEntry](repr)
+        assert(decoded == sample)
+
+
+        val tree = jMapper.readTree(repr).asInstanceOf[ObjectNode]
+        assert(tree.`with`("enumMap").has("abc--"))
+        assert(tree.`with`("enumMap").has("c-b-a"))
+        assert(tree.`with`("enumMap").has("xyz"))
     }
   }
 

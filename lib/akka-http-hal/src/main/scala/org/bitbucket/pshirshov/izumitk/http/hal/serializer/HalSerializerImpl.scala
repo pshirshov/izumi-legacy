@@ -146,7 +146,7 @@ class HalSerializerImpl @Inject()
   private def getLabel(value: Any): String =
     value match {
       case s: String => s
-      case e: Enum[_] => e.name()
+      case _ => mapper.convertValue[String](value)
     }
 
   private def fillSequence(ec: HalEntityContext, name: String, v: Traversable[_]): Unit = {
