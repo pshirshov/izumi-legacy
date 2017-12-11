@@ -23,7 +23,7 @@ object Dependencies {
     private val akka_slf4j = "com.typesafe.akka" %% "akka-slf4j" % akka_version
     private val akka_stream = "com.typesafe.akka" %% "akka-stream" % akka_version
     private val akka_http_dsl = "com.typesafe.akka" %% "akka-http" % akka_http_version
-    val akka = Seq(akka_actor, akka_slf4j, akka_http_dsl)
+    val akka = Seq(akka_actor, akka_stream, akka_slf4j, akka_http_dsl)
 
     private val cassandra_core = "com.datastax.cassandra" % "cassandra-driver-core" % "3.1.4"
     val cassandra: Seq[ModuleID] = Seq(cassandra_core).map(_.exclude("com.google.guava", "guava"))
