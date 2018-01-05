@@ -9,7 +9,7 @@ object Dependencies {
     scalaVersion := crossScalaVersions.value.head
   )
 
-  val globalExclusions: Seq[SbtExclusionRule] = Seq[sbt.SbtExclusionRule]()
+//  val globalExclusions: Seq[SbtExclusionRule] = Seq[sbt.SbtExclusionRule]()
 
 
   object C {

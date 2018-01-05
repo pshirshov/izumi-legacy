@@ -1,8 +1,10 @@
-perfect-build.json
-credentials.*.properties
-failures*.zip
-travis.*
+.idea
+build/project
+local.sbt
+credentials.sonatype-nexus.properties
+.gnupg*
 secrets.tar
+
 
 **/.idea/*
 !**/.idea/runConfigurations
