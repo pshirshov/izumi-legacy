@@ -92,7 +92,7 @@ public final class Version {
 
 
     public static String getBuildTimestamp() {
-        String timestamp = MANIFEST.get("Git-Build-Date");
+        String timestamp = MANIFEST.get("X-Build-Timestamp");
         if (timestamp != null) {
             return timestamp;
         }
@@ -111,9 +111,9 @@ public final class Version {
 
 
     public static String getRevision() {
-        Optional<String> revision = Optional.ofNullable(MANIFEST.get("Git-Branch"));
-        Optional<String> head = Optional.ofNullable(MANIFEST.get("Git-Head-Rev"));
-        Optional<String> clean = Optional.ofNullable(MANIFEST.get("Git-Repo-Is-Clean"));
+        Optional<String> revision = Optional.ofNullable(MANIFEST.get("X-Git-Branch"));
+        Optional<String> head = Optional.ofNullable(MANIFEST.get("X-Git-Head-Rev"));
+        Optional<String> clean = Optional.ofNullable(MANIFEST.get("X-Git-Repo-Is-Clean"));
 
         final String isClean;
         if (Boolean.valueOf(clean.orElse("false"))) {
