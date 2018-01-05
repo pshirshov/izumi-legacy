@@ -42,7 +42,7 @@ pomExtra in Global := <url>https://bitbucket.org/pshirshov/izumi-legacy</url>
 val baseSettings = new GlobalSettings {
   override val globalSettings: ProjectSettings = new ProjectSettings {
     override val settings = Seq(
-      organization := "com.github.pshirshov.izumi"
+      organization := "com.github.pshirshov.izumi.legacy"
       //, scalaVersion := "2.12.4"
       , crossScalaVersions := Seq(
         "2.12.4"
