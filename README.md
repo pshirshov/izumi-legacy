@@ -1,18 +1,5 @@
+[![Build Status](https://travis-ci.org/pshirshov/izumi-legacy.svg?branch=develop)](https://travis-ci.org/pshirshov/izumi-legacy)
+
 A simple Scala toolkit for fast evolving advanced applications.
 
-## Publishing
-
-The most convenient workflow:
-
-1. `sbt updateBugfix`
-2. `git checkout HEAD~1`
-3. `sbt -Dpb.strict-version=false clean publish sonatypeRelease`
-4. `git checkout master`
-
-
-Convenience oneliner:
-
-    sbt -Dpb.config=perfect-build.json.SAMPLE updateBugfix && \
-      git push --all --follow-tags && git checkout HEAD~1 && \
-      sbt -Dpb.strict-version=false +clean +publish sonatypeRelease && \
-      git checkout master
+Check [this repository](https://github.com/pshirshov/izumi-r2) for publishing details.
