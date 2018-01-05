@@ -49,7 +49,7 @@ val baseSettings = new GlobalSettings {
         , "2.11.8"
       )
       , publishMavenStyle in Global := true
-      , sonatypeProfileName := "org.bitbucket.pshirshov.izumitk"
+      , sonatypeProfileName := "com.github.pshirshov"
       , publishTo := Some(
         if (isSnapshot.value)
           Opts.resolver.sonatypeSnapshots
