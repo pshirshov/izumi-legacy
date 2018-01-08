@@ -3,7 +3,7 @@ scalaVersion := "2.12.4"
 // https://github.com/coursier/coursier#sbt-plugin
 addSbtPlugin("io.get-coursier" % "sbt-coursier" % sys.props.get("build.coursier.version").getOrElse("1.0.0"))
 
-addSbtPlugin("com.github.pshirshov.izumi" %% "sbt-izumi" % "0.4.8")
+addSbtPlugin("com.github.pshirshov.izumi" %% "sbt-izumi" % "0.4.11")
 
 ////logLevel := Level.Debug
 //
