@@ -6,7 +6,6 @@ import com.typesafe.config.{Config, ConfigList, ConfigObject, ConfigValueType}
 import com.typesafe.scalalogging.StrictLogging
 import net.codingwell.scalaguice.ScalaModule
 
-import scala.language.existentials
 import scala.util.{Success, Try}
 
 case class ConfigBinding(value: Any, clazz: Class[_])

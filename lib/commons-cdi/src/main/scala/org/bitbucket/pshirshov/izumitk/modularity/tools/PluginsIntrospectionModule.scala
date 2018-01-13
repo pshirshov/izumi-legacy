@@ -1,7 +1,6 @@
 package org.bitbucket.pshirshov.izumitk.modularity.tools
 
 import com.google.inject.TypeLiteral
-import com.google.inject.name.Names
 import com.google.inject.util.Types
 import com.typesafe.scalalogging.StrictLogging
 import net.codingwell.scalaguice.ScalaModule

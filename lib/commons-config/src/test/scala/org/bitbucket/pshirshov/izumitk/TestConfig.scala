@@ -4,7 +4,6 @@ import com.typesafe.config.{Config, ConfigFactory}
 import com.typesafe.scalalogging.StrictLogging
 import org.bitbucket.pshirshov.izumitk.test.ExposedTestScope
 
-import scala.language.implicitConversions
 
 @ExposedTestScope
 object TestConfig extends StrictLogging {

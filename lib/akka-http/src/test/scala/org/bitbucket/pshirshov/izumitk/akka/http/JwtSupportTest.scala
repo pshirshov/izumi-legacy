@@ -5,7 +5,6 @@ import java.security.{PrivateKey, PublicKey}
 import org.bitbucket.pshirshov.izumitk.akka.http.modules.SecurityKeys
 import org.bitbucket.pshirshov.izumitk.test.IzumiTestBase
 
-import scala.language.postfixOps
 
 class JwtSupportTest extends IzumiTestBase {
   "JWT Module" must {
@@ -67,7 +66,7 @@ class JwtSupportTest extends IzumiTestBase {
         assert(SecurityKeys.keyInfo(privateKey) == "RSA:JCERSAPrivateCrtKey")
         assert(SecurityKeys.keyInfo(publicKey) == "RSA:JCERSAPublicKey")
         assert(SecurityKeys.writePublicPemKey(publicKey).trim == publickKeyString.trim)
-        assert(SecurityKeys.writePublicPemKey(privateKey).trim == SecurityKeys.writePublicPemKey(publicKey).trim )
+        assert(SecurityKeys.writePublicPemKey(privateKey).trim == SecurityKeys.writePublicPemKey(publicKey).trim)
     }
   }
 

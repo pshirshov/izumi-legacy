@@ -1,7 +1,6 @@
 package org.bitbucket.pshirshov.izumitk.app.modules
 
 import net.codingwell.scalaguice.{ScalaModule, ScalaMultibinder}
-import org.jminix.console.servlet.MiniConsoleServlet
 import org.jolokia.http.AgentServlet
 
 
