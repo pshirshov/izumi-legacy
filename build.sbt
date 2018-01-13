@@ -57,8 +57,11 @@ val baseSettings = new GlobalSettings {
           Opts.resolver.sonatypeStaging
       )
       , credentials in Global += Credentials(new File("credentials.sonatype-nexus.properties"))
-
-
+      
+      , publishArtifact in(Test, packageBin) := true
+      , publishArtifact in(Test, packageDoc) := true
+      , publishArtifact in(Test, packageSrc) := true
+      
       , releaseProcess := Seq[ReleaseStep](
         checkSnapshotDependencies, // : ReleaseStep
         inquireVersions, // : ReleaseStep
