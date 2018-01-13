@@ -11,7 +11,6 @@ import org.bitbucket.pshirshov.izumitk.modularity.tools.DefaultPluginsConfigServ
 import org.bitbucket.pshirshov.izumitk.test.IzumiTestBase
 import org.bitbucket.pshirshov.izumitk.testplugins._
 
-import scala.language.postfixOps
 
 class TestLoader extends GuicePluginsSupport {
   val testConfig: Config = ConfigFactory.load("plugins-test.conf")

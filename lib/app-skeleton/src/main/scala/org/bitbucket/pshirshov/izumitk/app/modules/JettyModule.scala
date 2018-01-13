@@ -10,7 +10,6 @@ import org.eclipse.jetty.server.{Server, ServerConnector}
 import org.eclipse.jetty.servlet.ServletContextHandler
 
 import scala.collection.immutable
-import scala.language.existentials
 
 case class ServletBinding(pathSpec: String, clazz: Class[_ <: Servlet])
 

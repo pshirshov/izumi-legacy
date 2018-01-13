@@ -6,7 +6,6 @@ import com.datastax.driver.core.Session
 import com.datastax.driver.core.exceptions.{ConnectionException, NoHostAvailableException}
 import com.google.inject.Injector
 import org.bitbucket.pshirshov.izumitk.test.{ExposedTestScope, ResourceVerifier, TestResourceAvailabilityChecker}
-import org.bitbucket.pshirshov.izumitk.util.types.ExceptionUtils
 
 
 @ExposedTestScope

@@ -6,7 +6,6 @@ import com.typesafe.scalalogging.StrictLogging
 import net.codingwell.scalaguice.InjectorExtensions._
 
 import scala.collection.immutable
-import scala.language.existentials
 import scala.util.{Failure, Success, Try}
 
 
