@@ -35,7 +35,7 @@ object Dependencies {
     val jackson: Seq[ModuleID] = Seq(jackson_databind, jackson_scala, jackson_jsr310).map(_.exclude("com.google.guava", "guava"))
     val jsonpath: ModuleID = "com.jayway.jsonpath" % "json-path" % "2.2.0"
 
-    private val scopt = "com.github.scopt" %% "scopt" % "3.5.0"
+    private val scopt = "com.github.scopt" %% "scopt" % "3.7.0"
     private val jolokia = "org.jolokia" % "jolokia-core" % "1.3.7"
     private val jminix = "org.jminix" % "jminix" % "1.2.0"
     private val opendmk = "org.jvnet.opendmk" % "jmxremote_optional" % "1.0_01-ea"
