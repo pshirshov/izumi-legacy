@@ -46,7 +46,7 @@ val baseSettings = new GlobalSettings {
       //, scalaVersion := "2.12.4"
       , crossScalaVersions := Seq(
         "2.12.4"
-        , "2.11.8"
+        , "2.11.11"
       )
       , publishMavenStyle in Global := true
       , sonatypeProfileName := "com.github.pshirshov"
