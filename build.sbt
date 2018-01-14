@@ -18,6 +18,11 @@ val AppSettings = SettingsGroupId()
 
 resolvers in Global += "restlet" at "http://maven.restlet.com/"
 
+crossScalaVersions in ThisBuild := Seq(
+  "2.12.4"
+  , "2.11.12"
+)
+
 javacOptions in Global -= "-Xdoclint:all"
 scalacOptions in Global -= "-opt-warnings:_"
 scalacOptions in Global -= "-Ywarn-extra-implicit"
@@ -43,11 +48,7 @@ val baseSettings = new GlobalSettings {
   override val globalSettings: ProjectSettings = new ProjectSettings {
     override val settings = Seq(
       organization := "com.github.pshirshov.izumi.legacy"
-      //, scalaVersion := "2.12.4"
-      , crossScalaVersions := Seq(
-        "2.12.4"
-        , "2.11.12"
-      )
+
       , publishMavenStyle in Global := true
       , sonatypeProfileName := "com.github.pshirshov"
       , publishTo := Some(
