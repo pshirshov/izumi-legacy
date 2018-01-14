@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/pshirshov/izumi-legacy.svg?branch=develop)](https://travis-ci.org/pshirshov/izumi-legacy)
 [![Maven Central](https://img.shields.io/maven-central/v/com.github.pshirshov.izumi.legacy/izumi-legacy_2.12.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.github.pshirshov.izumi.legacy%22)
-[![Sonatype snapshots](https://img.shields.io/nexus/s/https/oss.sonatype.org/com.github.pshirshov.izumi/izumi-legacy_2.12.svg)](https://oss.sonatype.org/content/repositories/snapshots/com/github/pshirshov/izumi/legacy/)
+[![Sonatype snapshots](https://img.shields.io/nexus/s/https/oss.sonatype.org/com.github.pshirshov.izumi.legacy/izumi-legacy_2.12.svg)](https://oss.sonatype.org/content/repositories/snapshots/com/github/pshirshov/izumi/legacy/)
 [![Latest Release](https://img.shields.io/github/tag/pshirshov/izumi-legacy.svg)](https://github.com/pshirshov/izumi-legacy/releases)
 [![License](https://img.shields.io/github/license/pshirshov/izumi-legacy.svg)](https://github.com/pshirshov/izumi-legacy/blob/develop/LICENSE)
 
