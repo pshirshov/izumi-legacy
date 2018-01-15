@@ -34,11 +34,8 @@ pomExtra in Global := <url>https://bitbucket.org/pshirshov/izumi-legacy</url>
     </developer>
   </developers>
 
-javacOptions in Global -= "-Xdoclint:all"
-scalacOptions in Global -= "-opt-warnings:_"
-scalacOptions in Global -= "-Ywarn-unused:_"
-scalacOptions in Global -= "-Ywarn-extra-implicit"
-scalacOptions in Global -= "-Ypartial-unification"
+scalacOptions in ThisBuild ++= CompilerOptionsPlugin.dynamicSettings(scalaVersion.value, isSnapshot.value)
+
 
 val baseSettings = new GlobalSettings {
   override protected val settings: Map[SettingsGroupId, ProjectSettings] = Map(
