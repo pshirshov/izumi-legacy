@@ -34,8 +34,9 @@ pomExtra in Global := <url>https://bitbucket.org/pshirshov/izumi-legacy</url>
     </developer>
   </developers>
 
-scalacOptions in ThisBuild ++= CompilerOptionsPlugin.dynamicSettings(scalaVersion.value, isSnapshot.value)
 
+scalacOptions in Global ++= CompilerOptionsPlugin.dynamicSettings(scalaVersion.value, isSnapshot.value)
+scalacOptions in Global -= "-Ywarn-unused:_"
 
 val baseSettings = new GlobalSettings {
   override protected val settings: Map[SettingsGroupId, ProjectSettings] = Map(
