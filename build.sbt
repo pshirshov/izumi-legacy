@@ -17,11 +17,7 @@ crossScalaVersions in ThisBuild := Seq(
 )
 
 resolvers in Global += "restlet" at "http://maven.restlet.com/"
-javacOptions in Global -= "-Xdoclint:all"
-scalacOptions in Global -= "-opt-warnings:_"
-scalacOptions in Global -= "-Ywarn-extra-implicit"
-scalacOptions in Global -= "-Ywarn-unused:_"
-scalacOptions in Global -= "-Ypartial-unification"
+
 pomExtra in Global := <url>https://bitbucket.org/pshirshov/izumi-legacy</url>
   <licenses>
     <license>
@@ -37,6 +33,12 @@ pomExtra in Global := <url>https://bitbucket.org/pshirshov/izumi-legacy</url>
       <url>https://github.com/pshirshov</url>
     </developer>
   </developers>
+
+javacOptions in Global -= "-Xdoclint:all"
+scalacOptions in Global -= "-opt-warnings:_"
+scalacOptions in Global -= "-Ywarn-unused:_"
+scalacOptions in Global -= "-Ywarn-extra-implicit"
+scalacOptions in Global -= "-Ypartial-unification"
 
 val baseSettings = new GlobalSettings {
   override protected val settings: Map[SettingsGroupId, ProjectSettings] = Map(
@@ -140,7 +142,6 @@ val failuresCassandra = inLib.as.module
 
 lazy val root = inRoot.as
   .root
-  .enablePlugins(GitStampPlugin)
   .transitiveAggregate(
     json
     , akkaHttpHal, akkaHttpRestlike, akkaCdi, appAkkaHttp
