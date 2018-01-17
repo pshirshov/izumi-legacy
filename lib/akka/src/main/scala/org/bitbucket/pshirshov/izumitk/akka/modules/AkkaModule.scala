@@ -9,7 +9,7 @@ import net.codingwell.scalaguice.ScalaModule
 import org.bitbucket.pshirshov.izumitk.akka.util.AkkaShutdownAdapter
 
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
-
+import scala.concurrent.duration._
 
 
 final class AkkaModule() extends ScalaModule {
@@ -27,7 +27,7 @@ final class AkkaModule() extends ScalaModule {
   @Provides
   @Singleton
   def closeableActorSystem(@Named("app.config") appConfig: Config): AkkaShutdownAdapter = {
-    new AkkaShutdownAdapter()(ActorSystem("akka", appConfig))
+    new AkkaShutdownAdapter(1.second)(ActorSystem("akka", appConfig))
   }
 
 
