@@ -13,5 +13,5 @@ before_install:
   - ( openssl aes-256-cbc -K $encrypted_8b9fa9a5a6a3_key -iv $encrypted_8b9fa9a5a6a3_iv -in secrets.tar.enc -out secrets.tar -d && tar xvf secrets.tar ) || true
 script:
   - if [[ "$TRAVIS_BRANCH" != "master" &&  "$TRAVIS_BRANCH" != "develop" && ! ( "$TRAVIS_TAG" =~ ^v.*$ ) ]] ; then sbt ++$TRAVIS_SCALA_VERSION "addVersionSuffix $TRAVIS_BRANCH"; fi
-  - if [[ -f secrets.tar ]] ; then sbt +clean +test +publishSigned ; else sbt +clean +test +package ; fi
+  - if [[ -f credentials.sonatype-nexus.properties ]] ; then sbt +clean +test +publishSigned ; else sbt +clean +test +package ; fi
   - if [[ "$TRAVIS_TAG" =~ ^v.*$ ]] ; then sbt ++$TRAVIS_SCALA_VERSION sonatypeRelease; fi
