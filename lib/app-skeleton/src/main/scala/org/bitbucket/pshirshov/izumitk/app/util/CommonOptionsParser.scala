@@ -47,6 +47,10 @@ abstract class CommonOptionsParser(programName: String) extends scopt.OptionPars
       (_, c) =>
         c.copy(toJson = Some(true))
     } text "write json format reference configuration files"
-    )
+    , opt[Unit]("full-format") abbr "full" action {
+      (_, c) =>
+        c.copy(full = Some(true))
+    } text "write json format reference configuration files"
+  )
 
 }
