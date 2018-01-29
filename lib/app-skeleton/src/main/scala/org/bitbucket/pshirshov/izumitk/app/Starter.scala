@@ -7,7 +7,7 @@ import ch.qos.logback.classic.LoggerContext
 import ch.qos.logback.classic.util.ContextInitializer
 import ch.qos.logback.core.joran.spi.JoranException
 import ch.qos.logback.core.util.StatusPrinter
-import com.typesafe.config.{Config, ConfigFactory, ConfigRenderOptions}
+import com.typesafe.config.{Config, ConfigFactory, ConfigParseOptions, ConfigRenderOptions}
 import org.apache.commons.io.{FileUtils, IOUtils}
 import org.bitbucket.pshirshov.izumitk.app.model.{AppArguments, StartupConfiguration}
 import org.bitbucket.pshirshov.izumitk.config._
@@ -115,7 +115,7 @@ abstract class Starter {
 
     args.writeReference match {
       case Some(true) =>
-        writeReference(config, args.toJson.get)
+        writeReference(config, args.toJson.get, args.full.get)
         System.exit(0)
       case _ =>
     }
@@ -157,10 +157,30 @@ abstract class Starter {
     forDump.root.render(ConfigRenderOptions.defaults.setComments(false).setOriginComments(false).setJson(toJson))
   }
 
-  protected def writeReference(c: LoadedConfig, jsonFormat : Boolean): Unit = {
+  protected def writeReference(c: LoadedConfig, jsonFormat : Boolean, fullConfig: Boolean): Unit = {
     val fileName = if (jsonFormat) referenceConfigName.replaceFirst(".conf", ".json") else referenceConfigName
-    writeReference(new File(fileName), render(c.reference, jsonFormat))
+    val config = if (fullConfig) fullRefferenceConfig() else c.reference
+    writeReference(new File(fileName), render(config, jsonFormat))
     writeReference(logbackFile, getLoggingReference)
+  }
+
+  protected def fullRefferenceConfig(): Config = {
+    import scala.collection.JavaConverters._
+
+    val appConf = ConfigFactory.parseResourcesAnySyntax(
+      referenceConfigName, ConfigParseOptions.defaults().setAllowMissing(true)
+    )
+    
+    val systemProps = ConfigFactory.defaultOverrides.root.unwrapped.asScala.keySet
+    val withoutSystemReference = ConfigFactory.parseMap(
+      appConf
+        .withFallback(ConfigFactory.defaultReference(classOf[Object].getClassLoader))
+        .root().asScala
+        .filterKeys(!systemProps.contains(_))
+        .toMap.asJava
+    )
+    
+    appConf.withFallback(withoutSystemReference)
   }
 
   protected def getLoggingReference: String = {
