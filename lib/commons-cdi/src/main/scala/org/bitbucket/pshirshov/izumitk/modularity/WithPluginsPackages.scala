@@ -3,11 +3,11 @@ package org.bitbucket.pshirshov.izumitk.modularity
 trait WithPluginsPackages {
   protected def namespace: String = "plugins"
 
-  protected def basePackage: Package = getClass.getPackage
+  protected def basePackage: String = getClass.getPackage.getName
 
-  protected def companyPackage(): String = basePackage.getName.split('.').take(2).toList.mkString(".")
+  protected def companyPackage(): String = basePackage.split('.').take(2).toList.mkString(".")
 
-  protected def classPackage(): String = basePackage.getName
+  protected def classPackage(): String = basePackage
 
   protected def pluginsPackages(): Seq[String] = {
     withPkg(namespace, WithPluginsPackages.izumiPackages() ++ appPackages()).distinct
