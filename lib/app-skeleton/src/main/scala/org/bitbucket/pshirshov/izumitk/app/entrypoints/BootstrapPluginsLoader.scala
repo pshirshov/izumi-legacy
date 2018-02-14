@@ -4,9 +4,9 @@ import org.bitbucket.pshirshov.izumitk.config.LoadedConfig
 import org.bitbucket.pshirshov.izumitk.modularity.PluginsSupport
 import org.bitbucket.pshirshov.izumitk.modularity.tools.DefaultPluginsConfigService
 
-class BootstrapPluginsLoader
+case class BootstrapPluginsLoader
 (
-  override protected val basePackage: Package
+  override protected val basePackage: String
   , config: LoadedConfig
 )
   extends PluginsSupport {

@@ -7,7 +7,7 @@ import com.typesafe.scalalogging.StrictLogging
 import org.bitbucket.pshirshov.izumitk.app.Starter
 import org.bitbucket.pshirshov.izumitk.app.model.{AppArguments, EntryPoint, StartupConfiguration}
 import org.bitbucket.pshirshov.izumitk.config.{LoadedConfig, ResolvedConfig}
-
+import org.bitbucket.pshirshov.izumitk.modularity.PluginsSupport
 
 abstract class EntrypointLoader
   extends Starter
@@ -24,7 +24,7 @@ abstract class EntrypointLoader
     , bootstrapReference
   )
 
-  protected def bootstrapLoader: BootstrapPluginsLoader = new BootstrapPluginsLoader(getClass.getPackage, bootstrapConfig)
+  protected def bootstrapLoader: BootstrapPluginsLoader = BootstrapPluginsLoader(getClass.getPackage.getName, bootstrapConfig)
 
   protected val entrypoint = new AtomicReference[EntryPoint](null)
 
@@ -35,12 +35,14 @@ abstract class EntrypointLoader
           logger.warn(s"Entrypoint is expected to be null on app start but it was set to $oldEp")
       }
       
-      val epMap = loadEntrypoints()
-      epMap.values.foreach(_.configure(parser))
+      val btMap = loadBoostrapEntrypoints()
+      btMap.values.foreach(_.configure(parser))
+
       configuration(args, defaultArguments()) match {
         case StartupConfiguration(arguments, config) =>
           val epName = arguments.value[String](EntrypointLoader.EP_KEY)
-          epMap.get(epName) match {
+          val epMap = loadEntrypoints(BootstrapPluginsLoader(s"${getClass.getPackage.getName}.$epName", bootstrapConfig))
+          (btMap ++ epMap).get(epName) match {
             case Some(e) =>
               entrypoint.set(e)
               e.run(arguments, config)
@@ -51,17 +53,18 @@ abstract class EntrypointLoader
     }
   }
 
-  protected def loadEntrypoints(): Map[String, EntryPoint] = {
-    val epMap: Map[String, EntryPoint] = {
-      val entrypoints = bootstrapLoader.loadPlugins().filter(_.isInstanceOf[EntryPoint]).map(_.asInstanceOf[EntryPoint])
-      logger.info(s"Entrypoints loaded: ${entrypoints.map(_.name)}")
+  protected def loadBoostrapEntrypoints(): Map[String, EntryPoint] = {
+    loadEntrypoints(bootstrapLoader)
+  }
 
-      entrypoints.groupBy(_.name).map {
-        case (k, v) =>
-          k -> v.head
-      }
+  protected def loadEntrypoints(pluginLoader: PluginsSupport): Map[String, EntryPoint] = {
+    val entrypoints = pluginLoader.loadPlugins().filter(_.isInstanceOf[EntryPoint]).map(_.asInstanceOf[EntryPoint])
+    logger.info(s"Entrypoints loaded: ${entrypoints.map(_.name)}")
+
+    entrypoints.groupBy(_.name).map {
+      case (k, v) =>
+        k -> v.head
     }
-    epMap
   }
 }
 
