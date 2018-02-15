@@ -13,7 +13,7 @@ import scala.concurrent.{Future, Promise}
 
 trait WithCassandraFacade
   extends DecorateAsJava with DecorateAsScala {
-  protected def facade: CassandraFacade
+  protected def facade: CassandraFacadeBase
 
   implicit class Binder(query: CPreparedStatement) {
     def bind(args: AnyRef*): CBoundStatement = {
@@ -27,6 +27,12 @@ trait WithCassandraFacade
 }
 
 trait CassandraFacade
+  extends CassandraFacadeBase
+    with WithCassandraFacade {
+  override protected def facade: CassandraFacade = this
+}
+
+trait CassandraFacadeBase
   extends Initializable
     with WithCassandraFacade
     with StrictLogging {
@@ -34,8 +40,6 @@ trait CassandraFacade
   protected def cassandra: CassandraContext
 
   protected def ddl: Seq[CBaseStatement]
-  
-  override protected def facade: CassandraFacade = this
 
   protected def defaultKeyspaceId: CKeyspaceId = CKeyspaceId("default")
   protected def inDefaultKeyspace(name: String): CTable = CTable(aliasToName(defaultKeyspaceId), name)
