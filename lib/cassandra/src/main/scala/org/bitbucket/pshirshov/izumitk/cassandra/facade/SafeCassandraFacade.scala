@@ -12,7 +12,9 @@ import scala.collection.convert.{DecorateAsJava, DecorateAsScala}
 
 trait SafeCassandraFacade
   extends CassandraFacadeBase
-    with WithSafeCassandraFacade
+    with WithSafeCassandraFacade {
+  override protected def facade: CassandraFacadeBase = this
+}
 
 trait WithSafeCassandraFacade
   extends DecorateAsJava with DecorateAsScala {
