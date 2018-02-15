@@ -34,8 +34,8 @@ trait CassandraFacade
 
 trait CassandraFacadeBase
   extends Initializable
-    with WithCassandraFacade
-    with StrictLogging {
+    with StrictLogging
+    with DecorateAsScala  {
 
   protected def cassandra: CassandraContext
 

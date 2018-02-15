@@ -52,12 +52,12 @@ trait WithSafeCassandraFacade
   implicit final def scalaSetsAllowed[T: IsCassandraValue](set: Set[T]): CassandraValue = CassandraValue.make(set.asJava)
   implicit final def scalaMapsAllowed[K: IsCassandraValue, V: IsCassandraValue](map: Map[K, V]): CassandraValue = CassandraValue.make(map.asJava)
 
-  implicit final class SafeOps(statement: CPreparedStatement) {
+  implicit final class SafeOps(query: CPreparedStatement) {
     def execute(args: CassandraValue*): ResultSet =
-      facade.execute(statement, args.map(_.value): _*)
+      facade.execute(bind(args: _*))
 
     def bind(args: CassandraValue*): CBoundStatement =
-      facade.bind(statement, args.map(_.value): _*)
+      facade.bind(query, args.map(_.value): _*)
   }
 
   def cassandraValue[T: IsCassandraValue](value: T): CassandraValue = value
