@@ -25,6 +25,8 @@ trait WithSafeCassandraFacade
   // http://spray.io/blog/2012-12-13-the-magnet-pattern/
   type IsCassandraValue[T] = T => CassandraValue
 
+  import scala.language.implicitConversions
+
   implicit final val intAllowed: IsCassandraValue[Int] = CassandraValue.apply(_.underlying())
   implicit final val longAllowed: IsCassandraValue[Long] = CassandraValue.apply(_.underlying())
   implicit final val byteAllowed: IsCassandraValue[Byte] = CassandraValue.apply(_.underlying())
@@ -40,15 +42,15 @@ trait WithSafeCassandraFacade
   implicit final val dateAllowed: IsCassandraValue[Date] = CassandraValue.make
   implicit final val cassandraLocalDateAllowed: IsCassandraValue[LocalDate] = CassandraValue.make
   implicit final val inetAddressAllowed: IsCassandraValue[InetAddress] = CassandraValue.make
-  implicit final def javaListsAllowed[T: IsCassandraValue]: IsCassandraValue[java.util.List[T]] = CassandraValue.make
-  implicit final def javaSetsAllowed[T: IsCassandraValue]: IsCassandraValue[java.util.Set[T]] = CassandraValue.make
-  implicit final def javaMapsAllowed[K: IsCassandraValue, V: IsCassandraValue]: IsCassandraValue[java.util.Map[K, V]] = CassandraValue.make
+  implicit final def javaListsAllowed[T: IsCassandraValue](list: java.util.List[T]): CassandraValue = CassandraValue.make(list)
+  implicit final def javaSetsAllowed[T: IsCassandraValue](set: java.util.Set[T]): CassandraValue = CassandraValue.make(set)
+  implicit final def javaMapsAllowed[K: IsCassandraValue, V: IsCassandraValue](map: java.util.Map[K, V]): CassandraValue = CassandraValue.make(map)
   implicit final val udtValueAllowed: IsCassandraValue[UDTValue] = CassandraValue.make
   implicit final val tupleValueAllowed: IsCassandraValue[TupleValue] = CassandraValue.make
   implicit final val zonedDateTimeAllowed: IsCassandraValue[ZonedDateTime] = CassandraValue.apply(z => Date.from(z.toInstant))
-  implicit final def scalaListsAllowed[T: IsCassandraValue]: IsCassandraValue[List[T]] = CassandraValue.apply(_.asJava)
-  implicit final def scalaSetsAllowed[T: IsCassandraValue]: IsCassandraValue[Set[T]] = CassandraValue.apply(_.asJava)
-  implicit final def scalaMapsAllowed[K: IsCassandraValue, V: IsCassandraValue]: IsCassandraValue[Map[K, V]] = CassandraValue.apply(_.asJava)
+  implicit final def scalaListsAllowed[T: IsCassandraValue](list: List[T]): CassandraValue = CassandraValue.make(list.asJava)
+  implicit final def scalaSetsAllowed[T: IsCassandraValue](set: Set[T]): CassandraValue = CassandraValue.make(set.asJava)
+  implicit final def scalaMapsAllowed[K: IsCassandraValue, V: IsCassandraValue](map: Map[K, V]): CassandraValue = CassandraValue.make(map.asJava)
 
   implicit final class SafeOps(statement: CPreparedStatement) {
     def execute(args: CassandraValue*): ResultSet =
