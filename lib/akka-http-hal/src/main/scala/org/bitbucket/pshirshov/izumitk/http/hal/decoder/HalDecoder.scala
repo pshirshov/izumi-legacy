@@ -2,8 +2,6 @@ package org.bitbucket.pshirshov.izumitk.http.hal.decoder
 
 import com.fasterxml.jackson.databind.node.ObjectNode
 
-/**
-  */
 trait HalDecoder {
   import scala.reflect.runtime.universe._
 

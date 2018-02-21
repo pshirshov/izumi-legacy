@@ -8,7 +8,7 @@ import akka.http.scaladsl.server._
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
-import com.theoryinpractise.halbuilder.api.{Representation, RepresentationFactory}
+import com.theoryinpractise.halbuilder5.{ResourceRepresentation, Support}
 import com.typesafe.scalalogging.StrictLogging
 import org.bitbucket.pshirshov.izumitk.akka.http.services.HttpServiceConfiguration
 import org.bitbucket.pshirshov.izumitk.akka.http.util.MetricDirectives
@@ -17,7 +17,7 @@ import org.bitbucket.pshirshov.izumitk.akka.http.util.serialization.Serializatio
 import org.bitbucket.pshirshov.izumitk.failures.model.{CommonDomainExceptions, DomainException, ServiceException, ServiceFailure}
 import org.bitbucket.pshirshov.izumitk.failures.services.{FailureRecord, FailureRepository}
 import org.bitbucket.pshirshov.izumitk.http.hal.model.{HalExceptionContext, HalFailure, JwtRejection, ToHal}
-import org.bitbucket.pshirshov.izumitk.http.hal.serializer.HalSerializer
+import org.bitbucket.pshirshov.izumitk.http.hal.serializer.{HalSerializer, JacksonHalSerializer}
 import org.bitbucket.pshirshov.izumitk.util.types.ExceptionUtils
 import org.scalactic.{Bad, Every, Good}
 
@@ -28,7 +28,7 @@ import scala.util.control.NonFatal
 @Singleton
 class DefaultHalApiPolicy @Inject()
 (
-  representationFactory: RepresentationFactory
+  jacksonHalSerializer: JacksonHalSerializer
   , serializer: HalSerializer
   , failureRepository: FailureRepository
   , cors: CORS
@@ -39,14 +39,14 @@ class DefaultHalApiPolicy @Inject()
   with MetricDirectives
   with StrictLogging {
 
-  val `application/hal+json`: WithFixedCharset = MediaType.applicationWithFixedCharset(RepresentationFactory.HAL_JSON.split("/").last, HttpCharsets.`UTF-8`)
+  val `application/hal+json`: WithFixedCharset = MediaType.applicationWithFixedCharset(Support.HAL_JSON.split("/").last, HttpCharsets.`UTF-8`)
 
   val halContentType = ContentType(`application/hal+json`)
 
-  override def completeHal[R <: ToHal](endpointName: String)(fun: => R): (RequestContext) => Future[RouteResult] = metered(endpointName) {
+  override def completeHal(endpointName: String)(fun: => ToHal): (RequestContext) => Future[RouteResult] = metered(endpointName) {
     ctx: RequestContext =>
       try {
-        val body = serializeEntity(fun, ctx.request).toString(RepresentationFactory.HAL_JSON)
+        val body = jacksonHalSerializer.writeValueAsString(serializeEntity(fun, ctx.request))
 
         ctx.complete(HttpResponse(StatusCodes.OK
           , entity = HttpEntity(body).withContentType(halContentType)
@@ -98,7 +98,7 @@ class DefaultHalApiPolicy @Inject()
     }
   }
 
-  protected def serializeEntity[R <: ToHal](value: R, ctx: HttpRequest): Representation = {
+  protected def serializeEntity(value: ToHal, ctx: HttpRequest): ResourceRepresentation[ObjectNode] = {
     import ToHal._
 
     value match {
@@ -165,8 +165,9 @@ class DefaultHalApiPolicy @Inject()
       , stacktrace
     )
 
-    val body = serializer.makeRepr(fdata, HalExceptionContext(e), ctx.request)
-      .toString(RepresentationFactory.HAL_JSON)
+    val body = jacksonHalSerializer.writeValueAsString(
+      serializer.makeRepr(fdata, HalExceptionContext(e), ctx.request)
+    )
 
     ctx.complete(HttpResponse(StatusCodes.InternalServerError
       , entity = HttpEntity(body).withContentType(halContentType)

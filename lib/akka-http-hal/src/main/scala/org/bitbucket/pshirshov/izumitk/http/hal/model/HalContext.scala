@@ -1,7 +1,8 @@
 package org.bitbucket.pshirshov.izumitk.http.hal.model
 
 import akka.http.scaladsl.model.HttpRequest
-import com.theoryinpractise.halbuilder.api.Representation
+import com.fasterxml.jackson.databind.node.ObjectNode
+import com.theoryinpractise.halbuilder5.ResourceRepresentation
 
 trait HalContext {}
 
@@ -13,5 +14,5 @@ case class HalEntityContext(
                              hc: HalContext
                              , rc: HalRequestContext
                              , dto: Any
-                             , repr: Representation
+                             , repr: ResourceRepresentation[ObjectNode]
                            )

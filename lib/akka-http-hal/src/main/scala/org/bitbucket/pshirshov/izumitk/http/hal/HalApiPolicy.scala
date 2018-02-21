@@ -7,5 +7,5 @@ import org.bitbucket.pshirshov.izumitk.http.hal.model.ToHal
 import scala.concurrent.Future
 
 trait HalApiPolicy extends APIPolicy {
-  def completeHal[R <: ToHal](endpointName: String)(fun: => R): (RequestContext) => Future[RouteResult]
+  def completeHal(endpointName: String)(fun: => ToHal): (RequestContext) => Future[RouteResult]
 }

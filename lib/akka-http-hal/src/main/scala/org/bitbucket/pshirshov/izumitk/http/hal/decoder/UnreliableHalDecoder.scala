@@ -78,7 +78,6 @@ class UnreliableHalDecoder @Inject()
 
                   case argKey :: argValue :: Nil =>
                     val argTt = TypeUtils.typeToTypeTag(argValue, tt.mirror)
-                    val newNode = mapper.getNodeFactory.objectNode()
                     enclosingTree.set(attributeName, decodeHal(enclosingTree)(argTt))
 
                   case _ =>

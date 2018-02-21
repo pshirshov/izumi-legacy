@@ -2,7 +2,7 @@ package org.bitbucket.pshirshov.izumitk.failures.util
 
 import com.typesafe.scalalogging.StrictLogging
 import org.bitbucket.pshirshov.izumitk.failures.model.{Maybe, ServiceException, ServiceFailure}
-import org.scalactic.{Bad, Every, One, Or}
+import org.scalactic._
 
 import scala.util.Try
 
@@ -23,6 +23,10 @@ package object maybe extends StrictLogging {
     log(Or.from(theTry).badMap(mapper))
   }
 
+  def flatten[G](m: Maybe[Maybe[G]]): Maybe[G] = m match {
+    case Good(g) => g
+    case Bad(b) => Bad(b)
+  }
 
   def flatten[G](theTry: => Try[Maybe[G]]): Maybe[G] = {
     flatten("Call unexpectedly failed")(theTry)

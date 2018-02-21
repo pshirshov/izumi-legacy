@@ -28,7 +28,7 @@ object Dependencies {
     private val cassandra_core = "com.datastax.cassandra" % "cassandra-driver-core" % "3.1.4"
     val cassandra: Seq[ModuleID] = Seq(cassandra_core).map(_.exclude("com.google.guava", "guava"))
 
-    private val jackson_version = "2.8.7"
+    private val jackson_version = "2.9.4"
     private val jackson_databind = "com.fasterxml.jackson.core" % "jackson-databind" % jackson_version
     private val jackson_scala = "com.fasterxml.jackson.module" %% "jackson-module-scala" % jackson_version
     private val jackson_jsr310 = "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % jackson_version
@@ -109,7 +109,7 @@ object Dependencies {
       , string_template
     )).map(_.exclude("com.google.guava", "guava")) ++ Seq(guava)
 
-    val halbuilder: ModuleID = "com.theoryinpractise" % "halbuilder-standard" % "4.0.1"
+    val halbuilder: ModuleID = "com.theoryinpractise" % "halbuilder5" % "5.1.3" exclude("com.fasterxml.jackson.core", "jackson-databind")
 
     val bouncycastle: ModuleID = "org.bouncycastle" % "bcprov-jdk16" % "1.46"
   }

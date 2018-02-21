@@ -1,5 +1,6 @@
 package org.bitbucket.pshirshov.izumitk.http.hal.serializer
 
+import java.math.BigInteger
 import java.util
 import java.util.UUID
 
@@ -9,7 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
-import com.theoryinpractise.halbuilder.api.{Representation, RepresentationFactory}
+import com.theoryinpractise.halbuilder5.{Rels, ResourceRepresentation}
 import org.apache.commons.lang3.StringUtils
 import org.bitbucket.pshirshov.izumitk.hal.HalResource
 import org.bitbucket.pshirshov.izumitk.http.hal.model.{HalContext, HalEntityContext, HalRequestContext}
@@ -23,8 +24,8 @@ import scala.reflect.runtime.universe._
 @Singleton
 class HalSerializerImpl @Inject()
 (
-  @Named("standardMapper") mapper: JacksonMapper
-  , factory: RepresentationFactory
+  jacksonHalSerializer: JacksonHalSerializer
+  , @Named("standardMapper") mapper: JacksonMapper
   , linkExtractor: LinkExtractor
   , hooks: HalHooks
 ) extends HalSerializer {
@@ -32,41 +33,34 @@ class HalSerializerImpl @Inject()
                          dto: Any
                          , hc: HalContext
                          , rc: HttpRequest
-                       ): Representation = {
+                       ): ResourceRepresentation[ObjectNode] = {
     val baseUri = linkExtractor.extract(Option(rc))
     val requestContext = HalRequestContext(baseUri, rc)
 
-    val repr = factory.newRepresentation()
+    val repr = ResourceRepresentation.create(mapper.createObjectNode())
     val ec = hooks.reduce(HalEntityContext(hc, requestContext, dto, repr))
 
-
-    dto match {
+    val rRR = dto match {
       case tree: ObjectNode =>
         serializeTree(tree, repr)
-      case hr =>
+      case _ =>
         serializeDto(ec)
     }
 
-    hooks.handleEntity(ec)
-    repr
+    hooks.handleEntity(ec.copy(repr = rRR))
   }
 
-  private def serializeTree(tree: ObjectNode, repr: Representation): Unit = {
-    tree.fields().asScala.foreach {
-      e =>
-        repr.withProperty(e.getKey, e.getValue)
-    }
+  private def serializeTree(tree: ObjectNode, repr: ResourceRepresentation[ObjectNode]): ResourceRepresentation[ObjectNode] = {
+    repr.withValue(tree)
   }
 
-  private def serializeDto(ec: HalEntityContext): Unit = {
-    Option(ec.dto.getClass.getAnnotation(classOf[HalResource])).foreach {
-      rann =>
-        Option(rann.self()).filter(_.nonEmpty).foreach {
-          self =>
-            ec.repr.withLink("self", s"${ec.rc.baseUri}/$self")
-        }
-      // TODO: anything else?..
-    }
+  private def serializeDto(ec: HalEntityContext): ResourceRepresentation[ObjectNode] = {
+    val ecRepr = (for {
+      rann <- Option(ec.dto.getClass.getAnnotation(classOf[HalResource]))
+      self <- Option(rann.self()).filter(_.nonEmpty)
+    } yield  // TODO: anything else?..
+      ec.repr.withLink("self", s"${ec.rc.baseUri}/$self")
+    ) getOrElse ec.repr
 
     val rm = scala.reflect.runtime.currentMirror
     val instanceMirror = rm.reflect(ec.dto)
@@ -74,95 +68,112 @@ class HalSerializerImpl @Inject()
     rm.classSymbol(ec.dto.getClass).toType.members.collect {
       case m: MethodSymbol if isPublicGetter(m) => m
       case m: MethodSymbol if isGetterLike(m) => m
-    }.foreach {
-      acc =>
-        val rawName = acc.name.decodedName.toString
+    }.foldLeft(ecRepr) {
+      (repr, sym) =>
+        val rawName = sym.name.decodedName.toString
         val name = if (rawName.startsWith("get")) {
           StringUtils.uncapitalize(rawName.substring(3))
         } else {
           rawName
         }
 
-        val value = instanceMirror.reflectMethod(acc).apply()
+        val value = instanceMirror.reflectMethod(sym).apply()
         value match {
           case null =>
-            ec.repr.withProperty(name, value)
-          case _: Number =>
-            ec.repr.withProperty(name, value)
-          case _: String =>
-            ec.repr.withProperty(name, value)
-          case _: UUID =>
-            ec.repr.withProperty(name, value.toString)
-          case _: Boolean =>
-            ec.repr.withProperty(name, value)
-
-          // TODO: improve maps support: we need to handle embedded hal resources as well
+            repr.map(_.putNull(name))
+          case v: java.lang.Short =>
+            repr.map(_.put(name, v))
+          case v: Short =>
+            repr.map(_.put(name, v))
+          case v: java.lang.Double =>
+            repr.map(_.put(name, v))
+          case v: Double =>
+            repr.map(_.put(name, v))
+          case v: BigInteger =>
+            repr.map(_.put(name, v))
+          case v: BigInt =>
+            repr.map(_.put(name, v.bigInteger))
+          case v: Integer =>
+            repr.map(_.put(name, v))
+          case v: Int =>
+            repr.map(_.put(name, v))
+          case v: java.lang.Boolean =>
+            repr.map(_.put(name, v))
+          case v: Boolean =>
+            repr.map(_.put(name, v))
+          case v: java.math.BigDecimal =>
+            repr.map(_.put(name, v))
+          case v: BigDecimal =>
+            repr.map(_.put(name, v.bigDecimal))
+          case v: java.lang.Long =>
+            repr.map(_.put(name, v))
+          case v: Long =>
+            repr.map(_.put(name, v))
+          case v: java.lang.Float =>
+            repr.map(_.put(name, v))
+          case v: Float =>
+            repr.map(_.put(name, v))
+          case v: String =>
+            repr.map(_.put(name, v))
+          case v: UUID =>
+            repr.map(_.put(name, v.toString))
           case v: util.Map[_, _] =>
             fillMap(ec, name, v.asScala.toMap)
-
           case v: Map[_, _] =>
             fillMap(ec, name, v)
-
           case v: util.Collection[_] =>
-            fillSequence(ec, name, v.asScala.toSeq)
-
+            fillSequence(ec, name, v.asScala)
           case v: Traversable[_] =>
-            fillSequence(ec, name, v.toSeq)
-
+            fillSequence(ec, name, v)
           case v: AnyRef if isHalResource(v) =>
-            ec.repr.withRepresentation(name, makeRepr(v, ec.hc, ec.rc.rc))
-
-          case v: AnyRef => //if isHalProperty(v) =>
-            ec.repr.withProperty(name, mapper.valueToTree(v))
-
+            val reprWithCollection = repr.withRel(Rels.collection(name))
+            reprWithCollection.withRepresentation(name, makeRepr(v, ec.hc, ec.rc.rc))
+          case v: AnyRef =>
+            repr.map(_.set(name, mapper.valueToTree[ObjectNode](v)).asInstanceOf[ObjectNode])
           case _ =>
             throw new UnsupportedOperationException(s"We don't know how to serialize `$value` in `$ec`")
         }
     }
   }
 
-  private def fillMap(ec: HalEntityContext, name: String, v: Map[_, _]): Any = {
+  private def fillMap(ec: HalEntityContext, name: String, v: Map[_, _]): ResourceRepresentation[ObjectNode] = {
     v.partition(pair => isHalResource(pair._2)) match {
       case (resources: Map[_, _], values: Map[_, _]) =>
-        val node = mapper.getNodeFactory.objectNode()
-
-        resources.foreach {
-          resource =>
-            val rrepr = makeRepr(resource._2, ec.hc, ec.rc.rc)
-            val asJson = rrepr.toString(RepresentationFactory.HAL_JSON)
-            node.set(getLabel(resource._1), mapper.readValue[ObjectNode](asJson))
-        }
+        val mutnode = ec.repr.get().`with`(name)
 
         values.foreach {
           value =>
-            node.set(getLabel(value._1), mapper.valueToTree(value._2))
+            mutnode.set(getLabel(value._1), mapper.valueToTree[JsonNode](value._2))
         }
 
-        ec.repr.withProperty(name, mapper.valueToTree(node))
+        resources.foreach {
+          resource =>
+              val rrepr = jacksonHalSerializer.valueToTree(makeRepr(resource._2, ec.hc, ec.rc.rc))
+              mutnode.set(getLabel(resource._1), rrepr)
+        }
+
+        ec.repr
     }
   }
 
-
-  private def getLabel(value: Any): String =
-    value match {
-      case s: String => s
-      case _ => mapper.convertValue[String](value)
-    }
-
-  private def fillSequence(ec: HalEntityContext, name: String, v: Traversable[_]): Unit = {
+  private def fillSequence(ec: HalEntityContext, name: String, v: Traversable[_]): ResourceRepresentation[ObjectNode] = {
     serializeSequence(ec, v) match {
       case (resources, properties) =>
         if (properties.nonEmpty) {
-          val arr = mapper.getNodeFactory.arrayNode()
+          val arr = ec.repr.get.putArray(name)
+
           properties.foreach(v => arr.add(mapper.valueToTree[JsonNode](v)))
-          ec.repr.withProperty(name, arr)
         }
 
-        resources.foreach(r => ec.repr.withRepresentation(name, r))
+        val reprWithCollection = ec.repr.withRel(Rels.collection(name))
+        resources.foldLeft(reprWithCollection) {
+          (acc, inner) =>
+            acc.withRepresentation(name, inner)
+        }
     }
   }
 
-  private def serializeSequence(ec: HalEntityContext, sequence: Traversable[_]): (Seq[Representation], Seq[JsonNode]) = {
+  private def serializeSequence(ec: HalEntityContext, sequence: Traversable[_]): (Seq[ResourceRepresentation[ObjectNode]], Seq[JsonNode]) = {
     sequence.partition(isHalResource) match {
       case (resources, properties) =>
         (
@@ -171,6 +182,12 @@ class HalSerializerImpl @Inject()
         )
     }
   }
+
+  private def getLabel(value: Any): String =
+    value match {
+      case s: String => s
+      case _ => mapper.convertValue[String](value)
+    }
 
   private def isHalResource(value: Any): Boolean = {
     value.getClass.isAnnotationPresent(classOf[HalResource])
@@ -187,10 +204,4 @@ class HalSerializerImpl @Inject()
   private def isPublicGetter(m: _root_.scala.reflect.runtime.universe.MethodSymbol) = {
     m.isGetter && m.isPublic
   }
-
-  //  private def isHalProperty(value: AnyRef): Boolean = {
-  //    (Seq(value.getClass) ++ value.getClass.getInterfaces.toSeq)
-  //      .flatMap(_.getAnnotations)
-  //      .exists(_.annotationType() == classOf[HalProperty])
-  //  }
 }
