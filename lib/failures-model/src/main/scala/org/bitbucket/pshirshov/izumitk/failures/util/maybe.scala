@@ -2,13 +2,13 @@ package org.bitbucket.pshirshov.izumitk.failures.util
 
 import com.typesafe.scalalogging.StrictLogging
 import org.bitbucket.pshirshov.izumitk.failures.model.{Maybe, ServiceException, ServiceFailure}
-import org.scalactic.{Bad, Every, One, Or}
+import org.scalactic._
 
 import scala.util.Try
 
-/**
-  */
-package object maybe extends StrictLogging {
+object maybe extends StrictLogging {
+  self =>
+
   def apply[T](r: => T): Maybe[T] = from(Try(r))
 
   def from[G](theTry: => Try[G]): Maybe[G] = {
@@ -23,13 +23,16 @@ package object maybe extends StrictLogging {
     log(Or.from(theTry).badMap(mapper))
   }
 
+  def flatten[G](m: Maybe[Maybe[G]]): Maybe[G] = {
+    m.flatMap(identity)
+  }
 
   def flatten[G](theTry: => Try[Maybe[G]]): Maybe[G] = {
     flatten("Call unexpectedly failed")(theTry)
   }
 
   def flatten[G](failureMessage: String)(theTry: => Try[Maybe[G]]): Maybe[G] = {
-    flatten(maybe.mapException(Some(failureMessage)))(theTry)
+    flatten(mapException(Some(failureMessage)))(theTry)
   }
 
   def flatten[G](mapper: PartialFunction[Throwable, Every[ServiceFailure]])(theTry: => Try[Maybe[G]]): Maybe[G] = {
@@ -37,7 +40,6 @@ package object maybe extends StrictLogging {
       .badMap(mapper)
       .flatMap(v => v))
   }
-
 
   def mapException(failureMessage: Option[String] = None): PartialFunction[Throwable, Every[ServiceFailure]] = {
     case s: ServiceFailure =>
@@ -74,6 +76,10 @@ package object maybe extends StrictLogging {
         case _ =>
           Seq()
       }
+    }
+
+    def flatten[G](implicit ev: Maybe[T] <:< Maybe[Maybe[G]]): Maybe[G] = {
+      self.flatten(theMaybe)
     }
   }
 
