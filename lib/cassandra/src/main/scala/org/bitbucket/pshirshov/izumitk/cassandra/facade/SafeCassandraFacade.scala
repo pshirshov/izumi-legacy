@@ -46,17 +46,17 @@ trait WithSafeCassandraFacade
   implicit final val udtValueAllowed: IsCassandraValue[UDTValue] = CassandraValue.fromAnyRef
   implicit final val tupleValueAllowed: IsCassandraValue[TupleValue] = CassandraValue.fromAnyRef
   implicit final def javaListsAllowed[T: IsCassandraValue](list: java.util.List[T]): CassandraValue = CassandraValue.fromAnyRef {
-    list.stream().map[AnyRef](implicitly[IsCassandraValue[T]].apply(_).unbox).collect(Collectors.toList[AnyRef])
+    list.stream().map[AnyRef]{z: T => implicitly[IsCassandraValue[T]].apply(z).unbox}.collect(Collectors.toList[AnyRef])
   }
   implicit final def javaSetsAllowed[T: IsCassandraValue](set: java.util.Set[T]): CassandraValue = CassandraValue.fromAnyRef {
-    set.stream().map[AnyRef](implicitly[IsCassandraValue[T]].apply(_).unbox).collect(Collectors.toSet[AnyRef])
+    set.stream().map[AnyRef]{z: T => implicitly[IsCassandraValue[T]].apply(z).unbox}.collect(Collectors.toSet[AnyRef])
   }
   implicit final def javaMapsAllowed[K: IsCassandraValue, V: IsCassandraValue](map: java.util.Map[K, V]): CassandraValue = CassandraValue.fromAnyRef {
-    map.entrySet().stream().map[(AnyRef, AnyRef)] { e =>
+    map.entrySet().stream().map[(AnyRef, AnyRef)] { e: java.util.Map.Entry[K, V] =>
       implicitly[IsCassandraValue[K]].apply(e.getKey).unbox -> implicitly[IsCassandraValue[V]].apply(e.getValue).unbox
     }.collect(Collectors.toMap[(AnyRef, AnyRef), AnyRef, AnyRef](
-      {_._1} : java.util.function.Function[(AnyRef, AnyRef), AnyRef]
-      , {_._2} : java.util.function.Function[(AnyRef, AnyRef), AnyRef]))
+      {z : (AnyRef, AnyRef) => z._1} : java.util.function.Function[(AnyRef, AnyRef), AnyRef]
+      , {z : (AnyRef, AnyRef) => z._2} : java.util.function.Function[(AnyRef, AnyRef), AnyRef]))
   }
   implicit final def scalaListsAllowed[T: IsCassandraValue](list: List[T]): CassandraValue = javaListsAllowed(list.asJava)
   implicit final def scalaSetsAllowed[T: IsCassandraValue](set: Set[T]): CassandraValue = javaSetsAllowed(set.asJava)
