@@ -3,7 +3,6 @@ package org.bitbucket.pshirshov.izumitk.cassandra.facade
 import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.time.ZonedDateTime
-import java.util.stream.Collectors
 import java.util.{Date, UUID}
 
 import com.datastax.driver.core.{LocalDate, ResultSet, TupleValue, UDTValue}
@@ -46,22 +45,28 @@ trait WithSafeCassandraFacade
   implicit final val udtValueAllowed: IsCassandraValue[UDTValue] = CassandraValue.fromAnyRef
   implicit final val tupleValueAllowed: IsCassandraValue[TupleValue] = CassandraValue.fromAnyRef
   implicit final def javaListsAllowed[T: IsCassandraValue](list: java.util.List[T]): CassandraValue = CassandraValue.fromAnyRef {
-    list.stream().map[AnyRef]{z: T => implicitly[IsCassandraValue[T]].apply(z).unbox}.collect(Collectors.toList[AnyRef])
+    list.asScala.map(implicitly[IsCassandraValue[T]].apply(_).unbox).asJava
   }
   implicit final def javaSetsAllowed[T: IsCassandraValue](set: java.util.Set[T]): CassandraValue = CassandraValue.fromAnyRef {
-    set.stream().map[AnyRef]{z: T => implicitly[IsCassandraValue[T]].apply(z).unbox}.collect(Collectors.toSet[AnyRef])
+    set.asScala.map(implicitly[IsCassandraValue[T]].apply(_).unbox).asJava
   }
   implicit final def javaMapsAllowed[K: IsCassandraValue, V: IsCassandraValue](map: java.util.Map[K, V]): CassandraValue = CassandraValue.fromAnyRef {
-    map.entrySet().stream().map[(AnyRef, AnyRef)] { e: java.util.Map.Entry[K, V] =>
-      implicitly[IsCassandraValue[K]].apply(e.getKey).unbox -> implicitly[IsCassandraValue[V]].apply(e.getValue).unbox
-    }.collect(Collectors.toMap[(AnyRef, AnyRef), AnyRef, AnyRef](
-      {z : (AnyRef, AnyRef) => z._1} : java.util.function.Function[(AnyRef, AnyRef), AnyRef]
-      , {z : (AnyRef, AnyRef) => z._2} : java.util.function.Function[(AnyRef, AnyRef), AnyRef]))
+    map.asScala.map {
+      case (k, v) =>
+        implicitly[IsCassandraValue[K]].apply(k).unbox -> implicitly[IsCassandraValue[V]].apply(v).unbox
+    }.asJava
   }
+
   implicit final def scalaListsAllowed[T: IsCassandraValue](list: List[T]): CassandraValue = javaListsAllowed(list.asJava)
   implicit final def scalaSetsAllowed[T: IsCassandraValue](set: Set[T]): CassandraValue = javaSetsAllowed(set.asJava)
   implicit final def scalaMapsAllowed[K: IsCassandraValue, V: IsCassandraValue](map: Map[K, V]): CassandraValue = javaMapsAllowed(map.asJava)
   implicit final val zonedDateTimeAllowed: IsCassandraValue[ZonedDateTime] = z => dateAllowed(Date.from(z.toInstant))
+  implicit final def scalaOptionAllowed[T: IsCassandraValue](option: Option[T]): CassandraValue = option match {
+    case Some(z) =>
+      implicitly[IsCassandraValue[T]].apply(z)
+    case None =>
+      CassandraValue.fromAnyRef(null)
+  }
 
   implicit final class SafeOps(query: CPreparedStatement) {
     def execute(args: CassandraValue*): ResultSet =
