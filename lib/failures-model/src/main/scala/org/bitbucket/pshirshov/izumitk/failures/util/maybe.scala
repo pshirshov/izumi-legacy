@@ -41,6 +41,14 @@ object maybe extends StrictLogging {
       .flatMap(v => v))
   }
 
+  def when(cond: Boolean)(m: => Maybe[Unit]): Maybe[Unit] = {
+    if (cond) m else Good(())
+  }
+
+  def pure[T](r: T): Maybe[T] = Good(r)
+
+  def void: Maybe[Unit] = Good(())
+
   def mapException(failureMessage: Option[String] = None): PartialFunction[Throwable, Every[ServiceFailure]] = {
     case s: ServiceFailure =>
       One(s.toException)
@@ -80,6 +88,18 @@ object maybe extends StrictLogging {
 
     def flatten[G](implicit ev: Maybe[T] <:< Maybe[Maybe[G]]): Maybe[G] = {
       self.flatten(theMaybe)
+    }
+
+    def andThen[G](next: => Maybe[G])(implicit ev: Maybe[T] <:< Maybe[Unit]): Maybe[G] = {
+      theMaybe.flatMap(_ => next)
+    }
+
+    def void: Maybe[Unit] = {
+      theMaybe.map(_ => ())
+    }
+
+    def pure[G](g: G): Maybe[G] = {
+      theMaybe.map(_ => g)
     }
   }
 

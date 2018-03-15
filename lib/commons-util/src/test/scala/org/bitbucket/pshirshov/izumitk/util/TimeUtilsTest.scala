@@ -31,8 +31,8 @@ class TimeUtilsTest extends WordSpec with MockFactory {
 
     "restore timestamp from epoch millis" in {
       val now = TimeUtils.utcNow
-      assert(TimeUtils.utcEpochMillies(now.toInstant.toEpochMilli).isEqual(now))
       assert(TimeUtils.utcEpochSeconds(now.toEpochSecond).isEqual(now.withNano(0)))
+      assert(TimeUtils.utcEpochMillies(now.toInstant.toEpochMilli).isEqual(now))
     }
 
     "convert java.util.Date to timestamp" in {

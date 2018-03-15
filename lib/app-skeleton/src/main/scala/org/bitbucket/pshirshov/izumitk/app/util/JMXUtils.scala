@@ -1,16 +1,15 @@
 package org.bitbucket.pshirshov.izumitk.app.util
 
 import java.lang.management.{ManagementFactory, PlatformManagedObject}
+
+import com.sun.management.HotSpotDiagnosticMXBean
 import javax.management.remote.{JMXConnectorServer, JMXConnectorServerFactory, JMXServiceURL}
 import javax.management.{InstanceAlreadyExistsException, MBeanServer, ObjectName}
-
 import com.typesafe.scalalogging.StrictLogging
 import sun.management.ManagementFactoryHelper
 
 import scala.collection.JavaConverters._
 
-/**
-  */
 object JMXUtils extends StrictLogging {
 
   def createUsingMBeanServer(mbs: MBeanServer, hostname: String, port: Int): JMXMPContext = {
@@ -18,7 +17,7 @@ object JMXUtils extends StrictLogging {
 
     val url = new JMXServiceURL("jmxmp", hostname, port)
     val cs = JMXConnectorServerFactory.newJMXConnectorServer(url, null, mbs)
-    new JMXMPContext(mbs, cs)
+    JMXMPContext(mbs, cs)
   }
 
   private def configure(mbs: MBeanServer): MBeanServer = {
@@ -34,7 +33,7 @@ object JMXUtils extends StrictLogging {
       platformBeans.add(ManagementFactory.getRuntimeMXBean)
       platformBeans.add(ManagementFactory.getThreadMXBean)
       platformBeans.addAll(ManagementFactoryHelper.getBufferPoolMXBeans)
-      platformBeans.add(ManagementFactoryHelper.getDiagnosticMXBean)
+      platformBeans.add(ManagementFactory.getPlatformMXBean(classOf[HotSpotDiagnosticMXBean]))
 
       val registered = new java.util.HashSet[ObjectName]()
       for (bean <- platformBeans.asScala) {

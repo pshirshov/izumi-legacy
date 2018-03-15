@@ -4,13 +4,6 @@ import sbt.Keys._
 import sbt._
 
 object Dependencies {
-  val Versions = Seq(
-    crossScalaVersions := Seq("2.12.4", "2.11.11"),
-    scalaVersion := crossScalaVersions.value.head
-  )
-
-//  val globalExclusions: Seq[SbtExclusionRule] = Seq[sbt.SbtExclusionRule]()
-
 
   object C {
     val scala_macros: ModuleID = "org.scalamacros" % "paradise" % "2.1.0"
