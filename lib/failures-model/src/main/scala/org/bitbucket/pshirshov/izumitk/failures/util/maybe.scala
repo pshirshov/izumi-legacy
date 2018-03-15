@@ -102,7 +102,7 @@ object maybe extends StrictLogging {
       theMaybe.map(_ => ())
     }
 
-    def pure[G](g: G): Maybe[G] = {
+    def pure[G](g: => G): Maybe[G] = {
       theMaybe.map(_ => g)
     }
   }
