@@ -45,6 +45,10 @@ object maybe extends StrictLogging {
     if (cond) m else Good(())
   }
 
+  def when[T](value: T)(m: PartialFunction[T, Maybe[Unit]]): Maybe[Unit] = {
+    m.applyOrElse(value, { _: T => Good(()) })
+  }
+
   def pure[T](r: T): Maybe[T] = Good(r)
 
   def void: Maybe[Unit] = Good(())
