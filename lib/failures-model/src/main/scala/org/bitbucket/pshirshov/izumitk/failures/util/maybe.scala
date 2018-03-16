@@ -51,7 +51,7 @@ object maybe extends StrictLogging {
 
   def pure[T](r: T): Maybe[T] = Good(r)
 
-  def void: Maybe[Unit] = Good(())
+  def unit: Maybe[Unit] = Good(())
 
   def mapException(failureMessage: Option[String] = None): PartialFunction[Throwable, Every[ServiceFailure]] = {
     case s: ServiceFailure =>
@@ -102,7 +102,7 @@ object maybe extends StrictLogging {
       theMaybe.map(_ => ())
     }
 
-    def pure[G](g: => G): Maybe[G] = {
+    def as[G](g: => G): Maybe[G] = {
       theMaybe.map(_ => g)
     }
   }
