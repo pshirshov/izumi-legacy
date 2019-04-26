@@ -5,6 +5,4 @@
 [![Sonatype snapshots](https://img.shields.io/nexus/s/https/oss.sonatype.org/com.github.pshirshov.izumi.legacy/izumi-legacy_2.12.svg)](https://oss.sonatype.org/content/repositories/snapshots/com/github/pshirshov/izumi/legacy/)
 [![License](https://img.shields.io/github/license/pshirshov/izumi-legacy.svg)](https://github.com/pshirshov/izumi-legacy/blob/develop/LICENSE)
 
-A bunch of oudated and dirty tools which are still maintained for those who depend on them but there is nothing worthy.. Don't use them. Use [izumi-r2](https://github.com/pshirshov/izumi-r2).
-
-Check [this repository](https://github.com/pshirshov/izumi-r2) for publishing details.
+A bunch of oudated and dirty tools. Not maintained anymore. Use [izumi-r2](https://github.com/pshirshov/izumi-r2).
